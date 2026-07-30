@@ -1,0 +1,6 @@
+{
+  "name": "JollyJuniors - Premium Baby Care & Toys Store",
+  "description": "A premium, image-first e-commerce store for baby care products, educational toys, and mom essentials with interactive shopping features, mega menu, and WhatsApp orders.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -683,6 +683,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 mb-2">Product Image *</label>
                   <ImageUploadWidget
+                    folder="products"
                     initialImage={formData.imageUrl}
                     onUploadSuccess={(url) => setFormData({ ...formData, imageUrl: url })}
                   />

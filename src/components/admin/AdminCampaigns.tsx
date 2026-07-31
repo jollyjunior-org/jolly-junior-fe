@@ -267,6 +267,7 @@ export const AdminCampaigns: React.FC = () => {
               Background image (optional)
             </label>
             <ImageUploadWidget
+              folder="campaigns"
               initialImage={form.background_image_url || undefined}
               onUploadSuccess={(url) => setForm({ ...form, background_image_url: url })}
             />

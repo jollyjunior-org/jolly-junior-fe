@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Sparkles, ArrowRight } from 'lucide-react';
 import { useShopStore } from '@/store/useShopStore';
 
 /**
- * Homepage hero slider — content comes from admin Control (Cloudinary images).
+ * Homepage hero slider — each slide is a category (image/name/description from Categories).
  */
 export const HeroSlider: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);

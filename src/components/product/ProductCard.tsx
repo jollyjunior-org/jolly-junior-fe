@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Heart, ShoppingBag, Eye, Star, MessageSquare, Flame } from 'lucide-react';
 import { Product } from '../../types';
 import { formatDiscountLabel } from '../../utils/discount';
+import { isComingSoonProduct } from '../../utils/product';
 import { useShopStore } from '../../store/useShopStore';
 
 interface ProductCardProps {
@@ -21,8 +22,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const isWishlisted = isInWishlist(product.id);
 
+  const comingSoon = isComingSoonProduct(product);
   const stockQty = product.stockQuantity ?? (product.inStock ? 10 : 0);
-  const isAvailable = product.inStock && stockQty > 0;
+  const isAvailable = !comingSoon && product.inStock && stockQty > 0;
   const isLowStock = isAvailable && stockQty <= (product.lowStockThreshold || 5);
 
   const handleWhatsAppOrder = (e: React.MouseEvent) => {
@@ -64,9 +66,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
         )}
 
-        {/* Top Badges (Stock / Discount / Flash Sale / Best Seller) */}
+        {/* Top Badges (Coming Soon / Stock / Discount / Flash Sale / Best Seller) */}
         <div className="absolute top-3 left-3 z-10 flex flex-col gap-1 items-start">
-          {!isAvailable ? (
+          {comingSoon ? (
+            <span className="px-2.5 py-1 rounded-full bg-slate-700/95 text-white text-[10px] font-black uppercase tracking-wider shadow-xs backdrop-blur-xs">
+              Coming Soon
+            </span>
+          ) : !isAvailable ? (
             <span className="px-2.5 py-1 rounded-full bg-slate-900/90 text-white text-[10px] font-black uppercase tracking-wider shadow-xs backdrop-blur-xs">
               Out of Stock
             </span>
@@ -174,12 +180,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   ? 'bg-[#B4F8C8] text-[#2E6038] hover:bg-[#A0E8B8] cursor-pointer'
                   : 'bg-slate-100 text-slate-300 cursor-not-allowed'
               }`}
-              title={isAvailable ? 'Order via WhatsApp' : 'Product Out of Stock'}
+              title={
+                comingSoon
+                  ? 'Coming Soon'
+                  : isAvailable
+                    ? 'Order via WhatsApp'
+                    : 'Product Out of Stock'
+              }
             >
               <MessageSquare className="w-4 h-4 fill-current" />
             </button>
 
-            {/* Add to Cart */}
+            {/* Add to Cart — blocked for Coming Soon */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -194,7 +206,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             >
               <ShoppingBag className="w-3.5 h-3.5" />
               <span className="text-[11px] font-bold">
-                {isAvailable ? 'Add' : 'Sold Out'}
+                {comingSoon ? 'Soon' : isAvailable ? 'Add' : 'Sold Out'}
               </span>
             </button>
           </div>

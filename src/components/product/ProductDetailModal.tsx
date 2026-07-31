@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { Product, ProductVariant } from '../../types';
 import { formatDiscountLabel } from '../../utils/discount';
+import { isComingSoonProduct } from '../../utils/product';
 import { useShopStore } from '../../store/useShopStore';
 
 export const ProductDetailModal: React.FC = () => {
@@ -45,7 +46,8 @@ export const ProductDetailModal: React.FC = () => {
   const currentPrice = selectedVariant ? selectedVariant.price : product.price;
 
   const stockQty = product.stockQuantity ?? (product.inStock ? 10 : 0);
-  const isAvailable = product.inStock && stockQty > 0;
+  const comingSoon = isComingSoonProduct(product);
+  const isAvailable = !comingSoon && product.inStock && stockQty > 0;
   const isLowStock = isAvailable && stockQty <= (product.lowStockThreshold || 5);
 
   // Bundle offer product
@@ -232,7 +234,11 @@ export const ProductDetailModal: React.FC = () => {
                   {/* Live Stock Status Indicator */}
                   <div className="mt-4 p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs font-bold">
                     <span className="text-slate-600">Inventory Status:</span>
-                    {!isAvailable ? (
+                    {comingSoon ? (
+                      <span className="px-2.5 py-1 rounded-full bg-slate-200 text-slate-700 font-extrabold">
+                        Coming Soon — not for sale yet
+                      </span>
+                    ) : !isAvailable ? (
                       <span className="px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 font-extrabold flex items-center gap-1">
                         🔴 Currently Out of Stock
                       </span>
@@ -287,7 +293,7 @@ export const ProductDetailModal: React.FC = () => {
                       }`}
                     >
                       <ShoppingBag className="w-4 h-4" />
-                      <span>{isAvailable ? 'Add to Cart' : 'Out of Stock'}</span>
+                      <span>{comingSoon ? 'Coming Soon' : isAvailable ? 'Add to Cart' : 'Out of Stock'}</span>
                     </button>
 
                     <button
@@ -299,7 +305,7 @@ export const ProductDetailModal: React.FC = () => {
                           : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
                       }`}
                     >
-                      <span>{isAvailable ? 'Buy Now' : 'Unavailable'}</span>
+                      <span>{comingSoon ? 'Coming Soon' : isAvailable ? 'Buy Now' : 'Unavailable'}</span>
                     </button>
                   </div>
 
@@ -314,7 +320,13 @@ export const ProductDetailModal: React.FC = () => {
                     }`}
                   >
                     <MessageSquare className={`w-4 h-4 ${isAvailable ? 'fill-[#22C55E]' : 'fill-slate-300'}`} />
-                    <span>{isAvailable ? 'Instant Order via WhatsApp' : 'WhatsApp Orders Disabled (Out of Stock)'}</span>
+                    <span>
+                      {comingSoon
+                        ? 'Coming Soon — WhatsApp orders unavailable'
+                        : isAvailable
+                          ? 'Instant Order via WhatsApp'
+                          : 'WhatsApp Orders Disabled (Out of Stock)'}
+                    </span>
                   </button>
 
                   {/* Trust Badges */}

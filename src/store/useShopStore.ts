@@ -45,6 +45,7 @@ const emptyStorefront: StorefrontConfig = {
   tags: [],
   navCategories: [],
   featuredCategories: [],
+  footerCategories: [],
   heroSlides: [],
   homeSections: [],
   navSectionChips: [],
@@ -67,6 +68,7 @@ interface ShopStore {
   searchOpen: boolean;
   mobileMenuOpen: boolean;
   authModalOpen: boolean;
+  accountPanelOpen: boolean;
   activeCategorySlug: string | null;
   toastMessage: string | null;
   lastOrderNumber: string | null;
@@ -100,6 +102,7 @@ interface ShopStore {
   setSearchOpen: (open: boolean) => void;
   setMobileMenuOpen: (open: boolean) => void;
   setAuthModalOpen: (open: boolean) => void;
+  setAccountPanelOpen: (open: boolean) => void;
   setActiveCategorySlug: (slug: string | null) => void;
   showToast: (msg: string) => void;
   setLastOrderNumber: (num: string) => void;
@@ -199,6 +202,7 @@ export const useShopStore = create<ShopStore>((set, get) => ({
   searchOpen: false,
   mobileMenuOpen: false,
   authModalOpen: false,
+  accountPanelOpen: false,
   activeCategorySlug: null,
   toastMessage: null,
   lastOrderNumber: null,
@@ -213,6 +217,16 @@ export const useShopStore = create<ShopStore>((set, get) => ({
   addToCart: (product, variant, quantity = 1) => {
     const targetProduct = get().products.find((p) => p.id === product.id) || product;
     const currentStock = targetProduct.stockQuantity ?? 0;
+    const tags = targetProduct.tags || [];
+    const comingSoon = tags.some((t) => {
+      const name = (t.name || '').toLowerCase().replace(/\s+/g, '-');
+      const label = (t.label || '').toLowerCase();
+      return name === 'coming-soon' || name === 'comingsoon' || label.includes('coming soon');
+    });
+    if (comingSoon) {
+      get().showToast(`"${targetProduct.name}" is Coming Soon — not available to buy yet.`);
+      return;
+    }
     const isAvailable = targetProduct.inStock && currentStock > 0;
 
     if (!isAvailable) {
@@ -368,6 +382,7 @@ export const useShopStore = create<ShopStore>((set, get) => ({
   setSearchOpen: (open) => set({ searchOpen: open }),
   setMobileMenuOpen: (open) => set({ mobileMenuOpen: open }),
   setAuthModalOpen: (open) => set({ authModalOpen: open }),
+  setAccountPanelOpen: (open) => set({ accountPanelOpen: open }),
   setActiveCategorySlug: (slug) => set({ activeCategorySlug: slug }),
 
   hydrateGuestState: () => {
@@ -653,6 +668,7 @@ export const useShopStore = create<ShopStore>((set, get) => ({
         is_enabled: newCatData.isEnabled !== false,
         show_in_nav: newCatData.showInNav ?? false,
         show_in_featured: newCatData.showInFeatured ?? newCatData.featured ?? true,
+        show_in_footer: newCatData.showInFooter ?? false,
         nav_order: newCatData.navOrder ?? 0,
         tag_id: newCatData.tagId || null,
         subcategories: (newCatData.subcategories || []).filter(Boolean),
@@ -677,6 +693,7 @@ export const useShopStore = create<ShopStore>((set, get) => ({
       if (updated.isEnabled !== undefined) payload.is_enabled = updated.isEnabled;
       if (updated.showInNav !== undefined) payload.show_in_nav = updated.showInNav;
       if (updated.showInFeatured !== undefined) payload.show_in_featured = updated.showInFeatured;
+      if (updated.showInFooter !== undefined) payload.show_in_footer = updated.showInFooter;
       if (updated.featured !== undefined && updated.showInFeatured === undefined) {
         payload.show_in_featured = updated.featured;
       }
@@ -717,7 +734,8 @@ export const useShopStore = create<ShopStore>((set, get) => ({
         customer_phone: order.customerPhone,
         shipping_address: order.address,
         city: order.city,
-        payment_method: order.paymentMethod,
+        payment_method: 'COD',
+        user_id: (order.userId as string | undefined) || null,
         subtotal: order.totalAmount,
         shipping_fee: 0,
         discount_amount: 0,

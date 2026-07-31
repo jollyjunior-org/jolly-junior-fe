@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Search, Heart, ShoppingBag, User, Flame,
-  MessageSquare, Menu, LogOut,
+  MessageSquare, Menu,
 } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 import { useShopStore } from '../../store/useShopStore';
@@ -22,8 +22,8 @@ export const Header: React.FC = () => {
     setSelectedProductDetail,
     setMobileMenuOpen,
     setAuthModalOpen,
+    setAccountPanelOpen,
     isCustomerAuthenticated,
-    logoutCustomer,
     liveSales,
     filter,
     activeCategorySlug,
@@ -340,16 +340,17 @@ export const Header: React.FC = () => {
 
           {isCustomerAuthenticated ? (
             <button
-              onClick={logoutCustomer}
-              className="hidden sm:flex p-2.5 rounded-full hover:bg-[#F5F2ED] text-[#5A5A40] cursor-pointer"
-              title="Sign out"
+              onClick={() => setAccountPanelOpen(true)}
+              className="relative p-2.5 rounded-full hover:bg-[#F5F2ED] text-[#5A5A40] cursor-pointer"
+              title="My account"
             >
-              <LogOut className="w-5 h-5" />
+              <User className="w-5 h-5" />
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-400" />
             </button>
           ) : (
             <button
               onClick={() => setAuthModalOpen(true)}
-              className="hidden sm:flex p-2.5 rounded-full hover:bg-[#F5F2ED] text-[#5A5A40] cursor-pointer"
+              className="p-2.5 rounded-full hover:bg-[#F5F2ED] text-[#5A5A40] cursor-pointer"
               title="Sign in"
             >
               <User className="w-5 h-5" />

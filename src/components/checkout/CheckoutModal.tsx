@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import confetti from 'canvas-confetti';
 import { 
-  X, Check, ShieldCheck, Truck, CreditCard, MessageSquare, 
+  X, Check, ShieldCheck, Truck, 
   MapPin, User, Mail, Phone, ShoppingBag
 } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
+import { apiFetch } from '@/api/api-client';
+import { publicEndpoints } from '@/api/endpoints/public';
+import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import confetti from 'canvas-confetti';
 
 export const CheckoutModal: React.FC = () => {
   const { 
@@ -17,7 +19,9 @@ export const CheckoutModal: React.FC = () => {
     setLastOrderNumber,
     lastOrderNumber,
     currentView,
-    addOrder
+    addOrder,
+    isCustomerAuthenticated,
+    customerToken,
   } = useShopStore();
 
   const [formData, setFormData] = useState({
@@ -26,11 +30,41 @@ export const CheckoutModal: React.FC = () => {
     phone: '',
     address: '',
     city: 'Lahore',
-    paymentMethod: 'COD' as 'COD' | 'Card' | 'WhatsApp',
-    notes: ''
+    paymentMethod: 'COD' as const,
+    notes: '',
+    userId: null as string | null,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Prefill from saved profile when logged in
+  useEffect(() => {
+    if (currentView !== 'checkout' || !isCustomerAuthenticated) return;
+    (async () => {
+      try {
+        const p = await apiFetch<{
+          id: string;
+          name: string;
+          email: string;
+          phone?: string;
+          address?: string;
+          city?: string;
+        }>(publicEndpoints.meProfile(), { authMode: 'customer' });
+        setFormData((f) => ({
+          ...f,
+          fullName: p.name || f.fullName,
+          email: p.email || f.email,
+          phone: p.phone || f.phone,
+          address: p.address || f.address,
+          city: p.city || f.city,
+          userId: p.id,
+          paymentMethod: 'COD',
+        }));
+      } catch {
+        /* ignore */
+      }
+    })();
+  }, [currentView, isCustomerAuthenticated, customerToken]);
 
   if (currentView !== 'checkout' && currentView !== 'order-success') return null;
 
@@ -61,11 +95,12 @@ export const CheckoutModal: React.FC = () => {
         customerPhone: formData.phone,
         address: formData.address,
         city: formData.city,
-        paymentMethod: formData.paymentMethod,
+        paymentMethod: 'COD' as const,
         status: 'Pending' as const,
         createdAt: new Date().toLocaleString(),
         totalAmount: finalTotal,
         notes: formData.notes,
+        userId: formData.userId || undefined,
         items: cart.map(c => ({
           productId: c.product.id,
           productName: c.product.name,
@@ -186,36 +221,17 @@ export const CheckoutModal: React.FC = () => {
                 </div>
               </div>
 
-              {/* Payment Method Selection */}
+              {/* Payment Method — COD only */}
               <div className="space-y-3 pt-2">
                 <h3 className="text-xs font-extrabold text-[#64748B] uppercase tracking-wider">
-                  2. Select Payment Method
+                  2. Payment Method
                 </h3>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {[
-                    { id: 'COD', title: 'Cash on Delivery', desc: 'Pay when delivered to doorstep' },
-                    { id: 'Card', title: 'Debit / Credit Card', desc: 'Visa / Mastercard / UnionPay' },
-                    { id: 'WhatsApp', title: 'WhatsApp Direct', desc: 'Confirm order via chat' }
-                  ].map((method) => (
-                    <div
-                      key={method.id}
-                      onClick={() => setFormData({ ...formData, paymentMethod: method.id as any })}
-                      className={`p-3 rounded-2xl border cursor-pointer transition-all ${
-                        formData.paymentMethod === method.id
-                          ? 'border-[#EC4899] bg-[#FCE7F3] shadow-2xs'
-                          : 'border-[#E2E8F0] bg-[#FFFDF8] hover:bg-slate-50'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-black text-[#1E293B]">{method.title}</span>
-                        {formData.paymentMethod === method.id && (
-                          <Check className="w-4 h-4 text-[#EC4899]" />
-                        )}
-                      </div>
-                      <p className="text-[10px] text-[#64748B] mt-1">{method.desc}</p>
-                    </div>
-                  ))}
+                <div className="p-3 rounded-2xl border border-[#EC4899] bg-[#FCE7F3] shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-[#1E293B]">Cash on Delivery</span>
+                    <Check className="w-4 h-4 text-[#EC4899]" />
+                  </div>
+                  <p className="text-[10px] text-[#64748B] mt-1">Pay when delivered to your doorstep</p>
                 </div>
               </div>
 

@@ -10,7 +10,6 @@ import { ProductSlider } from './components/home/ProductSlider';
 import { ShopByAge } from './components/home/ShopByAge';
 import { GiftIdeas } from './components/home/GiftIdeas';
 import { ParentReviews } from './components/home/ParentReviews';
-import { InstagramGallery } from './components/home/InstagramGallery';
 import { ShopPage } from './components/shop/ShopPage';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { CartDrawer } from './components/cart/CartDrawer';
@@ -21,6 +20,8 @@ import { CheckoutModal } from './components/checkout/CheckoutModal';
 import { MobileBottomNav } from './components/mobile/MobileBottomNav';
 import { MobileSidebar } from './components/common/MobileSidebar';
 import { AuthModal } from './components/common/AuthModal';
+import { AccountPanel } from './components/common/AccountPanel';
+import { FeedbackModal } from './components/common/FeedbackModal';
 import { Toast } from './components/common/Toast';
 import { MessageSquare } from 'lucide-react';
 import { productsForHomeSection } from './services/home-section-resolver';
@@ -115,6 +116,8 @@ export default function App() {
       <Header />
       <MobileSidebar />
       <AuthModal />
+      <AccountPanel />
+      <FeedbackModal />
 
       <main className="flex-1 relative z-10">
         {currentView === 'home' ? (
@@ -146,7 +149,6 @@ export default function App() {
               );
             })}
             <ParentReviews />
-            <InstagramGallery />
           </div>
         ) : (
           <ShopPage />

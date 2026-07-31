@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Star, ShoppingBag, Eye, ArrowRight, MessageSquare } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
+import { isComingSoonProduct } from '../../utils/product';
 
 export const QuickViewModal: React.FC = () => {
   const { 
@@ -15,7 +16,8 @@ export const QuickViewModal: React.FC = () => {
   if (!product) return null;
 
   const stockQty = product.stockQuantity ?? (product.inStock ? 10 : 0);
-  const isAvailable = product.inStock && stockQty > 0;
+  const comingSoon = isComingSoonProduct(product);
+  const isAvailable = !comingSoon && product.inStock && stockQty > 0;
 
   return (
     <AnimatePresence>
@@ -82,7 +84,7 @@ export const QuickViewModal: React.FC = () => {
                   }`}
                 >
                   <ShoppingBag className="w-4 h-4" />
-                  <span>{isAvailable ? 'Add to Cart' : 'Out of Stock'}</span>
+                  <span>{comingSoon ? 'Coming Soon' : isAvailable ? 'Add to Cart' : 'Out of Stock'}</span>
                 </button>
 
                 <button

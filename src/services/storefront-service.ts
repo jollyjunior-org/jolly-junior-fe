@@ -21,6 +21,9 @@ function mapStorefrontConfig(raw: Record<string, unknown>): StorefrontConfig {
   const featuredCategories = ((raw.featuredCategories as Record<string, unknown>[]) || []).map(
     mapCategory,
   );
+  const footerCategories = ((raw.footerCategories as Record<string, unknown>[]) || []).map(
+    mapCategory,
+  );
 
   const tags: StoreTag[] = ((raw.tags as Record<string, unknown>[]) || []).map((t) => ({
     id: String(t.id),
@@ -76,7 +79,7 @@ function mapStorefrontConfig(raw: Record<string, unknown>): StorefrontConfig {
     sortOrder: Number(c.sort_order ?? 0),
   }));
 
-  return { tags, navCategories, featuredCategories, heroSlides, homeSections, navSectionChips };
+  return { tags, navCategories, featuredCategories, footerCategories, heroSlides, homeSections, navSectionChips };
 }
 
 /**

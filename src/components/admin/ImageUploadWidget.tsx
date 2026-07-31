@@ -1,10 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
-import { uploadImage } from '@/services/upload-service';
+import { uploadImage, type AdminUploadFolder } from '@/services/upload-service';
 
 interface ImageUploadWidgetProps {
   initialImage?: string;
   onUploadSuccess: (url: string) => void;
+  /** Cloudinary folder key — keeps storage organized */
+  folder?: AdminUploadFolder;
 }
 
 const resizeImage = (file: File, maxWidth: number, maxHeight: number): Promise<Blob | null> => {
@@ -55,7 +57,8 @@ const resizeImage = (file: File, maxWidth: number, maxHeight: number): Promise<B
 
 export const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({ 
   initialImage, 
-  onUploadSuccess 
+  onUploadSuccess,
+  folder = 'admin',
 }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(initialImage || null);
@@ -89,7 +92,7 @@ export const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({
       const formData = new FormData();
       formData.append('file', resizedBlob, filename);
 
-      const data = await uploadImage(formData);
+      const data = await uploadImage(formData, folder as AdminUploadFolder);
       if (data.url) {
         setPreview(data.url);
         onUploadSuccess(data.url);

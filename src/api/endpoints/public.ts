@@ -31,4 +31,11 @@ export const publicEndpoints = {
   meWishlistItem: (productId: string) =>
     `${PUBLIC_API_BASE_URL}/store/me/wishlist/${encodeURIComponent(productId)}`,
   meWishlistMerge: () => `${PUBLIC_API_BASE_URL}/store/me/wishlist/merge`,
+  meProfile: () => `${PUBLIC_API_BASE_URL}/store/me/profile`,
+  meAddresses: () => `${PUBLIC_API_BASE_URL}/store/me/addresses`,
+  meOrders: () => `${PUBLIC_API_BASE_URL}/store/me/orders`,
+  testimonials: () => `${PUBLIC_API_BASE_URL}/store/testimonials`,
+  testimonialInvite: (token: string) =>
+    `${PUBLIC_API_BASE_URL}/store/testimonials/invite/${encodeURIComponent(token)}`,
+  storeUpload: () => `${PUBLIC_API_BASE_URL}/store/upload`,
 } as const;

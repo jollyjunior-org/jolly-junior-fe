@@ -30,6 +30,7 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
     featured: true,
     isEnabled: true,
     showInNav: false,
+    showInFooter: false,
     navOrder: 1,
     subcategoriesText: 'Wooden Puzzles, Sorting Blocks, Sensory Toys'
   });
@@ -46,6 +47,7 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
       featured: true,
       isEnabled: true,
       showInNav: false,
+      showInFooter: false,
       navOrder: categories.length + 1,
       subcategoriesText: 'Wooden Puzzles, Sorting Blocks, Sensory Toys'
     });
@@ -68,6 +70,7 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
       featured: cat.featured ?? true,
       isEnabled: cat.isEnabled ?? true,
       showInNav: Boolean(cat.showInNav),
+      showInFooter: Boolean(cat.showInFooter),
       navOrder: cat.navOrder ?? 1,
       subcategoriesText: cat.subcategories.join(', ')
     });
@@ -101,6 +104,7 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
         featured: formData.featured,
         isEnabled: formData.isEnabled,
         showInNav: formData.showInNav,
+        showInFooter: formData.showInFooter,
         navOrder: formData.navOrder,
         subcategories: subs.length > 0 ? subs : ['General Essentials']
       });
@@ -115,6 +119,7 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
         featured: formData.featured,
         isEnabled: formData.isEnabled,
         showInNav: formData.showInNav,
+        showInFooter: formData.showInFooter,
         navOrder: formData.navOrder,
         subcategories: subs.length > 0 ? subs : ['General Essentials'],
         itemCount: 0
@@ -300,6 +305,7 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
                 <label className="block text-xs font-bold text-slate-700 mb-2">Category Image {editingCategory ? '*' : '(Upload after create)'}</label>
                 {editingCategory ? (
                   <ImageUploadWidget
+                    folder="categories"
                     initialImage={formData.image}
                     onUploadSuccess={(url) => setFormData({ ...formData, image: url })}
                   />
@@ -367,6 +373,15 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
                       className="w-4 h-4 rounded text-sky-600 focus:ring-0 cursor-pointer"
                     />
                     Show under search bar
+                  </label>
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.showInFooter}
+                      onChange={e => setFormData({ ...formData, showInFooter: e.target.checked })}
+                      className="w-4 h-4 rounded text-sky-600 focus:ring-0 cursor-pointer"
+                    />
+                    Show in footer Top Categories
                   </label>
                 </div>
               </div>

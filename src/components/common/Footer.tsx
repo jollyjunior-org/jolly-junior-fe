@@ -1,16 +1,30 @@
 import React from 'react';
 import { BrandLogo } from './BrandLogo';
-import { MessageSquare, Phone, Mail, MapPin, Heart, ShieldCheck, Sparkles, Truck } from 'lucide-react';
+import {
+  MessageSquare, ShieldCheck, Sparkles, Truck, Instagram,
+} from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
 
-export const Footer: React.FC = () => {
-  const { setCurrentView, setFilter } = useShopStore();
+/** Simple Facebook glyph for the footer social row. */
+const FacebookIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
+    <path d="M14 13.5h2.5l.5-3H14V8.5c0-.9.3-1.5 1.6-1.5H17V4.1C16.4 4 15.5 4 14.6 4 12.2 4 10.5 5.5 10.5 8.2V10.5H8v3h2.5V20h3.5v-6.5z" />
+  </svg>
+);
 
+export const Footer: React.FC = () => {
+  const { setCurrentView, setFilter, storefrontConfig } = useShopStore();
+
+  /** Open shop filtered to one category slug. */
   const handleCategoryLink = (slug: string) => {
-    setFilter({ categoryId: slug });
+    setFilter({ categoryId: slug, categoryIds: [slug] });
     setCurrentView('shop');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const topCategories = storefrontConfig.footerCategories || [];
+  const instagramUrl = 'https://www.instagram.com/JollyJuniorsStore/';
+  const facebookUrl = 'https://www.facebook.com/';
 
   return (
     <footer className="relative bg-white border-t border-[#F5F2ED] pt-12 pb-24 md:pb-12 mt-16 text-[#5A5A40]">
@@ -48,21 +62,62 @@ export const Footer: React.FC = () => {
 
         {/* Main Footer Links */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Brand Info */}
+          {/* Brand Info + social */}
           <div className="space-y-4">
             <BrandLogo size="md" />
             <p className="text-xs text-[#8C8C70] leading-relaxed font-medium">
-              JollyJuniors.com is Pakistan's premier online store for Montessori educational toys, certified organic baby care products, feeding sets, and luxury baby shower gift hampers.
+              JollyJuniors.com is Pakistan&apos;s premier online store for Montessori educational toys, certified organic baby care products, feeding sets, and luxury baby shower gift hampers.
             </p>
             <div className="flex items-center gap-3 pt-1">
-              <a 
-                href="https://wa.me/923001234567" 
-                target="_blank" 
+              <a
+                href="https://wa.me/923001234567"
+                target="_blank"
                 rel="noreferrer"
                 className="px-3 py-1.5 rounded-full bg-[#B4F8C8] text-[#2E6038] text-xs font-bold flex items-center gap-1.5 hover:bg-[#A0E8B8] transition-colors"
               >
                 <MessageSquare className="w-3.5 h-3.5 fill-current" />
                 <span>+92 300 1234567</span>
+              </a>
+            </div>
+            {/* Social icons + Instagram handle */}
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <a
+                href={instagramUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="p-2 rounded-full bg-[#F5F2ED] text-[#5A5A40] hover:bg-[#FFB347] hover:text-white transition-colors"
+                title="Instagram"
+                aria-label="Instagram"
+              >
+                <Instagram className="w-4 h-4" />
+              </a>
+              <a
+                href={facebookUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="p-2 rounded-full bg-[#F5F2ED] text-[#5A5A40] hover:bg-[#FFB347] hover:text-white transition-colors"
+                title="Facebook"
+                aria-label="Facebook"
+              >
+                <FacebookIcon className="w-4 h-4" />
+              </a>
+              <a
+                href="https://wa.me/923001234567"
+                target="_blank"
+                rel="noreferrer"
+                className="p-2 rounded-full bg-[#F5F2ED] text-[#5A5A40] hover:bg-[#22C55E] hover:text-white transition-colors"
+                title="WhatsApp"
+                aria-label="WhatsApp"
+              >
+                <MessageSquare className="w-4 h-4" />
+              </a>
+              <a
+                href={instagramUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs font-bold text-[#5A5A40] hover:text-[#FFB347] transition-colors"
+              >
+                @JollyJuniorsStore
               </a>
             </div>
           </div>
@@ -73,12 +128,20 @@ export const Footer: React.FC = () => {
               Top Categories
             </h3>
             <ul className="space-y-2 text-xs font-semibold text-[#8C8C70]">
-              <li><button onClick={() => handleCategoryLink('educational-toys')} className="hover:text-[#FFB347] cursor-pointer">Educational Toys</button></li>
-              <li><button onClick={() => handleCategoryLink('baby-toys')} className="hover:text-[#FFB347] cursor-pointer">Baby Toys & Rattles</button></li>
-              <li><button onClick={() => handleCategoryLink('feeding')} className="hover:text-[#FFB347] cursor-pointer">Silicone Feeding Sets</button></li>
-              <li><button onClick={() => handleCategoryLink('bath-care')} className="hover:text-[#FFB347] cursor-pointer">Tear-Free Bath Care</button></li>
-              <li><button onClick={() => handleCategoryLink('newborn-essentials')} className="hover:text-[#FFB347] cursor-pointer">Newborn Organic Swaddles</button></li>
-              <li><button onClick={() => handleCategoryLink('gift-sets')} className="hover:text-[#FFB347] cursor-pointer">Baby Shower Gift Hampers</button></li>
+              {topCategories.length > 0 ? (
+                topCategories.map((cat) => (
+                  <li key={cat.id}>
+                    <button
+                      onClick={() => handleCategoryLink(cat.slug)}
+                      className="hover:text-[#FFB347] cursor-pointer"
+                    >
+                      {cat.name}
+                    </button>
+                  </li>
+                ))
+              ) : (
+                <li className="text-[11px] italic">Mark categories as “Show in footer” in Admin</li>
+              )}
             </ul>
           </div>
 
@@ -103,7 +166,6 @@ export const Footer: React.FC = () => {
             </h3>
             <div className="flex flex-wrap gap-2 text-xs font-bold text-[#5A5A40]">
               <span className="px-2.5 py-1 bg-[#FFFDF8] border border-[#F5F2ED] rounded-lg">Cash on Delivery</span>
-              <span className="px-2.5 py-1 bg-[#FFFDF8] border border-[#F5F2ED] rounded-lg">Visa / Mastercard</span>
               <span className="px-2.5 py-1 bg-[#FFFDF8] border border-[#F5F2ED] rounded-lg">JazzCash / EasyPaisa</span>
             </div>
             <p className="text-[11px] text-[#8C8C70] pt-2">

@@ -18,6 +18,7 @@ export const AdminUsers: React.FC = () => {
     name: '',
     email: '',
     phone: '',
+    address: '',
     city: 'Karachi',
     status: 'Active' as 'Active' | 'Suspended'
   });
@@ -27,6 +28,7 @@ export const AdminUsers: React.FC = () => {
       name: '',
       email: '',
       phone: '',
+      address: '',
       city: 'Karachi',
       status: 'Active'
     });
@@ -39,6 +41,7 @@ export const AdminUsers: React.FC = () => {
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
+      address: formData.address,
       city: formData.city,
       status: formData.status,
       joinedDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
@@ -61,7 +64,8 @@ export const AdminUsers: React.FC = () => {
       const emailMatch = u.email.toLowerCase().includes(q);
       const phoneMatch = u.phone.includes(q);
       const cityMatch = u.city.toLowerCase().includes(q);
-      if (!nameMatch && !emailMatch && !phoneMatch && !cityMatch) return false;
+      const addressMatch = (u.address || '').toLowerCase().includes(q);
+      if (!nameMatch && !emailMatch && !phoneMatch && !cityMatch && !addressMatch) return false;
     }
 
     if (statusFilter !== 'all' && u.status !== statusFilter) {
@@ -97,7 +101,7 @@ export const AdminUsers: React.FC = () => {
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
           <input
             type="text"
-            placeholder="Search user by name, email, phone or city..."
+            placeholder="Search user by name, email, phone, city or address..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium outline-none focus:border-sky-500"
@@ -129,6 +133,7 @@ export const AdminUsers: React.FC = () => {
               <tr className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
                 <th className="p-3">User & Email</th>
                 <th className="p-3">Phone</th>
+                <th className="p-3">Address</th>
                 <th className="p-3">City</th>
                 <th className="p-3">Joined Date</th>
                 <th className="p-3">Total Orders</th>
@@ -152,10 +157,20 @@ export const AdminUsers: React.FC = () => {
                     </td>
 
                     {/* Phone */}
-                    <td className="p-3 font-mono text-slate-800">{u.phone}</td>
+                    <td className="p-3 font-mono text-slate-800">{u.phone || '—'}</td>
+
+                    {/* Address */}
+                    <td className="p-3 max-w-[220px]">
+                      <div className="flex items-start gap-1.5 text-slate-700">
+                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                        <span className="line-clamp-2" title={u.address || undefined}>
+                          {u.address?.trim() ? u.address : '—'}
+                        </span>
+                      </div>
+                    </td>
 
                     {/* City */}
-                    <td className="p-3">{u.city}</td>
+                    <td className="p-3">{u.city || '—'}</td>
 
                     {/* Joined Date */}
                     <td className="p-3 text-slate-500">{u.joinedDate}</td>
@@ -254,6 +269,17 @@ export const AdminUsers: React.FC = () => {
                 />
               </div>
 
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Address</label>
+                <input
+                  type="text"
+                  placeholder="House / Street / Area"
+                  value={formData.address}
+                  onChange={e => setFormData({ ...formData, address: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-sky-500"
+                />
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">City</label>
@@ -312,6 +338,13 @@ export const AdminUsers: React.FC = () => {
               <div>
                 <h3 className="text-base font-bold text-slate-900">{selectedUserHistory.name}</h3>
                 <p className="text-xs text-slate-500">{selectedUserHistory.email} • {selectedUserHistory.phone}</p>
+                {selectedUserHistory.address && (
+                  <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />
+                    {selectedUserHistory.address}
+                    {selectedUserHistory.city ? `, ${selectedUserHistory.city}` : ''}
+                  </p>
+                )}
               </div>
               <button
                 onClick={() => setSelectedUserHistory(null)}

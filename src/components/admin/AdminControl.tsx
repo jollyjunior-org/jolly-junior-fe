@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Trash2, Save, Loader2, Image as ImageIcon, Tag as TagIcon, LayoutGrid, SlidersHorizontal, Flame } from 'lucide-react';
 import { useShopStore } from '@/store/useShopStore';
-import { ImageUploadWidget } from '@/components/admin/ImageUploadWidget';
 import { AdminCampaigns } from '@/components/admin/AdminCampaigns';
 import * as storefrontService from '@/services/storefront-service';
 import type { StoreTag, HeroSlideConfig, HomeSectionConfig } from '@/types';
@@ -10,7 +9,7 @@ type ControlTab = 'nav' | 'tags' | 'hero' | 'sections' | 'campaigns';
 
 /**
  * Admin Control tab — manage storefront nav, tags, hero slides, home rails.
- * Uses Cloudinary via ImageUploadWidget for hero images.
+ * Hero slides pick a category only — image/name/description come from Categories.
  */
 export const AdminControl: React.FC = () => {
   const { categories, updateCategory, showToast, fetchAdminCategories, fetchStorefrontConfig } =
@@ -24,14 +23,8 @@ export const AdminControl: React.FC = () => {
 
   const [tagForm, setTagForm] = useState({ name: '', label: '', color: '#F97316' });
   const [slideForm, setSlideForm] = useState({
-    badge: '',
-    title: '',
-    subtitle: '',
-    image_url: '',
-    button_text: 'Shop Now',
-    accent_color: '#F59E0B',
-    link_type: 'category',
     link_value: '',
+    button_text: 'Shop Now',
     sort_order: 0,
     is_active: true,
   });
@@ -145,18 +138,12 @@ export const AdminControl: React.FC = () => {
     }
   };
 
-  // —— Hero ——
+  // —— Hero (category pick only — no duplicate image/copy) ——
   const resetSlideForm = () => {
     setEditingSlideId(null);
     setSlideForm({
-      badge: '',
-      title: '',
-      subtitle: '',
-      image_url: '',
-      button_text: 'Shop Now',
-      accent_color: '#F59E0B',
-      link_type: 'category',
       link_value: '',
+      button_text: 'Shop Now',
       sort_order: slides.length + 1,
       is_active: true,
     });
@@ -164,12 +151,23 @@ export const AdminControl: React.FC = () => {
 
   const handleSaveSlide = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!slideForm.image_url) {
-      showToast('Please upload a slide image (Cloudinary)');
+    if (!slideForm.link_value) {
+      showToast('Select a category for this slide');
+      return;
+    }
+    const cat = categories.find((c) => c.slug === slideForm.link_value);
+    if (cat && !cat.image) {
+      showToast('That category needs an image first — set it under Categories');
       return;
     }
     try {
-      const payload = { ...slideForm, link_value: slideForm.link_value || null };
+      const payload = {
+        link_type: 'category',
+        link_value: slideForm.link_value,
+        button_text: slideForm.button_text || 'Shop Now',
+        sort_order: slideForm.sort_order,
+        is_active: slideForm.is_active,
+      };
       if (editingSlideId) {
         await storefrontService.updateHeroSlide(editingSlideId, payload);
         showToast('Slide updated');
@@ -188,14 +186,8 @@ export const AdminControl: React.FC = () => {
   const handleEditSlide = (slide: HeroSlideConfig) => {
     setEditingSlideId(slide.id);
     setSlideForm({
-      badge: slide.badge || '',
-      title: slide.title,
-      subtitle: slide.subtitle || '',
-      image_url: slide.imageUrl,
-      button_text: slide.buttonText,
-      accent_color: slide.accentColor,
-      link_type: slide.linkType,
       link_value: slide.linkValue || '',
+      button_text: slide.buttonText || 'Shop Now',
       sort_order: slide.sortOrder || 0,
       is_active: slide.isActive !== false,
     });
@@ -534,6 +526,7 @@ export const AdminControl: React.FC = () => {
             <h3 className="text-sm font-black text-slate-900">Add Tag</h3>
             <p className="text-[11px] text-slate-500">
               Create tags once here. Products and campaigns only pick from this list — no free typing, so names always match.
+              Tag a product <strong>COMING SOON</strong> to show it on the store without Add to Cart.
             </p>
             <input
               required
@@ -590,37 +583,56 @@ export const AdminControl: React.FC = () => {
         </div>
       )}
 
-      {/* HERO */}
+      {/* HERO — pick categories only; image + copy come from Categories */}
       {tab === 'hero' && (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           <form onSubmit={handleSaveSlide} className="bg-white rounded-2xl border border-slate-200 p-4 space-y-3">
             <h3 className="text-sm font-black text-slate-900">
-              {editingSlideId ? 'Edit Slide' : 'Add Hero Slide'}
+              {editingSlideId ? 'Edit Hero Slide' : 'Add Hero Slide'}
             </h3>
-            <p className="text-[11px] text-slate-500">Images upload through Cloudinary (Settings credentials).</p>
-            <ImageUploadWidget
-              initialImage={slideForm.image_url || undefined}
-              onUploadSuccess={(url) => setSlideForm({ ...slideForm, image_url: url })}
-            />
-            <input
+            <p className="text-[11px] text-slate-500">
+              Pick a category. The slider uses that category&apos;s image, name, and description — edit those under Categories.
+            </p>
+            <label className="block text-[11px] font-bold text-slate-600">Category *</label>
+            <select
               required
-              placeholder="Title"
-              value={slideForm.title}
-              onChange={(e) => setSlideForm({ ...slideForm, title: e.target.value })}
+              value={slideForm.link_value}
+              onChange={(e) => setSlideForm({ ...slideForm, link_value: e.target.value })}
               className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs"
-            />
-            <input
-              placeholder="Badge"
-              value={slideForm.badge}
-              onChange={(e) => setSlideForm({ ...slideForm, badge: e.target.value })}
-              className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs"
-            />
-            <textarea
-              placeholder="Subtitle"
-              value={slideForm.subtitle}
-              onChange={(e) => setSlideForm({ ...slideForm, subtitle: e.target.value })}
-              className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs min-h-[70px]"
-            />
+            >
+              <option value="">Select category…</option>
+              {categories
+                .filter((c) => c.isEnabled !== false)
+                .map((c) => (
+                  <option key={c.id} value={c.slug}>
+                    {c.name}
+                    {!c.image ? ' (no image)' : ''}
+                  </option>
+                ))}
+            </select>
+            {slideForm.link_value && (
+              <div className="flex gap-3 p-2 rounded-xl bg-slate-50 border border-slate-100">
+                {categories.find((c) => c.slug === slideForm.link_value)?.image ? (
+                  <img
+                    src={categories.find((c) => c.slug === slideForm.link_value)!.image}
+                    alt=""
+                    className="w-20 h-14 object-cover rounded-lg"
+                  />
+                ) : (
+                  <div className="w-20 h-14 rounded-lg bg-slate-200 text-[9px] flex items-center justify-center text-slate-500">
+                    No image
+                  </div>
+                )}
+                <div className="min-w-0 text-[11px]">
+                  <div className="font-bold text-slate-800 truncate">
+                    {categories.find((c) => c.slug === slideForm.link_value)?.name}
+                  </div>
+                  <div className="text-slate-500 line-clamp-2">
+                    {categories.find((c) => c.slug === slideForm.link_value)?.description || '—'}
+                  </div>
+                </div>
+              </div>
+            )}
             <input
               placeholder="Button text"
               value={slideForm.button_text}
@@ -628,22 +640,23 @@ export const AdminControl: React.FC = () => {
               className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs"
             />
             <div className="grid grid-cols-2 gap-2">
-              <select
-                value={slideForm.link_type}
-                onChange={(e) => setSlideForm({ ...slideForm, link_type: e.target.value })}
-                className="px-3 py-2 border border-slate-200 rounded-xl text-xs"
-              >
-                <option value="category">Category slug</option>
-                <option value="shop">Shop all</option>
-                <option value="url">External URL</option>
-                <option value="none">No link</option>
-              </select>
               <input
-                placeholder="Link value (slug or URL)"
-                value={slideForm.link_value}
-                onChange={(e) => setSlideForm({ ...slideForm, link_value: e.target.value })}
+                type="number"
+                placeholder="Sort order"
+                value={slideForm.sort_order}
+                onChange={(e) =>
+                  setSlideForm({ ...slideForm, sort_order: Number(e.target.value) || 0 })
+                }
                 className="px-3 py-2 border border-slate-200 rounded-xl text-xs"
               />
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-700 px-2">
+                <input
+                  type="checkbox"
+                  checked={slideForm.is_active}
+                  onChange={(e) => setSlideForm({ ...slideForm, is_active: e.target.checked })}
+                />
+                Active on store
+              </label>
             </div>
             <div className="flex gap-2">
               <button type="submit" className="px-4 py-2 bg-sky-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5">
@@ -663,7 +676,10 @@ export const AdminControl: React.FC = () => {
                 <img src={slide.imageUrl} alt="" className="w-24 h-16 object-cover rounded-xl" />
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-black text-slate-900 truncate">{slide.title}</div>
-                  <div className="text-[10px] text-slate-500">{slide.linkType}: {slide.linkValue || '—'}</div>
+                  <div className="text-[10px] text-slate-500">
+                    Category: {slide.linkValue || '—'}
+                    {slide.isActive === false ? ' · Hidden' : ''}
+                  </div>
                   <div className="flex gap-2 mt-2">
                     <button type="button" onClick={() => handleEditSlide(slide)} className="text-[10px] font-bold text-sky-600">
                       Edit
@@ -675,6 +691,11 @@ export const AdminControl: React.FC = () => {
                 </div>
               </div>
             ))}
+            {!slides.length && (
+              <p className="text-xs text-slate-500 p-4 border border-dashed rounded-2xl">
+                No hero slides yet. Add one by selecting a category.
+              </p>
+            )}
           </div>
         </div>
       )}

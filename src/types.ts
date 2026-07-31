@@ -62,6 +62,7 @@ export interface Category {
   isEnabled?: boolean; // default true
   showInNav?: boolean;
   showInFeatured?: boolean;
+  showInFooter?: boolean;
   navOrder?: number;
   tagId?: string | null;
   tagLabel?: string | null;
@@ -151,6 +152,7 @@ export interface StorefrontConfig {
   tags: StoreTag[];
   navCategories: Category[];
   featuredCategories: Category[];
+  footerCategories: Category[];
   heroSlides: HeroSlideConfig[];
   homeSections: HomeSectionConfig[];
   navSectionChips: NavSectionChip[];
@@ -240,6 +242,8 @@ export interface Order {
   stockDeducted?: boolean;
   createdAt: string;
   notes?: string;
+  /** Linked customer user id when logged in at checkout */
+  userId?: string;
 }
 
 export interface AppUser {
@@ -247,7 +251,9 @@ export interface AppUser {
   name: string;
   email: string;
   phone: string;
+  address: string;
   city: string;
+  postalCode?: string;
   status: 'Active' | 'Suspended';
   joinedDate: string;
   totalOrders: number;

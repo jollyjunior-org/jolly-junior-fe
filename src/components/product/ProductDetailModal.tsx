@@ -5,6 +5,7 @@ import {
   Truck, ShieldCheck, RefreshCw, Play, Plus
 } from 'lucide-react';
 import { Product, ProductVariant } from '../../types';
+import { formatDiscountLabel } from '../../utils/discount';
 import { useShopStore } from '../../store/useShopStore';
 
 export const ProductDetailModal: React.FC = () => {
@@ -112,9 +113,9 @@ export const ProductDetailModal: React.FC = () => {
 
                   {/* Badges */}
                   <div className="absolute top-3 left-3 flex flex-col gap-1">
-                    {product.discountBadge && (
+                    {formatDiscountLabel(product.discountBadge) && (
                       <span className="px-2.5 py-1 rounded-full bg-[#EF4444] text-white text-xs font-black">
-                        {product.discountBadge}
+                        {formatDiscountLabel(product.discountBadge)}
                       </span>
                     )}
                   </div>
@@ -194,7 +195,7 @@ export const ProductDetailModal: React.FC = () => {
                     <span className="text-2xl font-black text-[#1E293B]">
                       Rs. {currentPrice.toLocaleString()}
                     </span>
-                    {product.originalPrice && (
+                    {product.originalPrice != null && product.originalPrice > currentPrice && (
                       <span className="text-sm text-slate-400 line-through font-medium">
                         Rs. {product.originalPrice.toLocaleString()}
                       </span>

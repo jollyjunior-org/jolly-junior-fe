@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, Package, Layers, ShoppingBag, 
-  Users, Store, ShieldCheck, ChevronRight, LogOut, Boxes, Settings
+  Users, Store, ShieldCheck, ChevronRight, LogOut, Boxes, Settings, SlidersHorizontal
 } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
 import { AdminLogin } from './AdminLogin';
@@ -13,6 +13,7 @@ import { AdminUsers } from './AdminUsers';
 import { AdminStock } from './AdminStock';
 import { AdminInventory } from './AdminInventory';
 import { AdminSettings } from './AdminSettings';
+import { AdminControl } from './AdminControl';
 
 export const AdminDashboard: React.FC = () => {
   const { 
@@ -32,7 +33,7 @@ export const AdminDashboard: React.FC = () => {
     isLoadingAdminData
   } = useShopStore();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'stock' | 'inventory' | 'categories' | 'orders' | 'users' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'stock' | 'inventory' | 'categories' | 'control' | 'orders' | 'users' | 'settings'>('overview');
   const [openAddProductModal, setOpenAddProductModal] = useState(false);
   const [openAddCategoryModal, setOpenAddCategoryModal] = useState(false);
 
@@ -53,6 +54,9 @@ export const AdminDashboard: React.FC = () => {
         fetchInventoryStats();
         break;
       case 'categories':
+        fetchAdminCategories();
+        break;
+      case 'control':
         fetchAdminCategories();
         break;
       case 'orders':
@@ -190,6 +194,18 @@ export const AdminDashboard: React.FC = () => {
             </button>
 
             <button
+              onClick={() => setActiveTab('control')}
+              className={`px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg text-xs font-bold cursor-pointer flex items-center gap-1.5 whitespace-nowrap transition-colors border ${
+                activeTab === 'control'
+                  ? 'bg-sky-500 text-slate-950 border-sky-400'
+                  : 'bg-slate-900/60 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
+              }`}
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              <span>Control</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('orders')}
               className={`px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg text-xs font-bold cursor-pointer flex items-center gap-1.5 whitespace-nowrap transition-colors border ${
                 activeTab === 'orders'
@@ -266,6 +282,8 @@ export const AdminDashboard: React.FC = () => {
             onCloseAddModal={() => setOpenAddCategoryModal(false)}
           />
         )}
+
+        {activeTab === 'control' && <AdminControl />}
 
         {activeTab === 'orders' && <AdminOrders />}
 

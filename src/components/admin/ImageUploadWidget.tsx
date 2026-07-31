@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
-import { useShopStore } from '../../store/useShopStore';
+import { uploadImage } from '@/services/upload-service';
 
 interface ImageUploadWidgetProps {
   initialImage?: string;
@@ -53,8 +53,6 @@ const resizeImage = (file: File, maxWidth: number, maxHeight: number): Promise<B
   });
 };
 
-const ADMIN_API = import.meta.env.VITE_ADMIN_API_URL || 'http://localhost:8002/api/v1';
-
 export const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({ 
   initialImage, 
   onUploadSuccess 
@@ -63,9 +61,6 @@ export const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({
   const [preview, setPreview] = useState<string | null>(initialImage || null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  // We need the admin auth token to upload securely
-  const authToken = useShopStore(state => state.authToken);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -94,20 +89,7 @@ export const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({
       const formData = new FormData();
       formData.append('file', resizedBlob, filename);
 
-      const response = await fetch(`${ADMIN_API}/admin/upload/`, {
-        method: 'POST',
-        headers: {
-          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {})
-        },
-        body: formData
-      });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.detail || 'Upload failed');
-      }
-
-      const data = await response.json();
+      const data = await uploadImage(formData);
       if (data.url) {
         setPreview(data.url);
         onUploadSuccess(data.url);

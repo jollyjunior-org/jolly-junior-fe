@@ -4,9 +4,29 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
 
 export const FeaturedCategories: React.FC = () => {
-  const { setCurrentView, setFilter, categories } = useShopStore();
+  const { setCurrentView, setFilter, storefrontConfig, categories, products } = useShopStore();
 
-  const activeCategories = categories.filter(cat => cat.isEnabled !== false);
+  const activeCategories = (
+    (storefrontConfig.featuredCategories?.length
+      ? storefrontConfig.featuredCategories
+      : storefrontConfig.navCategories?.length
+        ? storefrontConfig.navCategories
+        : categories.filter((cat) => cat.isEnabled !== false)) || []
+  )
+    .slice()
+    .sort((a, b) => (a.navOrder ?? 0) - (b.navOrder ?? 0) || a.name.localeCompare(b.name))
+    .map((cat) => {
+      // Prefer API item_count; fall back to live product list if missing
+      const liveCount = products.filter(
+        (p) =>
+          p.isPublished !== false &&
+          (p.categoryId === cat.id || p.categorySlug === cat.slug),
+      ).length;
+      return {
+        ...cat,
+        itemCount: cat.itemCount > 0 ? cat.itemCount : liveCount,
+      };
+    });
 
   const handleCategorySelect = (slug: string) => {
     setFilter({ categoryId: slug });

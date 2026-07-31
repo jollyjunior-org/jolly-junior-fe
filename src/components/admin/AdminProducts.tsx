@@ -4,8 +4,11 @@ import {
   X, Layers, Tag, DollarSign, Image as ImageIcon, Filter, Check
 } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
-import { Product } from '../../types';
+import { Product, StoreTag } from '../../types';
 import { ImageUploadWidget } from './ImageUploadWidget';
+import { TagMultiSelect } from './TagMultiSelect';
+import { formatDiscountLabel } from '../../utils/discount';
+import * as storefrontService from '@/services/storefront-service';
 
 interface AdminProductsProps {
   openAddModalInitially?: boolean;
@@ -22,6 +25,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
   const [stockFilter, setStockFilter] = useState<'all' | 'instock' | 'outstock'>('all');
   const [publishFilter, setPublishFilter] = useState<'all' | 'published' | 'draft'>('all');
+  const [availableTags, setAvailableTags] = useState<StoreTag[]>([]);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(openAddModalInitially);
@@ -37,7 +41,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
     basePrice: 0,
     originalPrice: 0,
     discountPercent: 0,
-    discountBadge: '',
+    tagIds: [] as string[],
     badge: '' as '' | 'Best Seller' | 'New' | 'Flash Sale' | 'Must Have' | 'Trending',
     ageGroup: '1-3Y' as '0-6M' | '6-12M' | '1-3Y' | '3-5Y' | '5Y+',
     imageUrl: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?auto=format&fit=crop&w=800&q=80',
@@ -59,7 +63,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
       basePrice: 0,
       originalPrice: 0,
       discountPercent: 0,
-      discountBadge: '',
+      tagIds: [],
       badge: '',
       ageGroup: '1-3Y',
       imageUrl: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?auto=format&fit=crop&w=800&q=80',
@@ -86,8 +90,10 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
       price: product.price,
       basePrice: product.basePrice || 0,
       originalPrice: product.originalPrice || 0,
-      discountPercent: parseDiscountPercent(product.discountBadge || calculateDiscountPercent(product.originalPrice || 0, product.price)),
-      discountBadge: product.discountBadge || '',
+      discountPercent: parseDiscountPercent(
+        product.discountBadge ?? calculateDiscountPercent(product.originalPrice || 0, product.price),
+      ),
+      tagIds: product.tagIds || [],
       badge: product.badge || '',
       ageGroup: product.ageGroup,
       imageUrl: product.images[0] || '',
@@ -121,14 +127,36 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
     return Math.round(((originalPrice - price) / originalPrice) * 100);
   };
 
+  /**
+   * Selling price from original + discount %.
+   * Args: originalPrice, discountPercent (0–100)
+   * Returns: rounded selling price; at 0% discount returns originalPrice
+   */
   const calculateSellingPrice = (originalPrice: number, discountPercent: number) => {
-    if (!originalPrice || originalPrice <= 0 || !discountPercent) return 0;
-    return Math.round(originalPrice * (1 - discountPercent / 100));
+    if (!originalPrice || originalPrice <= 0) return 0;
+    const pct = Math.max(0, Math.min(100, Number(discountPercent) || 0));
+    if (pct === 0) return Math.round(originalPrice);
+    return Math.round(originalPrice * (1 - pct / 100));
   };
 
-  const parseDiscountPercent = (value: string | number | undefined) => {
+  /**
+   * Resolve selling price whenever original or discount changes.
+   * Args: originalPrice, discountPercent, fallbackPrice (used if no original)
+   */
+  const resolveSellingPrice = (
+    originalPrice: number,
+    discountPercent: number,
+    fallbackPrice: number,
+  ) => {
+    if (originalPrice > 0) {
+      return calculateSellingPrice(originalPrice, discountPercent);
+    }
+    return fallbackPrice;
+  };
+
+  const parseDiscountPercent = (value: string | number | null | undefined) => {
     if (value === undefined || value === null || value === '') return 0;
-    const parsed = typeof value === 'number' ? value : Number(String(value).replace(/%/g, '').trim());
+    const parsed = typeof value === 'number' ? value : Number(String(value).replace(/[^0-9]/g, '').trim());
     return Number.isFinite(parsed) ? Math.max(0, Math.min(100, Math.round(parsed))) : 0;
   };
 
@@ -142,10 +170,18 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
 
     const generatedSlug = formData.slug || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     const parsedStock = Math.max(0, Number(formData.stockQuantity) || 0);
-    const computedPrice = formData.discountPercent > 0 && formData.originalPrice > 0
+
+    const hasDiscount = formData.discountPercent > 0 && formData.originalPrice > 0;
+    // With discount: selling is auto from original %. With 0%: selling = original (same price).
+    const computedPrice = hasDiscount
       ? calculateSellingPrice(formData.originalPrice, formData.discountPercent)
-      : Number(formData.price);
-    const discountBadgeValue = formData.discountPercent > 0 ? `${formData.discountPercent}% OFF` : '';
+      : formData.originalPrice > 0
+        ? Math.round(Number(formData.originalPrice))
+        : Number(formData.price);
+    // No discount → clear strikethrough original on storefront (or keep equal to selling)
+    const computedOriginalPrice = hasDiscount ? Number(formData.originalPrice) : computedPrice;
+    // DB stores integer percent only (e.g. 10); UI hardcodes "% OFF"
+    const discountPercentValue = hasDiscount ? formData.discountPercent : null;
 
     if (editingProduct) {
       updateProduct(editingProduct.id, {
@@ -155,8 +191,9 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
         categoryName: formData.categoryName,
         price: computedPrice,
         basePrice: formData.basePrice ? Number(formData.basePrice) : undefined,
-        originalPrice: formData.originalPrice ? Number(formData.originalPrice) : undefined,
-        discountBadge: discountBadgeValue || undefined,
+        originalPrice: computedOriginalPrice,
+        discountBadge: discountPercentValue,
+        tagIds: formData.tagIds,
         badge: formData.badge || undefined,
         ageGroup: formData.ageGroup,
         images: [formData.imageUrl],
@@ -174,8 +211,9 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
         categoryName: formData.categoryName,
         price: computedPrice,
         basePrice: formData.basePrice ? Number(formData.basePrice) : undefined,
-        originalPrice: formData.originalPrice ? Number(formData.originalPrice) : undefined,
-        discountBadge: discountBadgeValue || undefined,
+        originalPrice: computedOriginalPrice,
+        discountBadge: discountPercentValue ?? undefined,
+        tagIds: formData.tagIds,
         badge: formData.badge || undefined,
         ageGroup: formData.ageGroup,
         images: [formData.imageUrl],
@@ -207,6 +245,10 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
       }));
     }
   }, [categories, formData.categoryId]);
+
+  React.useEffect(() => {
+    storefrontService.fetchAdminTags().then(setAvailableTags).catch(() => setAvailableTags([]));
+  }, []);
 
   // Filtered List
   const filteredProducts = products.filter(p => {
@@ -367,7 +409,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                       )}
                     </td>
 
-                    {/* Badges */}
+                    {/* Badges + merchandising tags from Tags list */}
                     <td className="p-3">
                       <div className="flex flex-wrap gap-1">
                         {p.badge && (
@@ -375,12 +417,26 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                             {p.badge}
                           </span>
                         )}
-                        {p.discountBadge && (
+                        {formatDiscountLabel(p.discountBadge) && (
                           <span className="px-1.5 py-0.5 bg-rose-100 text-rose-800 rounded font-bold text-[10px]">
-                            {p.discountBadge}
+                            {formatDiscountLabel(p.discountBadge)}
                           </span>
                         )}
-                        {!p.badge && !p.discountBadge && <span className="text-slate-400 text-[10px]">-</span>}
+                        {(p.tags || []).map((t) => (
+                          <span
+                            key={t.id}
+                            className="px-1.5 py-0.5 rounded font-bold text-[10px] text-white"
+                            style={{ backgroundColor: t.color }}
+                            title={t.name}
+                          >
+                            {t.label}
+                          </span>
+                        ))}
+                        {!p.badge &&
+                          !formatDiscountLabel(p.discountBadge) &&
+                          !(p.tags || []).length && (
+                            <span className="text-slate-400 text-[10px]">-</span>
+                          )}
                       </div>
                     </td>
 
@@ -515,16 +571,30 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
               {/* Price & Original Price */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Selling Price (Auto)</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Selling Price {formData.discountPercent > 0 ? '(Auto)' : '(Rs.)'}
+                  </label>
                   <input
                     type="number"
                     required
-                    min="1"
+                    min="0"
                     placeholder="3450"
                     value={formData.price}
                     readOnly={formData.discountPercent > 0 && formData.originalPrice > 0}
-                    onChange={e => setFormData({ ...formData, price: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-sky-500"
+                    onChange={e => {
+                      const nextPrice = Number(e.target.value);
+                      setFormData(prev => ({
+                        ...prev,
+                        price: nextPrice,
+                        // Keep original in sync when there is no discount
+                        originalPrice: prev.discountPercent > 0 ? prev.originalPrice : nextPrice,
+                      }));
+                    }}
+                    className={`w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-sky-500 ${
+                      formData.discountPercent > 0 && formData.originalPrice > 0
+                        ? 'bg-slate-100 text-slate-600'
+                        : 'bg-slate-50'
+                    }`}
                   />
                 </div>
 
@@ -552,9 +622,8 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                       setFormData(prev => ({
                         ...prev,
                         originalPrice: nextOriginalPrice,
-                        price: prev.discountPercent > 0 && nextOriginalPrice > 0
-                          ? calculateSellingPrice(nextOriginalPrice, prev.discountPercent)
-                          : prev.price
+                        // Always recalc selling when original changes (up, down, or 0% discount)
+                        price: resolveSellingPrice(nextOriginalPrice, prev.discountPercent, prev.price),
                       }));
                     }}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-sky-500"
@@ -567,21 +636,29 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                     type="number"
                     min="0"
                     max="100"
+                    step="1"
                     placeholder="20"
                     value={formData.discountPercent}
                     onChange={e => {
-                      const nextPercent = parseDiscountPercent(e.target.value);
+                      const raw = e.target.value;
+                      // Allow empty while typing; treat as 0 for live calc
+                      const nextPercent = raw === '' ? 0 : parseDiscountPercent(raw);
                       setFormData(prev => ({
                         ...prev,
                         discountPercent: nextPercent,
-                        discountBadge: nextPercent > 0 ? `${nextPercent}% OFF` : '',
-                        price: prev.originalPrice > 0 && nextPercent > 0
-                          ? calculateSellingPrice(prev.originalPrice, nextPercent)
-                          : prev.price
+                        // Recalc on both increase and decrease; at 0% selling = original
+                        price: resolveSellingPrice(prev.originalPrice, nextPercent, prev.price),
                       }));
                     }}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-sky-500"
                   />
+                  {formData.originalPrice > 0 && (
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      {formData.discountPercent > 0
+                        ? `Selling auto: Rs. ${calculateSellingPrice(formData.originalPrice, formData.discountPercent).toLocaleString()} (${formData.discountPercent}% off Rs. ${formData.originalPrice.toLocaleString()})`
+                        : '0% discount — selling price matches original price'}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -610,6 +687,21 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                     onUploadSuccess={(url) => setFormData({ ...formData, imageUrl: url })}
                   />
                 </div>
+              </div>
+
+              {/* Merchandising tags — pick only from Control → Tags list */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Sale / campaign tags
+                </label>
+                <p className="text-[10px] text-slate-500 mb-2">
+                  Pick from your Tags list (no typing). Same tags on a campaign pull these products into the sale.
+                </p>
+                <TagMultiSelect
+                  tags={availableTags}
+                  selectedIds={formData.tagIds}
+                  onChange={(tagIds) => setFormData((prev) => ({ ...prev, tagIds }))}
+                />
               </div>
 
               {/* Description */}

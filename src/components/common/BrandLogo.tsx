@@ -4,12 +4,15 @@ interface BrandLogoProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg';
   showSubtitle?: boolean;
+  /** Navigate to home when the logo is clicked. */
+  onNavigateHome?: () => void;
 }
 
 export const BrandLogo: React.FC<BrandLogoProps> = ({ 
   className = '', 
   size = 'md',
-  showSubtitle = true 
+  showSubtitle = true,
+  onNavigateHome,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isWinking, setIsWinking] = useState(false);
@@ -32,10 +35,11 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     lg: 'text-xs'
   };
 
-  const handleMascotClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  /** Wink animation + go to the main/home page. */
+  const handleLogoClick = () => {
     setIsWinking(true);
     setTimeout(() => setIsWinking(false), 1200);
+    onNavigateHome?.();
   };
 
   return (
@@ -43,7 +47,9 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       className={`inline-flex items-center gap-2.5 group cursor-pointer select-none ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={handleMascotClick}
+      onClick={handleLogoClick}
+      role="link"
+      aria-label="Jolly Juniors home"
     >
       {/* Cartoon Mascot Emblem - "Jolly the Cub" */}
       <div className="relative flex items-center justify-center">

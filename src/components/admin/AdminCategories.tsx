@@ -29,6 +29,8 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
     iconName: 'Shapes',
     featured: true,
     isEnabled: true,
+    showInNav: false,
+    navOrder: 1,
     subcategoriesText: 'Wooden Puzzles, Sorting Blocks, Sensory Toys'
   });
 
@@ -43,6 +45,8 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
       iconName: 'Shapes',
       featured: true,
       isEnabled: true,
+      showInNav: false,
+      navOrder: categories.length + 1,
       subcategoriesText: 'Wooden Puzzles, Sorting Blocks, Sensory Toys'
     });
   };
@@ -63,6 +67,8 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
       iconName: cat.iconName,
       featured: cat.featured ?? true,
       isEnabled: cat.isEnabled ?? true,
+      showInNav: Boolean(cat.showInNav),
+      navOrder: cat.navOrder ?? 1,
       subcategoriesText: cat.subcategories.join(', ')
     });
     setIsModalOpen(true);
@@ -94,6 +100,8 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
         iconName: formData.iconName,
         featured: formData.featured,
         isEnabled: formData.isEnabled,
+        showInNav: formData.showInNav,
+        navOrder: formData.navOrder,
         subcategories: subs.length > 0 ? subs : ['General Essentials']
       });
     } else {
@@ -106,6 +114,8 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
         iconName: formData.iconName,
         featured: formData.featured,
         isEnabled: formData.isEnabled,
+        showInNav: formData.showInNav,
+        navOrder: formData.navOrder,
         subcategories: subs.length > 0 ? subs : ['General Essentials'],
         itemCount: 0
       });
@@ -142,8 +152,10 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
 
       {/* Category Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {categories.map((cat) => {
-          const catProductsCount = products.filter(p => p.categoryId === cat.slug).length;
+        {[...categories]
+          .sort((a, b) => (a.navOrder ?? 0) - (b.navOrder ?? 0) || a.name.localeCompare(b.name))
+          .map((cat) => {
+          const catProductsCount = products.filter(p => p.categoryId === cat.id || p.categorySlug === cat.slug).length;
 
           return (
             <div key={cat.id} className="bg-white rounded-xl border border-[#E2E8F0] overflow-hidden flex flex-col justify-between">
@@ -158,6 +170,9 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
                   className="absolute bottom-0 left-0 right-0 h-1" 
                   style={{ backgroundColor: cat.color }} 
                 />
+                <span className="absolute top-2 left-2 px-2 py-1 bg-sky-600 text-white rounded text-[10px] font-black">
+                  #{cat.navOrder ?? '—'}
+                </span>
                 <span className="absolute top-2 right-2 px-2 py-1 bg-black/70 text-white rounded text-[10px] font-bold">
                   {catProductsCount} Products
                 </span>
@@ -320,17 +335,40 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
               </div>
 
               {/* Status Switch */}
-              <div className="flex items-center gap-2 p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
-                <input
-                  type="checkbox"
-                  id="categoryEnabledCheck"
-                  checked={formData.isEnabled}
-                  onChange={e => setFormData({ ...formData, isEnabled: e.target.checked })}
-                  className="w-4 h-4 rounded text-sky-600 focus:ring-0 cursor-pointer"
-                />
-                <label htmlFor="categoryEnabledCheck" className="text-xs font-bold text-slate-800 cursor-pointer">
-                  Enabled Category (Visible on storefront & navigation)
-                </label>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Priority (1, 2, 3…)
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={formData.navOrder}
+                    onChange={e => setFormData({ ...formData, navOrder: Math.max(1, Number(e.target.value) || 1) })}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold outline-none focus:border-sky-500"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">1 shows first under search / featured</p>
+                </div>
+                <div className="space-y-2 pt-5">
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.isEnabled}
+                      onChange={e => setFormData({ ...formData, isEnabled: e.target.checked })}
+                      className="w-4 h-4 rounded text-sky-600 focus:ring-0 cursor-pointer"
+                    />
+                    Enabled
+                  </label>
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.showInNav}
+                      onChange={e => setFormData({ ...formData, showInNav: e.target.checked })}
+                      className="w-4 h-4 rounded text-sky-600 focus:ring-0 cursor-pointer"
+                    />
+                    Show under search bar
+                  </label>
+                </div>
               </div>
 
               {/* Submit CTA */}

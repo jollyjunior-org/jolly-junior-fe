@@ -70,11 +70,11 @@ export const AdminInventory: React.FC = () => {
           <div className="flex flex-wrap gap-2">
             <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
               <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Total Units</div>
-              <div className="text-lg font-black text-slate-900">{inventoryStats.totalStockUnits.toLocaleString()}</div>
+              <div className="text-lg font-black text-slate-900">{(inventoryStats?.totalStockUnits ?? 0).toLocaleString()}</div>
             </div>
             <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2">
               <div className="text-[10px] font-bold uppercase tracking-wider text-amber-600">Low Stock</div>
-              <div className="text-lg font-black text-amber-700">{inventoryStats.lowStockAlert}</div>
+              <div className="text-lg font-black text-amber-700">{inventoryStats?.lowStockAlert ?? 0}</div>
             </div>
             <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2">
               <div className="text-[10px] font-bold uppercase tracking-wider text-rose-600">Out of Stock</div>

@@ -22,12 +22,13 @@ export interface Product {
   id: string;
   name: string;
   slug: string;
-  categoryId: string; // e.g. 'educational-toys', 'baby-toys', 'feeding', 'bath-care', 'newborn-essentials', 'mom-essentials', 'outdoor-toys', 'gift-sets'
+  categoryId: string; // category UUID
+  categorySlug?: string; // category slug for filters / home rails
   categoryName: string;
   price: number; // in PKR Rs.
   basePrice?: number;
   originalPrice?: number;
-  discountBadge?: string; // e.g. '20% OFF', 'FLASH SALE'
+  discountBadge?: number | null; // integer percent in DB (e.g. 10); UI shows "10% OFF"
   badge?: 'Best Seller' | 'New' | 'Flash Sale' | 'Must Have' | 'Trending';
   rating: number;
   reviewCount: number;
@@ -42,6 +43,8 @@ export interface Product {
   stockQuantity: number; // live inventory remaining count
   lowStockThreshold?: number; // default 5 for warning
   isPublished?: boolean; // default true
+  tagIds?: string[];
+  tags?: StoreTag[];
   reviews?: ProductReview[];
   frequentlyBoughtTogetherId?: string; // product ID for bundle recommendation
 }
@@ -57,7 +60,100 @@ export interface Category {
   itemCount: number;
   featured?: boolean;
   isEnabled?: boolean; // default true
+  showInNav?: boolean;
+  showInFeatured?: boolean;
+  navOrder?: number;
+  tagId?: string | null;
+  tagLabel?: string | null;
+  tagColor?: string | null;
   subcategories: string[];
+}
+
+export interface StoreTag {
+  id: string;
+  name: string;
+  label: string;
+  color: string;
+  isActive?: boolean;
+  sortOrder?: number;
+}
+
+export interface CampaignConfig {
+  id: string;
+  key: string;
+  title: string;
+  subtitle?: string;
+  badgeText?: string;
+  campaignType: string;
+  startsAt?: string | null;
+  endsAt?: string | null;
+  backgroundColor?: string;
+  backgroundImageUrl?: string | null;
+  accentColor?: string;
+  maxItems: number;
+  sortOrder?: number;
+  isActive: boolean;
+  tags: StoreTag[];
+  tagIds?: string[];
+}
+
+export interface CampaignWithProducts {
+  campaign: CampaignConfig;
+  isLive: boolean;
+  products: Product[];
+  serverTime: string;
+}
+
+export interface HeroSlideConfig {
+  id: string;
+  badge?: string;
+  title: string;
+  subtitle?: string;
+  imageUrl: string;
+  buttonText: string;
+  accentColor: string;
+  linkType: string;
+  linkValue?: string | null;
+  sortOrder?: number;
+  isActive?: boolean;
+}
+
+export interface HomeSectionConfig {
+  id: string;
+  key: string;
+  title: string;
+  subtitle?: string;
+  sectionBadge?: string;
+  sourceType: string;
+  sourceValue?: string | null;
+  maxItems: number;
+  sortOrder: number;
+  isActive?: boolean;
+  showInNav?: boolean;
+  tagId?: string | null;
+  tagLabel?: string | null;
+  tagColor?: string | null;
+}
+
+export interface NavSectionChip {
+  id: string;
+  name: string;
+  slug: string;
+  kind: 'section';
+  sourceType: string;
+  sourceValue?: string | null;
+  tagLabel?: string | null;
+  tagColor?: string | null;
+  sortOrder?: number;
+}
+
+export interface StorefrontConfig {
+  tags: StoreTag[];
+  navCategories: Category[];
+  featuredCategories: Category[];
+  heroSlides: HeroSlideConfig[];
+  homeSections: HomeSectionConfig[];
+  navSectionChips: NavSectionChip[];
 }
 
 export interface CartItem {
@@ -68,12 +164,16 @@ export interface CartItem {
 
 export interface FilterState {
   categoryId: string | null;
+  /** Multi-select category slugs for shop filter checkboxes */
+  categoryIds: string[];
   searchQuery: string;
   ageGroup: string | null;
   priceRange: [number, number];
   sortBy: 'featured' | 'price-low-high' | 'price-high-low' | 'rating' | 'newest';
   onSaleOnly: boolean;
   inStockOnly: boolean;
+  /** Active sale campaign key (e.g. azaadi-sale) — filters by campaign tags */
+  saleKey: string | null;
 }
 
 export interface OrderDetails {
@@ -87,6 +187,7 @@ export interface OrderDetails {
 }
 
 export interface OrderItem {
+  id?: number; // backend order_items.id — needed for partial returns
   productId: string;
   productName: string;
   productImage: string;
@@ -95,8 +196,35 @@ export interface OrderItem {
   quantity: number;
 }
 
+export interface OrderReturnItem {
+  id: number;
+  orderItemId: number;
+  productId: string;
+  productName: string;
+  variantName?: string;
+  unitPrice: number;
+  quantity: number;
+  lineAmount: number;
+  reason?: string;
+}
+
+export interface OrderReturn {
+  id: string;
+  returnNumber: string;
+  orderId: string;
+  reason: string;
+  status: 'Pending' | 'Approved' | 'Rejected' | 'Completed';
+  refundAmount: number;
+  stockRestored: boolean;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+  items: OrderReturnItem[];
+}
+
 export interface Order {
   id: string; // e.g. 'JJ-1001'
+  orderNumber?: string; // backend order_number when available
   customerName: string;
   customerEmail: string;
   customerPhone: string;
@@ -104,8 +232,12 @@ export interface Order {
   city: string;
   paymentMethod: 'COD' | 'Card' | 'WhatsApp';
   items: OrderItem[];
+  returns?: OrderReturn[];
   totalAmount: number;
-  status: 'Pending' | 'Confirmed' | 'Packing' | 'Packed' | 'Ready For Dispatch' | 'Shipped' | 'Delivered' | 'Completed' | 'Cancelled' | 'Returned' | 'Refunded';
+  originalTotalAmount?: number;
+  originalSubtotal?: number;
+  status: 'Pending' | 'Processing' | 'Confirmed' | 'Packing' | 'Packed' | 'Ready For Dispatch' | 'Shipped' | 'Delivered' | 'Completed' | 'Cancelled' | 'Returned' | 'Refunded';
+  stockDeducted?: boolean;
   createdAt: string;
   notes?: string;
 }

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Heart, ShoppingBag, Eye, Star, MessageSquare, Flame } from 'lucide-react';
 import { Product } from '../../types';
+import { formatDiscountLabel } from '../../utils/discount';
 import { useShopStore } from '../../store/useShopStore';
 
 interface ProductCardProps {
@@ -75,9 +76,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </span>
           ) : null}
 
-          {product.discountBadge && (
+          {formatDiscountLabel(product.discountBadge) && (
             <span className="px-2.5 py-1 rounded-full bg-[#FFB7CE] text-white text-[10px] font-extrabold shadow-xs">
-              {product.discountBadge}
+              {formatDiscountLabel(product.discountBadge)}
             </span>
           )}
           {product.badge && (
@@ -155,7 +156,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <div className="text-sm sm:text-base font-black text-[#FFB347]">
               Rs. {product.price.toLocaleString()}
             </div>
-            {product.originalPrice && (
+            {product.originalPrice != null && product.originalPrice > product.price && (
               <div className="text-[11px] text-[#8C8C70] line-through">
                 Rs. {product.originalPrice.toLocaleString()}
               </div>

@@ -1,9 +1,12 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  readonly VITE_AUTH_API_URL?: string;
-  readonly VITE_ADMIN_API_URL?: string;
-  readonly VITE_PUBLIC_API_URL?: string;
+  /** Auth service — login, OTP, register */
+  readonly VITE_AUTH_API_BASE_URL?: string;
+  /** Admin service — products, orders, CMS, settings */
+  readonly VITE_ADMIN_API_BASE_URL?: string;
+  /** Public / store service — catalog, cart, checkout, storefront */
+  readonly VITE_PUBLIC_API_BASE_URL?: string;
 }
 
 interface ImportMeta {

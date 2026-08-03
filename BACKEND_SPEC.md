@@ -401,22 +401,22 @@ Connect the React/Zustand frontend (`useShopStore.ts`) to these microservices:
 
 ```env
 # JollyJuniors/.env
-VITE_AUTH_API_URL=http://localhost:8001/api/v1
-VITE_ADMIN_API_URL=http://localhost:8002/api/v1
-VITE_PUBLIC_API_URL=http://localhost:8003/api/v1
+VITE_AUTH_API_BASE_URL=http://localhost:8001/api/v1
+VITE_ADMIN_API_BASE_URL=http://localhost:8002/api/v1
+VITE_PUBLIC_API_BASE_URL=http://localhost:8003/api/v1
 ```
 
 ```typescript
 // Example store actions in useShopStore.ts
 fetchProducts: async () => {
-  const res = await axios.get(`${import.meta.env.VITE_PUBLIC_API_URL}/products`);
+  const res = await axios.get(`${import.meta.env.VITE_PUBLIC_API_BASE_URL}/products`);
   set({ products: res.data });
 },
 login: async (email, password) => {
   const form = new FormData();
   form.append('username', email);
   form.append('password', password);
-  const res = await axios.post(`${import.meta.env.VITE_AUTH_API_URL}/auth/login`, form);
+  const res = await axios.post(`${import.meta.env.VITE_AUTH_API_BASE_URL}/auth/login`, form);
   // Store token for subsequent requests
   set({ authToken: res.data.access_token });
 },

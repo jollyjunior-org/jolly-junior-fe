@@ -1,14 +1,16 @@
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Star, ShoppingBag, Eye, ArrowRight, MessageSquare } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
 import { isComingSoonProduct } from '../../utils/product';
+import { productPath } from '../../utils/product-path';
 
 export const QuickViewModal: React.FC = () => {
+  const router = useRouter();
   const { 
     quickViewProduct, 
     setQuickViewProduct, 
-    setSelectedProductDetail,
     addToCart 
   } = useShopStore();
 
@@ -89,8 +91,8 @@ export const QuickViewModal: React.FC = () => {
 
                 <button
                   onClick={() => {
-                    setSelectedProductDetail(product);
                     setQuickViewProduct(null);
+                    router.push(productPath(product));
                   }}
                   className="w-full py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs flex items-center justify-center gap-1 cursor-pointer"
                 >

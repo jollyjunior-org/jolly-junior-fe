@@ -1,9 +1,11 @@
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { BrandLogo } from './BrandLogo';
 import {
   MessageSquare, ShieldCheck, Sparkles, Truck, Instagram,
 } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
+import { goToShop } from '@/utils/navigate-shop';
 
 /** Simple Facebook glyph for the footer social row. */
 const FacebookIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -13,13 +15,12 @@ const FacebookIcon: React.FC<{ className?: string }> = ({ className }) => (
 );
 
 export const Footer: React.FC = () => {
-  const { setCurrentView, setFilter, storefrontConfig } = useShopStore();
+  const router = useRouter();
+  const { storefrontConfig } = useShopStore();
 
   /** Open shop filtered to one category slug. */
   const handleCategoryLink = (slug: string) => {
-    setFilter({ categoryId: slug, categoryIds: [slug] });
-    setCurrentView('shop');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    goToShop(router, { categoryId: slug, categoryIds: [slug], saleKey: null, searchQuery: '' });
   };
 
   const topCategories = storefrontConfig.footerCategories || [];
@@ -176,7 +177,7 @@ export const Footer: React.FC = () => {
 
         {/* Bottom Bar */}
         <div className="pt-6 border-t border-[#F5F2ED] flex flex-col sm:flex-row items-center justify-between text-xs text-[#8C8C70] font-medium gap-3">
-          <p>© {new Date().getFullYear()} JollyJuniors.com. All Rights Reserved. Crafted with ❤️ for parents & babies.</p>
+          <p suppressHydrationWarning>© {new Date().getFullYear()} JollyJuniors.com. All Rights Reserved. Crafted with ❤️ for parents & babies.</p>
           <div className="flex flex-wrap items-center gap-4">
             <span className="hover:underline cursor-pointer">Privacy Policy</span>
             <span>•</span>

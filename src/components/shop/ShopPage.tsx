@@ -1,21 +1,40 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Filter, X, RotateCcw, Search, Sparkles } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
 import { ProductCard } from '../product/ProductCard';
 
 /**
- * Shop catalog with category checkboxes, sale filter, and slug/id-safe matching.
+ * Shop catalog — loads products from store APIs by category / search / sale.
  */
 export const ShopPage: React.FC = () => {
-  const { products, categories, filter, setFilter, resetFilter, liveSales } = useShopStore();
+  const {
+    shopProducts,
+    shopLoading,
+    products,
+    categories,
+    filter,
+    setFilter,
+    resetFilter,
+    liveSales,
+    fetchShopCatalog,
+  } = useShopStore();
+
+  // Load / reload catalog whenever shop filters change
+  useEffect(() => {
+    void fetchShopCatalog();
+  }, [
+    fetchShopCatalog,
+    filter.categoryId,
+    filter.categoryIds.join(','),
+    filter.saleKey,
+    filter.searchQuery,
+    filter.sortBy,
+    filter.inStockOnly,
+    filter.onSaleOnly,
+    filter.ageGroup,
+  ]);
 
   const enabledCategories = categories.filter((c) => c.isEnabled !== false);
-  const disabledCategoryIds = new Set(
-    categories.filter((c) => c.isEnabled === false).map((c) => c.id),
-  );
-  const disabledCategorySlugs = new Set(
-    categories.filter((c) => c.isEnabled === false).map((c) => c.slug),
-  );
 
   const activeSale = liveSales.find((s) => s.key === filter.saleKey);
   const selectedSlugs = useMemo(() => {
@@ -26,7 +45,7 @@ export const ShopPage: React.FC = () => {
 
   const activeCategory = enabledCategories.find((c) => c.slug === filter.categoryId);
 
-  /** Toggle a category slug in the multi-select filter. */
+  /** Toggle a category slug in the multi-select filter (reloads via useEffect). */
   const toggleCategory = (slug: string) => {
     const current = new Set(filter.categoryIds || []);
     if (current.has(slug)) current.delete(slug);
@@ -38,49 +57,8 @@ export const ShopPage: React.FC = () => {
     });
   };
 
-  let filteredProducts = products.filter((p) => {
-    if (p.isPublished === false) return false;
-    if (disabledCategoryIds.has(p.categoryId) || disabledCategorySlugs.has(p.categorySlug || '')) {
-      return false;
-    }
-
-    if (selectedSlugs.size > 0) {
-      const match =
-        selectedSlugs.has(p.categorySlug || '') ||
-        selectedSlugs.has(p.categoryId) ||
-        [...selectedSlugs].some((s) => s === p.categorySlug || s === p.categoryId);
-      if (!match) return false;
-    }
-
-    if (filter.searchQuery.trim()) {
-      const q = filter.searchQuery.toLowerCase();
-      const nameMatch = p.name.toLowerCase().includes(q);
-      const catMatch = p.categoryName.toLowerCase().includes(q);
-      const descMatch = (p.description || '').toLowerCase().includes(q);
-      const tagMatch = (p.tags || []).some(
-        (t) => t.label.toLowerCase().includes(q) || t.name.toLowerCase().includes(q),
-      );
-      if (!nameMatch && !catMatch && !descMatch && !tagMatch) return false;
-    }
-
-    if (filter.ageGroup && p.ageGroup !== filter.ageGroup) return false;
-
-    if (filter.onSaleOnly && !p.discountBadge && p.badge !== 'Flash Sale') return false;
-
-    if (filter.inStockOnly && !(p.inStock && p.stockQuantity > 0)) return false;
-
-    // Sale campaign: product must have one of the campaign's tags
-    if (filter.saleKey) {
-      const sale = liveSales.find((s) => s.key === filter.saleKey);
-      const tagIds = new Set(sale?.tag_ids || []);
-      if (tagIds.size > 0) {
-        const hit = (p.tags || []).some((t) => tagIds.has(t.id)) || (p.tagIds || []).some((id) => tagIds.has(id));
-        if (!hit) return false;
-      }
-    }
-
-    return true;
-  });
+  // Prefer API-loaded shop catalog; fall back to in-memory products while loading first time
+  let filteredProducts = (shopProducts.length || shopLoading ? shopProducts : products).slice();
 
   if (filter.sortBy === 'price-low-high') {
     filteredProducts.sort((a, b) => a.price - b.price);
@@ -98,10 +76,12 @@ export const ShopPage: React.FC = () => {
       ? activeCategory.name
       : selectedSlugs.size > 1
         ? `${selectedSlugs.size} Categories`
-        : 'All Products & Essentials';
+        : filter.searchQuery
+          ? `Search: ${filter.searchQuery}`
+          : 'All Products & Essentials';
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
       <div className="bg-gradient-to-r from-[#FCE7F3] via-[#FFF7ED] to-[#E0E7FF] rounded-3xl p-6 sm:p-8 border border-[#F1F5F9] shadow-2xs">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -116,7 +96,7 @@ export const ShopPage: React.FC = () => {
             </p>
           </div>
           <div className="text-xs font-bold text-[#1E293B] bg-white px-4 py-2 rounded-full border border-[#E2E8F0] shadow-xs">
-            Showing {filteredProducts.length} Products
+            {shopLoading ? 'Loading…' : `Showing ${filteredProducts.length} Products`}
           </div>
         </div>
       </div>
@@ -305,10 +285,14 @@ export const ShopPage: React.FC = () => {
             </div>
           )}
 
-          {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-5">
+          {shopLoading && filteredProducts.length === 0 ? (
+            <div className="py-16 text-center bg-white rounded-3xl p-8 border border-[#F1F5F9]">
+              <p className="text-sm font-bold text-[#64748B]">Loading products…</p>
+            </div>
+          ) : filteredProducts.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5">
               {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard key={product.id} product={product} compact />
               ))}
             </div>
           ) : (

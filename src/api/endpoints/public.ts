@@ -3,7 +3,12 @@ import { PUBLIC_API_BASE_URL } from '@/api/base-urls';
 /** Public (customer-facing) catalog endpoint builders. */
 export const publicEndpoints = {
   products: () => `${PUBLIC_API_BASE_URL}/products/`,
-  product: (id: string) => `${PUBLIC_API_BASE_URL}/products/${id}`,
+  /** Product by UUID or slug */
+  product: (idOrSlug: string) =>
+    `${PUBLIC_API_BASE_URL}/products/${encodeURIComponent(idOrSlug)}`,
+  /** Related products ("You may also like") for a product id or slug */
+  relatedProducts: (idOrSlug: string, limit = 8) =>
+    `${PUBLIC_API_BASE_URL}/products/${encodeURIComponent(idOrSlug)}/related?limit=${limit}`,
   categories: () => `${PUBLIC_API_BASE_URL}/categories/`,
   storefrontConfig: () => `${PUBLIC_API_BASE_URL}/storefront/config`,
   campaign: (key: string) =>
@@ -19,6 +24,8 @@ export const publicEndpoints = {
   categoryProducts: (categoryRef: string, qs = '') =>
     `${PUBLIC_API_BASE_URL}/store/categories/${encodeURIComponent(categoryRef)}/products${qs ? `?${qs}` : ''}`,
   storeProducts: (qs = '') => `${PUBLIC_API_BASE_URL}/store/products${qs ? `?${qs}` : ''}`,
+  shippingConfig: () => `${PUBLIC_API_BASE_URL}/store/shipping-config`,
+  promoValidate: () => `${PUBLIC_API_BASE_URL}/store/promo/validate`,
   sales: () => `${PUBLIC_API_BASE_URL}/store/sales`,
   sale: (ref: string) => `${PUBLIC_API_BASE_URL}/store/sales/${encodeURIComponent(ref)}`,
   saleCategories: (ref: string) =>

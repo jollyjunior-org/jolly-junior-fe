@@ -13,6 +13,8 @@ export type SystemSettingsPayload = {
   smtp_from_name?: string;
   smtp_use_tls?: boolean;
   smtp_use_ssl?: boolean;
+  delivery_fee?: number;
+  free_delivery_threshold?: number;
 };
 
 /** GET system settings (Cloudinary + SMTP). */

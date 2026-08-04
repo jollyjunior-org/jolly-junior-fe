@@ -40,8 +40,8 @@ export const ParentReviews: React.FC = () => {
   if (reviews.length === 0) return null;
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="text-center max-w-xl mx-auto mb-10">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
+      <div className="text-center max-w-xl mx-auto mb-5">
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFB7CE]/20 text-[#5A5A40] text-xs font-bold mb-2">
           ❤️ Loved by Thousands of Families
         </span>

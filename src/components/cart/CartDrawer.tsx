@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ShoppingBag, Trash2, ArrowRight, MessageSquare, Tag, Check, Sparkles } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
+import { goToShop } from '@/utils/navigate-shop';
 
 export const CartDrawer: React.FC = () => {
+  const router = useRouter();
   const { 
     cart, 
     cartOpen, 
@@ -12,27 +15,37 @@ export const CartDrawer: React.FC = () => {
     removeFromCart, 
     getCartTotal, 
     getFreeShippingProgress,
+    getDeliveryFee,
+    getPromoDiscountAmount,
+    appliedPromo,
+    applyPromoCode,
+    clearPromoCode,
     setCurrentView,
     showToast
   } = useShopStore();
 
   const [promoInput, setPromoInput] = useState('');
-  const [discountPercent, setDiscountPercent] = useState(0);
+  const [promoLoading, setPromoLoading] = useState(false);
 
   if (!cartOpen) return null;
 
   const progress = getFreeShippingProgress();
   const subtotal = getCartTotal();
-  const discountAmount = Math.round((subtotal * discountPercent) / 100);
-  const finalTotal = Math.max(0, subtotal - discountAmount);
+  const discountAmount = getPromoDiscountAmount();
+  const deliveryFee = getDeliveryFee();
+  const finalTotal = Math.max(0, subtotal - discountAmount) + deliveryFee;
 
-  const handleApplyPromo = (e: React.FormEvent) => {
+  /** Verify promo with backend API. */
+  const handleApplyPromo = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (promoInput.trim().toUpperCase() === 'JOLLY10') {
-      setDiscountPercent(10);
-      showToast('🎉 Promo code JOLLY10 applied! 10% discount added.');
-    } else {
-      showToast('Invalid promo code. Try JOLLY10 for 10% OFF!');
+    if (!promoInput.trim()) return;
+    setPromoLoading(true);
+    try {
+      const result = await applyPromoCode(promoInput.trim());
+      showToast(result.message);
+      if (result.success) setPromoInput('');
+    } finally {
+      setPromoLoading(false);
     }
   };
 
@@ -43,7 +56,7 @@ export const CartDrawer: React.FC = () => {
     ).join('\n');
 
     const message = encodeURIComponent(
-      `Hi JollyJuniors! 👋 I want to place an order:\n\n${itemsList}\n\n*Subtotal:* Rs. ${subtotal.toLocaleString()}\n${discountAmount > 0 ? `*Discount:* -Rs. ${discountAmount.toLocaleString()}\n` : ''}*Delivery Fee:* ${progress.isFree ? 'FREE' : 'Rs. 250'}\n*Total Payable:* Rs. ${(finalTotal + (progress.isFree ? 0 : 250)).toLocaleString()}\n\nPlease confirm availability and delivery timeframe!`
+      `Hi JollyJuniors! 👋 I want to place an order:\n\n${itemsList}\n\n*Subtotal:* Rs. ${subtotal.toLocaleString()}\n${discountAmount > 0 ? `*Discount (${appliedPromo?.code}):* -Rs. ${discountAmount.toLocaleString()}\n` : ''}*Delivery Fee:* ${progress.isFree ? 'FREE' : `Rs. ${deliveryFee}`}\n*Total Payable:* Rs. ${finalTotal.toLocaleString()}\n\nPlease confirm availability and delivery timeframe!`
     );
 
     window.open(`https://wa.me/923001234567?text=${message}`, '_blank');
@@ -167,7 +180,12 @@ export const CartDrawer: React.FC = () => {
                 <button
                   onClick={() => {
                     setCartOpen(false);
-                    setCurrentView('shop');
+                    goToShop(router, {
+                      categoryId: null,
+                      categoryIds: [],
+                      saleKey: null,
+                      searchQuery: '',
+                    });
                   }}
                   className="px-5 py-2 bg-[#EC4899] text-white text-xs font-bold rounded-full cursor-pointer shadow-xs"
                 >
@@ -186,7 +204,7 @@ export const CartDrawer: React.FC = () => {
                   <Tag className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Promo code (e.g. JOLLY10)"
+                    placeholder="Promo code"
                     value={promoInput}
                     onChange={(e) => setPromoInput(e.target.value)}
                     className="w-full pl-9 pr-3 py-2 bg-white border border-[#E2E8F0] rounded-xl text-xs font-semibold uppercase outline-none focus:border-[#EC4899]"
@@ -194,11 +212,24 @@ export const CartDrawer: React.FC = () => {
                 </div>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#1E293B] text-white rounded-xl text-xs font-bold hover:bg-slate-800 cursor-pointer"
+                  disabled={promoLoading}
+                  className="px-4 py-2 bg-[#1E293B] text-white rounded-xl text-xs font-bold hover:bg-slate-800 cursor-pointer disabled:opacity-60"
                 >
-                  Apply
+                  {promoLoading ? '…' : 'Apply'}
                 </button>
               </form>
+              {appliedPromo && (
+                <div className="flex items-center justify-between text-[11px] font-bold text-[#059669] bg-emerald-50 px-3 py-1.5 rounded-lg">
+                  <span>{appliedPromo.code} applied</span>
+                  <button
+                    type="button"
+                    onClick={() => clearPromoCode()}
+                    className="text-slate-500 hover:text-rose-500 cursor-pointer underline"
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
 
               {/* Subtotal Calculation */}
               <div className="space-y-1 text-xs text-[#64748B] pt-1">
@@ -208,19 +239,24 @@ export const CartDrawer: React.FC = () => {
                 </div>
                 {discountAmount > 0 && (
                   <div className="flex justify-between text-[#059669] font-bold">
-                    <span>Discount (10% OFF)</span>
+                    <span>Discount ({appliedPromo?.code})</span>
                     <span>-Rs. {discountAmount.toLocaleString()}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-medium">
                   <span>Delivery Fee</span>
                   <span className={progress.isFree ? 'text-[#059669] font-bold' : ''}>
-                    {progress.isFree ? 'FREE' : 'Rs. 250'}
+                    {progress.isFree ? 'FREE' : `Rs. ${deliveryFee.toLocaleString()}`}
                   </span>
                 </div>
+                {!progress.isFree && progress.remaining > 0 && (
+                  <p className="text-[10px] text-[#8C8C70]">
+                    Add Rs. {progress.remaining.toLocaleString()} more for free delivery
+                  </p>
+                )}
                 <div className="flex justify-between text-base font-black text-[#1E293B] pt-2 border-t border-[#E2E8F0]">
                   <span>Total</span>
-                  <span>Rs. {(finalTotal + (progress.isFree ? 0 : 250)).toLocaleString()}</span>
+                  <span>Rs. {finalTotal.toLocaleString()}</span>
                 </div>
               </div>
 

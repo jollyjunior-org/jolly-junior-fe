@@ -1,23 +1,27 @@
 import React from 'react';
-import { Home, Search, Grid, Heart, ShoppingBag } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Home, Grid, Heart, ShoppingBag } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
+import { goToHome, goToShop } from '@/utils/navigate-shop';
 
+/**
+ * Mobile bottom bar — home / shop / wishlist / cart (works from product pages too).
+ */
 export const MobileBottomNav: React.FC = () => {
-  const { 
-    currentView, 
-    setCurrentView, 
-    getCartCount, 
-    wishlist, 
-    setCartOpen, 
+  const router = useRouter();
+  const {
+    currentView,
+    getCartCount,
+    wishlist,
+    setCartOpen,
     setWishlistOpen,
-    setSearchOpen
   } = useShopStore();
 
   return (
     <div className="md:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-[#F1F5F9] z-40 px-3 py-2 flex items-center justify-around shadow-lg">
-      {/* Home */}
       <button
-        onClick={() => setCurrentView('home')}
+        type="button"
+        onClick={() => goToHome(router)}
         className={`flex flex-col items-center gap-0.5 text-[10px] font-bold cursor-pointer ${
           currentView === 'home' ? 'text-[#EC4899]' : 'text-slate-500'
         }`}
@@ -26,9 +30,16 @@ export const MobileBottomNav: React.FC = () => {
         <span>Home</span>
       </button>
 
-      {/* Shop */}
       <button
-        onClick={() => setCurrentView('shop')}
+        type="button"
+        onClick={() =>
+          goToShop(router, {
+            categoryId: null,
+            categoryIds: [],
+            saleKey: null,
+            searchQuery: '',
+          })
+        }
         className={`flex flex-col items-center gap-0.5 text-[10px] font-bold cursor-pointer ${
           currentView === 'shop' ? 'text-[#EC4899]' : 'text-slate-500'
         }`}
@@ -37,8 +48,8 @@ export const MobileBottomNav: React.FC = () => {
         <span>Shop</span>
       </button>
 
-      {/* Wishlist */}
       <button
+        type="button"
         onClick={() => setWishlistOpen(true)}
         className="relative flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-500 cursor-pointer"
       >
@@ -53,8 +64,8 @@ export const MobileBottomNav: React.FC = () => {
         <span>Wishlist</span>
       </button>
 
-      {/* Cart */}
       <button
+        type="button"
         onClick={() => setCartOpen(true)}
         className="relative flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-500 cursor-pointer"
       >

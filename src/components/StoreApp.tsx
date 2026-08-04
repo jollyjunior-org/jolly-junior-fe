@@ -1,49 +1,58 @@
-import React, { useEffect } from 'react';
-import { useShopStore } from './store/useShopStore';
-import { Header } from './components/common/Header';
-import { Footer } from './components/common/Footer';
-import { BackgroundDecorations } from './components/common/Decorations';
-import { HeroSlider } from './components/home/HeroSlider';
-import { FeaturedCategories } from './components/home/FeaturedCategories';
-import { FlashSale } from './components/home/FlashSale';
-import { ProductSlider } from './components/home/ProductSlider';
-import { ShopByAge } from './components/home/ShopByAge';
-import { GiftIdeas } from './components/home/GiftIdeas';
-import { ParentReviews } from './components/home/ParentReviews';
-import { ShopPage } from './components/shop/ShopPage';
-import { AdminDashboard } from './components/admin/AdminDashboard';
-import { CartDrawer } from './components/cart/CartDrawer';
-import { WishlistDrawer } from './components/cart/WishlistDrawer';
-import { QuickViewModal } from './components/product/QuickViewModal';
-import { ProductDetailModal } from './components/product/ProductDetailModal';
-import { CheckoutModal } from './components/checkout/CheckoutModal';
-import { MobileBottomNav } from './components/mobile/MobileBottomNav';
-import { MobileSidebar } from './components/common/MobileSidebar';
-import { AuthModal } from './components/common/AuthModal';
-import { AccountPanel } from './components/common/AccountPanel';
-import { FeedbackModal } from './components/common/FeedbackModal';
-import { Toast } from './components/common/Toast';
-import { MessageSquare } from 'lucide-react';
-import { productsForHomeSection } from './services/home-section-resolver';
-import { readShopUrl } from './utils/shop-url';
+'use client';
 
-export default function App() {
+import React, { useEffect } from 'react';
+import { useShopStore } from '@/store/useShopStore';
+import { Header } from '@/components/common/Header';
+import { Footer } from '@/components/common/Footer';
+import { BackgroundDecorations } from '@/components/common/Decorations';
+import { HeroSlider } from '@/components/home/HeroSlider';
+import { FeaturedCategories } from '@/components/home/FeaturedCategories';
+import { FlashSale } from '@/components/home/FlashSale';
+import { ProductSlider } from '@/components/home/ProductSlider';
+import { ShopByAge } from '@/components/home/ShopByAge';
+import { GiftIdeas } from '@/components/home/GiftIdeas';
+import { ParentReviews } from '@/components/home/ParentReviews';
+import { ShopPage } from '@/components/shop/ShopPage';
+import { AdminDashboard } from '@/components/admin/AdminDashboard';
+import { CartDrawer } from '@/components/cart/CartDrawer';
+import { WishlistDrawer } from '@/components/cart/WishlistDrawer';
+import { QuickViewModal } from '@/components/product/QuickViewModal';
+import { CheckoutModal } from '@/components/checkout/CheckoutModal';
+import { MobileBottomNav } from '@/components/mobile/MobileBottomNav';
+import { MobileSidebar } from '@/components/common/MobileSidebar';
+import { AuthModal } from '@/components/common/AuthModal';
+import { AccountPanel } from '@/components/common/AccountPanel';
+import { FeedbackModal } from '@/components/common/FeedbackModal';
+import { Toast } from '@/components/common/Toast';
+import { MessageSquare } from 'lucide-react';
+import { productsForHomeSection } from '@/services/home-section-resolver';
+import { readShopUrl } from '@/utils/shop-url';
+
+/**
+ * Client storefront shell (same behavior as the old Vite App.tsx).
+ * Home/shop/admin views still switch via Zustand + URL helpers.
+ */
+export default function StoreApp() {
   const {
     currentView,
     setCurrentView,
     products,
     fetchPublicData,
+    hydrateGuestState,
     isAdminAuthenticated,
     storefrontConfig,
     setFilter,
     setActiveCategorySlug,
+    fetchShopCatalog,
   } = useShopStore();
 
   useEffect(() => {
+    // Restore cart / wishlist / auth from localStorage after mount (SSR-safe)
+    hydrateGuestState();
     fetchPublicData();
-  }, [fetchPublicData]);
+  }, [fetchPublicData, hydrateGuestState]);
 
-  // Restore shop filters from URL on load / back button
+  // Restore shop filters / admin route from URL on load / back button
   useEffect(() => {
     const applyUrl = () => {
       const path = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/';
@@ -84,6 +93,10 @@ export default function App() {
         });
         setActiveCategorySlug(url.categoryId);
         setCurrentView('shop');
+        // Load category / store products for this URL
+        void useShopStore.getState().fetchShopCatalog();
+      } else if (path === '/' || path === '') {
+        setCurrentView('home');
       }
     };
 
@@ -94,7 +107,7 @@ export default function App() {
       window.removeEventListener('popstate', applyUrl);
       window.removeEventListener('hashchange', applyUrl);
     };
-  }, [setCurrentView, isAdminAuthenticated, setFilter, setActiveCategorySlug]);
+  }, [setCurrentView, isAdminAuthenticated, setFilter, setActiveCategorySlug, fetchShopCatalog]);
 
   if (currentView === 'admin') {
     return (
@@ -121,7 +134,7 @@ export default function App() {
 
       <main className="flex-1 relative z-10">
         {currentView === 'home' ? (
-          <div className="space-y-4 sm:space-y-8">
+          <div className="space-y-1 sm:space-y-2">
             <HeroSlider />
             <FeaturedCategories />
             <FlashSale />
@@ -160,7 +173,6 @@ export default function App() {
       <CartDrawer />
       <WishlistDrawer />
       <QuickViewModal />
-      <ProductDetailModal />
       <CheckoutModal />
 
       <a

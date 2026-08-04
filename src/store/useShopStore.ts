@@ -53,6 +53,9 @@ const emptyStorefront: StorefrontConfig = {
 
 interface ShopStore {
   products: Product[];
+  /** Catalog loaded for the shop page via store APIs (by category / search) */
+  shopProducts: Product[];
+  shopLoading: boolean;
   categories: Category[];
   orders: Order[];
   users: AppUser[];
@@ -85,6 +88,15 @@ interface ShopStore {
     badge_text?: string | null;
     tag_ids?: string[];
   }>;
+  /** Delivery fee + free-over threshold from admin settings */
+  shippingConfig: { deliveryFee: number; freeDeliveryThreshold: number };
+  /** Promo verified by backend (null = none) */
+  appliedPromo: {
+    code: string;
+    discountType: 'percent' | 'fixed';
+    discountValue: number;
+    discountAmount: number;
+  } | null;
 
   addToCart: (product: Product, variant?: ProductVariant, quantity?: number) => void;
   removeFromCart: (productId: string, variantId?: string) => void;
@@ -113,6 +125,8 @@ interface ShopStore {
   syncCartToServer: () => Promise<void>;
 
   fetchPublicData: () => Promise<void>;
+  /** Load shop grid from /store/categories/.../products or /store/products */
+  fetchShopCatalog: () => Promise<void>;
   fetchStorefrontConfig: () => Promise<void>;
   fetchInventoryStats: () => Promise<void>;
   refreshInventoryStats: () => Promise<void>;
@@ -154,11 +168,17 @@ interface ShopStore {
 
   getCartTotal: () => number;
   getCartCount: () => number;
+  getDeliveryFee: () => number;
+  getPromoDiscountAmount: () => number;
+  fetchShippingConfig: () => Promise<void>;
+  applyPromoCode: (code: string) => Promise<{ success: boolean; message: string }>;
+  clearPromoCode: () => void;
   getFreeShippingProgress: () => {
     threshold: number;
     remaining: number;
     percentage: number;
     isFree: boolean;
+    deliveryFee: number;
   };
 }
 
@@ -187,11 +207,14 @@ const emptyInventoryStats: InventoryStats = {
 
 export const useShopStore = create<ShopStore>((set, get) => ({
   products: [],
+  shopProducts: [],
+  shopLoading: false,
   categories: [],
   orders: [],
   users: [],
+  // SSR-safe defaults — hydrate from localStorage after mount (avoids hydration mismatch)
   cart: [],
-  wishlist: typeof window !== 'undefined' ? loadGuestWishlist() : [],
+  wishlist: [],
   filter: initialFilter,
   inventoryStats: emptyInventoryStats,
   quickViewProduct: null,
@@ -206,13 +229,15 @@ export const useShopStore = create<ShopStore>((set, get) => ({
   activeCategorySlug: null,
   toastMessage: null,
   lastOrderNumber: null,
-  isAdminAuthenticated: isAuthenticated(),
-  isCustomerAuthenticated: isCustomerAuthenticated(),
-  customerToken: getCustomerToken(),
-  authToken: getAccessToken(),
+  isAdminAuthenticated: false,
+  isCustomerAuthenticated: false,
+  customerToken: null,
+  authToken: null,
   isLoadingAdminData: false,
   storefrontConfig: emptyStorefront,
   liveSales: [],
+  shippingConfig: { deliveryFee: 250, freeDeliveryThreshold: 3000 },
+  appliedPromo: null,
 
   addToCart: (product, variant, quantity = 1) => {
     const targetProduct = get().products.find((p) => p.id === product.id) || product;
@@ -314,7 +339,7 @@ export const useShopStore = create<ShopStore>((set, get) => ({
 
   clearCart: () => {
     saveGuestCart([]);
-    set({ cart: [] });
+    set({ cart: [], appliedPromo: null });
     void get().syncCartToServer();
   },
 
@@ -386,10 +411,18 @@ export const useShopStore = create<ShopStore>((set, get) => ({
   setActiveCategorySlug: (slug) => set({ activeCategorySlug: slug }),
 
   hydrateGuestState: () => {
+    if (typeof window === 'undefined') return;
     const products = get().products;
     const cart = hydrateCartFromStorage(products);
     const wishlist = loadGuestWishlist();
-    set({ cart, wishlist });
+    set({
+      cart,
+      wishlist,
+      isAdminAuthenticated: isAuthenticated(),
+      isCustomerAuthenticated: isCustomerAuthenticated(),
+      customerToken: getCustomerToken(),
+      authToken: getAccessToken(),
+    });
   },
 
   syncCartToServer: async () => {
@@ -467,12 +500,63 @@ export const useShopStore = create<ShopStore>((set, get) => ({
         storefrontService.fetchStorefrontConfig().catch(() => emptyStorefront),
       ]);
       const slugById = new Map(categories.map((c) => [c.id, c.slug]));
+      // Home rails still need a product list; shop grid uses fetchShopCatalog
       const products = await productService.fetchPublicProducts(slugById);
       set({ products, categories, storefrontConfig });
       get().hydrateGuestState();
       void get().fetchLiveSales();
+      void get().fetchShippingConfig();
     } catch (err) {
       console.error('Failed to fetch public data', err);
+    }
+  },
+
+  fetchShopCatalog: async () => {
+    const filter = get().filter;
+    set({ shopLoading: true });
+    try {
+      const sort = filter.sortBy || 'featured';
+      const cats =
+        filter.categoryIds?.length > 0
+          ? filter.categoryIds
+          : filter.categoryId
+            ? [filter.categoryId]
+            : [];
+
+      let items: Product[] = [];
+      if (filter.saleKey) {
+        const sale = await customerService.fetchSaleProducts(filter.saleKey, {
+          categoryId: cats[0],
+        });
+        items = sale.items;
+      } else if (cats.length === 1 && !filter.searchQuery.trim()) {
+        const page = await customerService.fetchCategoryProducts(cats[0], {
+          sort,
+          inStock: filter.inStockOnly || undefined,
+        });
+        items = page.items;
+      } else {
+        const page = await customerService.fetchStoreProducts({
+          categoryIds: cats.length ? cats : undefined,
+          q: filter.searchQuery.trim() || undefined,
+          sort,
+          inStock: filter.inStockOnly || undefined,
+        });
+        items = page.items;
+      }
+
+      // Client-side extras the store API may not apply the same way
+      if (filter.ageGroup) {
+        items = items.filter((p) => p.ageGroup === filter.ageGroup);
+      }
+      if (filter.onSaleOnly) {
+        items = items.filter((p) => p.discountBadge || p.badge === 'Flash Sale');
+      }
+
+      set({ shopProducts: items, shopLoading: false });
+    } catch (err) {
+      console.error('Failed to fetch shop catalog', err);
+      set({ shopLoading: false });
     }
   },
 
@@ -610,6 +694,14 @@ export const useShopStore = create<ShopStore>((set, get) => ({
         is_featured: false,
         age_group: newProdData.ageGroup,
         images: newProdData.images,
+        variants: (newProdData.variants || []).map((v) => ({
+          id: v.id,
+          name: v.name,
+          price: v.price,
+          original_price: v.originalPrice ?? null,
+          in_stock: v.inStock,
+          stock_quantity: v.stockQuantity,
+        })),
       });
       await get().fetchAdminData();
       get().showToast(`Product "${newProdData.name}" created successfully!`);
@@ -637,6 +729,16 @@ export const useShopStore = create<ShopStore>((set, get) => ({
       if (updated.ageGroup !== undefined) payload.age_group = updated.ageGroup;
       if (updated.isPublished !== undefined) payload.is_published = updated.isPublished;
       if (updated.images !== undefined) payload.images = updated.images;
+      if (updated.variants !== undefined) {
+        payload.variants = updated.variants.map((v) => ({
+          id: v.id,
+          name: v.name,
+          price: v.price,
+          original_price: v.originalPrice ?? null,
+          in_stock: v.inStock,
+          stock_quantity: v.stockQuantity,
+        }));
+      }
 
       await productService.updateProduct(id, payload);
       await get().fetchAdminData();
@@ -728,6 +830,11 @@ export const useShopStore = create<ShopStore>((set, get) => ({
 
   addOrder: async (order) => {
     try {
+      const subtotal = get().getCartTotal();
+      const shipping_fee = get().getDeliveryFee();
+      const discount_amount = get().getPromoDiscountAmount();
+      const total_amount = Math.max(0, subtotal - discount_amount) + shipping_fee;
+
       const mappedOrder = await orderService.createOrder({
         customer_name: order.customerName,
         customer_email: order.customerEmail,
@@ -736,10 +843,10 @@ export const useShopStore = create<ShopStore>((set, get) => ({
         city: order.city,
         payment_method: 'COD',
         user_id: (order.userId as string | undefined) || null,
-        subtotal: order.totalAmount,
-        shipping_fee: 0,
-        discount_amount: 0,
-        total_amount: order.totalAmount,
+        subtotal,
+        shipping_fee,
+        discount_amount,
+        total_amount: order.totalAmount || total_amount,
         items: order.items.map((item) => ({
           product_id: item.productId,
           product_name: item.productName,
@@ -843,11 +950,63 @@ export const useShopStore = create<ShopStore>((set, get) => ({
     return get().cart.reduce((count, item) => count + item.quantity, 0);
   },
 
+  getDeliveryFee: () => {
+    const progress = get().getFreeShippingProgress();
+    return progress.isFree ? 0 : progress.deliveryFee;
+  },
+
+  getPromoDiscountAmount: () => {
+    const promo = get().appliedPromo;
+    if (!promo) return 0;
+    // Recompute from current cart so discount stays honest after cart edits
+    const subtotal = get().getCartTotal();
+    if (promo.discountType === 'percent') {
+      return Math.min(subtotal, Math.round((subtotal * promo.discountValue) / 100));
+    }
+    return Math.min(subtotal, Math.round(promo.discountValue));
+  },
+
+  fetchShippingConfig: async () => {
+    try {
+      const { fetchShippingConfig } = await import('@/services/promo-service');
+      const shippingConfig = await fetchShippingConfig();
+      set({ shippingConfig });
+    } catch {
+      /* keep defaults */
+    }
+  },
+
+  applyPromoCode: async (code) => {
+    try {
+      const { validatePromoCode } = await import('@/services/promo-service');
+      const subtotal = get().getCartTotal();
+      const result = await validatePromoCode(code, subtotal);
+      if (!result.valid || !result.applied) {
+        set({ appliedPromo: null });
+        return { success: false, message: result.message || 'Invalid promo code.' };
+      }
+      set({ appliedPromo: result.applied });
+      return { success: true, message: result.message };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Could not verify promo code';
+      return { success: false, message };
+    }
+  },
+
+  clearPromoCode: () => set({ appliedPromo: null }),
+
   getFreeShippingProgress: () => {
     const total = get().getCartTotal();
-    const threshold = 3000;
+    const threshold = get().shippingConfig.freeDeliveryThreshold || 3000;
+    const deliveryFee = get().shippingConfig.deliveryFee ?? 250;
     const remaining = Math.max(0, threshold - total);
     const percentage = Math.min(100, Math.round((total / threshold) * 100));
-    return { threshold, remaining, percentage, isFree: total >= threshold };
+    return {
+      threshold,
+      remaining,
+      percentage,
+      isFree: total >= threshold,
+      deliveryFee,
+    };
   },
 }));

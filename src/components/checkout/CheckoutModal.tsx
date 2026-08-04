@@ -13,7 +13,10 @@ export const CheckoutModal: React.FC = () => {
   const { 
     cart, 
     getCartTotal, 
-    getFreeShippingProgress, 
+    getFreeShippingProgress,
+    getDeliveryFee,
+    getPromoDiscountAmount,
+    appliedPromo,
     clearCart, 
     setCurrentView,
     setLastOrderNumber,
@@ -70,8 +73,9 @@ export const CheckoutModal: React.FC = () => {
 
   const subtotal = getCartTotal();
   const progress = getFreeShippingProgress();
-  const deliveryFee = progress.isFree ? 0 : 250;
-  const finalTotal = subtotal + deliveryFee;
+  const deliveryFee = getDeliveryFee();
+  const discountAmount = getPromoDiscountAmount();
+  const finalTotal = Math.max(0, subtotal - discountAmount) + deliveryFee;
 
   const triggerConfetti = () => {
     confetti({
@@ -241,12 +245,23 @@ export const CheckoutModal: React.FC = () => {
                   <span>Items Subtotal</span>
                   <span className="font-bold text-[#1E293B]">Rs. {subtotal.toLocaleString()}</span>
                 </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between font-bold text-[#059669]">
+                    <span>Discount ({appliedPromo?.code})</span>
+                    <span>-Rs. {discountAmount.toLocaleString()}</span>
+                  </div>
+                )}
                 <div className="flex justify-between font-medium">
                   <span>Shipping Fee</span>
                   <span className={progress.isFree ? 'text-[#059669] font-bold' : ''}>
-                    {progress.isFree ? 'FREE' : 'Rs. 250'}
+                    {progress.isFree ? 'FREE' : `Rs. ${deliveryFee.toLocaleString()}`}
                   </span>
                 </div>
+                {!progress.isFree && progress.remaining > 0 && (
+                  <p className="text-[10px] text-[#8C8C70]">
+                    Free delivery over Rs. {progress.threshold.toLocaleString()}
+                  </p>
+                )}
                 <div className="flex justify-between text-base font-black text-[#1E293B] pt-2 border-t border-[#E2E8F0]">
                   <span>Total Amount Payable</span>
                   <span className="text-[#EC4899]">Rs. {finalTotal.toLocaleString()}</span>

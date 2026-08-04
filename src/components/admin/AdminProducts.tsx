@@ -4,11 +4,24 @@ import {
   X, Layers, Tag, DollarSign, Image as ImageIcon, Filter, Check
 } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
-import { Product, StoreTag } from '../../types';
+import { Product, ProductVariant, StoreTag } from '../../types';
 import { ImageUploadWidget } from './ImageUploadWidget';
 import { TagMultiSelect } from './TagMultiSelect';
 import { formatDiscountLabel } from '../../utils/discount';
 import * as storefrontService from '@/services/storefront-service';
+
+const MAX_IMAGES = 4;
+const EMPTY_IMAGES = ['', '', '', ''];
+
+/** Local draft row for a color/size option before save. */
+type VariantDraft = {
+  id?: string;
+  name: string;
+  price: number;
+  originalPrice: number;
+  stockQuantity: number;
+  inStock: boolean;
+};
 
 interface AdminProductsProps {
   openAddModalInitially?: boolean;
@@ -30,6 +43,8 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(openAddModalInitially);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [samePriceForVariants, setSamePriceForVariants] = useState(true);
+  const [variants, setVariants] = useState<VariantDraft[]>([]);
 
   // Form Fields State
   const [formData, setFormData] = useState({
@@ -44,7 +59,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
     tagIds: [] as string[],
     badge: '' as '' | 'Best Seller' | 'New' | 'Flash Sale' | 'Must Have' | 'Trending',
     ageGroup: '1-3Y' as '0-6M' | '6-12M' | '1-3Y' | '3-5Y' | '5Y+',
-    imageUrl: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?auto=format&fit=crop&w=800&q=80',
+    images: [...EMPTY_IMAGES] as string[],
     description: '',
     featuresText: 'Non-toxic paint, Solid beechwood, Eco-friendly',
     inStock: true,
@@ -52,8 +67,19 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
     isPublished: true
   });
 
+  /** Pad / trim image list to exactly 4 slots. */
+  const toImageSlots = (urls: string[] | undefined): string[] => {
+    const slots = [...EMPTY_IMAGES];
+    (urls || []).slice(0, MAX_IMAGES).forEach((u, i) => {
+      slots[i] = u || '';
+    });
+    return slots;
+  };
+
   const resetForm = () => {
     setEditingProduct(null);
+    setSamePriceForVariants(true);
+    setVariants([]);
     setFormData({
       name: '',
       slug: '',
@@ -66,7 +92,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
       tagIds: [],
       badge: '',
       ageGroup: '1-3Y',
-      imageUrl: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?auto=format&fit=crop&w=800&q=80',
+      images: [...EMPTY_IMAGES],
       description: '',
       featuresText: 'Non-toxic paint, Solid beechwood, Eco-friendly',
       inStock: true,
@@ -82,6 +108,21 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
 
   const handleOpenEditModal = (product: Product) => {
     setEditingProduct(product);
+    const productVariants = product.variants || [];
+    const prices = productVariants.map((v) => v.price);
+    const allSamePrice =
+      prices.length === 0 || prices.every((p) => p === (prices[0] ?? product.price));
+    setSamePriceForVariants(allSamePrice);
+    setVariants(
+      productVariants.map((v) => ({
+        id: v.id,
+        name: v.name,
+        price: v.price,
+        originalPrice: v.originalPrice ?? v.price,
+        stockQuantity: v.stockQuantity ?? 0,
+        inStock: v.inStock !== false,
+      })),
+    );
     setFormData({
       name: product.name,
       slug: product.slug,
@@ -96,7 +137,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
       tagIds: product.tagIds || [],
       badge: product.badge || '',
       ageGroup: product.ageGroup,
-      imageUrl: product.images[0] || '',
+      images: toImageSlots(product.images),
       description: product.description,
       featuresText: (product.features || []).join(', '),
       inStock: product.inStock,
@@ -169,65 +210,122 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
       .filter(Boolean);
 
     const generatedSlug = formData.slug || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    const parsedStock = Math.max(0, Number(formData.stockQuantity) || 0);
+    const imageUrls = formData.images.map((u) => u.trim()).filter(Boolean).slice(0, MAX_IMAGES);
+    if (!imageUrls.length) {
+      window.alert('Please add at least one product image.');
+      return;
+    }
 
     const hasDiscount = formData.discountPercent > 0 && formData.originalPrice > 0;
-    // With discount: selling is auto from original %. With 0%: selling = original (same price).
     const computedPrice = hasDiscount
       ? calculateSellingPrice(formData.originalPrice, formData.discountPercent)
       : formData.originalPrice > 0
         ? Math.round(Number(formData.originalPrice))
         : Number(formData.price);
-    // No discount → clear strikethrough original on storefront (or keep equal to selling)
     const computedOriginalPrice = hasDiscount ? Number(formData.originalPrice) : computedPrice;
-    // DB stores integer percent only (e.g. 10); UI hardcodes "% OFF"
     const discountPercentValue = hasDiscount ? formData.discountPercent : null;
+
+    // Build variants payload (name required); same-price copies product selling price
+    const variantPayload: ProductVariant[] = variants
+      .filter((v) => v.name.trim())
+      .map((v, idx) => {
+        const price = samePriceForVariants ? computedPrice : Number(v.price) || computedPrice;
+        const stock = Math.max(0, Number(v.stockQuantity) || 0);
+        return {
+          id: v.id || `tmp-${idx}`,
+          name: v.name.trim(),
+          price,
+          originalPrice: samePriceForVariants
+            ? computedOriginalPrice
+            : Number(v.originalPrice) || price,
+          inStock: stock > 0,
+          stockQuantity: stock,
+        };
+      });
+
+    const variantStockTotal = variantPayload.reduce((sum, v) => sum + v.stockQuantity, 0);
+    const parsedStock = variantPayload.length
+      ? variantStockTotal
+      : Math.max(0, Number(formData.stockQuantity) || 0);
+
+    const productPayload = {
+      name: formData.name,
+      slug: generatedSlug,
+      categoryId: formData.categoryId,
+      categoryName: formData.categoryName,
+      price: computedPrice,
+      basePrice: formData.basePrice ? Number(formData.basePrice) : undefined,
+      originalPrice: computedOriginalPrice,
+      discountBadge: discountPercentValue,
+      tagIds: formData.tagIds,
+      badge: (formData.badge || undefined) as Product['badge'],
+      ageGroup: formData.ageGroup,
+      images: imageUrls,
+      description: formData.description,
+      features: featuresList.length > 0 ? featuresList : ['High quality baby safe material'],
+      inStock: formData.inStock && parsedStock > 0,
+      stockQuantity: parsedStock,
+      isPublished: formData.isPublished,
+      variants: variantPayload,
+    };
 
     if (editingProduct) {
       updateProduct(editingProduct.id, {
-        name: formData.name,
-        slug: generatedSlug,
-        categoryId: formData.categoryId,
-        categoryName: formData.categoryName,
-        price: computedPrice,
-        basePrice: formData.basePrice ? Number(formData.basePrice) : undefined,
-        originalPrice: computedOriginalPrice,
+        ...productPayload,
         discountBadge: discountPercentValue,
-        tagIds: formData.tagIds,
-        badge: formData.badge || undefined,
-        ageGroup: formData.ageGroup,
-        images: [formData.imageUrl],
-        description: formData.description,
-        features: featuresList.length > 0 ? featuresList : ['High quality baby safe material'],
-        inStock: formData.inStock && parsedStock > 0,
-        stockQuantity: parsedStock,
-        isPublished: formData.isPublished
       });
     } else {
       addProduct({
-        name: formData.name,
-        slug: generatedSlug,
-        categoryId: formData.categoryId,
-        categoryName: formData.categoryName,
-        price: computedPrice,
-        basePrice: formData.basePrice ? Number(formData.basePrice) : undefined,
-        originalPrice: computedOriginalPrice,
+        ...productPayload,
         discountBadge: discountPercentValue ?? undefined,
-        tagIds: formData.tagIds,
-        badge: formData.badge || undefined,
-        ageGroup: formData.ageGroup,
-        images: [formData.imageUrl],
-        description: formData.description || 'Premium sustainable baby product designed for safe exploration and motor development.',
-        features: featuresList.length > 0 ? featuresList : ['Child safe non-toxic materials', 'Durable design'],
-        inStock: formData.inStock && parsedStock > 0,
-        stockQuantity: parsedStock,
-        isPublished: formData.isPublished,
         rating: 5.0,
-        reviewCount: 1
+        reviewCount: 1,
+        description:
+          formData.description ||
+          'Premium sustainable baby product designed for safe exploration and motor development.',
+        features: featuresList.length > 0 ? featuresList : ['Child safe non-toxic materials', 'Durable design'],
       });
     }
 
     handleCloseModal();
+  };
+
+  /** Add an empty color/size row. */
+  const addVariantRow = () => {
+    setVariants((prev) => [
+      ...prev,
+      {
+        name: '',
+        price: formData.price || formData.originalPrice || 0,
+        originalPrice: formData.originalPrice || formData.price || 0,
+        stockQuantity: 10,
+        inStock: true,
+      },
+    ]);
+  };
+
+  /** Update one field on a variant draft row. */
+  const updateVariantRow = (index: number, patch: Partial<VariantDraft>) => {
+    setVariants((prev) => prev.map((row, i) => (i === index ? { ...row, ...patch } : row)));
+  };
+
+  /** Remove a variant draft row. */
+  const removeVariantRow = (index: number) => {
+    setVariants((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  /** Set image URL at slot index (0–3). */
+  const setImageAt = (index: number, url: string) => {
+    setFormData((prev) => {
+      const images = [...prev.images];
+      images[index] = url;
+      return { ...prev, images };
+    });
+  };
+
+  /** Clear image at slot index. */
+  const clearImageAt = (index: number) => {
+    setImageAt(index, '');
   };
 
   const handleDelete = (id: string, name: string) => {
@@ -505,11 +603,11 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
         </div>
       </div>
 
-      {/* Add / Edit Modal (No Animations) */}
+      {/* Add / Edit Modal — scrollable body so long forms (images + variants) stay usable */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl border border-slate-200 max-w-2xl w-full p-6 space-y-5 my-8">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-xl border border-slate-200 max-w-2xl w-full max-h-[92vh] flex flex-col shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3 shrink-0">
               <h3 className="text-base font-bold text-slate-900">
                 {editingProduct ? 'Edit Product' : 'Add New Product to Catalog'}
               </h3>
@@ -521,7 +619,8 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="flex flex-col min-h-0 flex-1">
+              <div className="overflow-y-auto flex-1 px-5 py-4 space-y-4">
               {/* Product Name */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Product Name *</label>
@@ -662,7 +761,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                 </div>
               </div>
 
-              {/* Promo Badge & Image URL */}
+              {/* Promo Badge & Images (up to 4) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Special Badge</label>
@@ -679,15 +778,153 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                     <option value="Trending">Trending</option>
                   </select>
                 </div>
+              </div>
 
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-bold text-slate-700 mb-2">Product Image *</label>
-                  <ImageUploadWidget
-                    folder="products"
-                    initialImage={formData.imageUrl}
-                    onUploadSuccess={(url) => setFormData({ ...formData, imageUrl: url })}
-                  />
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Product images (up to {MAX_IMAGES}) *
+                </label>
+                <p className="text-[10px] text-slate-500 mb-2">
+                  Image 1 is the main cover photo shown on cards and search.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {formData.images.map((url, index) => (
+                    <div key={index} className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+                          Image {index + 1}{index === 0 ? ' · Main' : ''}
+                        </span>
+                        {url ? (
+                          <button
+                            type="button"
+                            onClick={() => clearImageAt(index)}
+                            className="text-[10px] font-bold text-rose-500 cursor-pointer"
+                          >
+                            Clear
+                          </button>
+                        ) : null}
+                      </div>
+                      <ImageUploadWidget
+                        key={`img-${index}-${url || 'empty'}`}
+                        folder="products"
+                        initialImage={url || undefined}
+                        onUploadSuccess={(nextUrl) => setImageAt(index, nextUrl)}
+                      />
+                    </div>
+                  ))}
                 </div>
+              </div>
+
+              {/* Variants — colors / styles with own stock (+ optional own price) */}
+              <div className="rounded-xl border border-slate-200 p-3 space-y-3 bg-slate-50/80">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700">
+                      Variants (colors / styles)
+                    </label>
+                    <p className="text-[10px] text-slate-500 mt-0.5">
+                      Optional. Each row has its own stock. Leave empty for a single product.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addVariantRow}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-[11px] font-bold text-slate-700 cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Add variant
+                  </button>
+                </div>
+
+                {variants.length > 0 && (
+                  <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={samePriceForVariants}
+                      onChange={(e) => setSamePriceForVariants(e.target.checked)}
+                      className="accent-sky-500"
+                    />
+                    Same price for all variants (uses product selling price)
+                  </label>
+                )}
+
+                {variants.length === 0 ? (
+                  <p className="text-[11px] text-slate-400 italic">No variants — product uses main stock below.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {variants.map((row, index) => (
+                      <div
+                        key={row.id || `new-${index}`}
+                        className="grid grid-cols-12 gap-2 items-end bg-white rounded-lg border border-slate-200 p-2"
+                      >
+                        <div className="col-span-12 sm:col-span-3">
+                          <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Name</label>
+                          <input
+                            type="text"
+                            placeholder="Pink / Blue / Size M"
+                            value={row.name}
+                            onChange={(e) => updateVariantRow(index, { name: e.target.value })}
+                            className="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs outline-none focus:border-sky-500"
+                          />
+                        </div>
+                        {!samePriceForVariants && (
+                          <>
+                            <div className="col-span-6 sm:col-span-2">
+                              <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Price</label>
+                              <input
+                                type="number"
+                                min={0}
+                                value={row.price}
+                                onChange={(e) =>
+                                  updateVariantRow(index, { price: Number(e.target.value) || 0 })
+                                }
+                                className="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs outline-none focus:border-sky-500"
+                              />
+                            </div>
+                            <div className="col-span-6 sm:col-span-2">
+                              <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Original</label>
+                              <input
+                                type="number"
+                                min={0}
+                                value={row.originalPrice}
+                                onChange={(e) =>
+                                  updateVariantRow(index, {
+                                    originalPrice: Number(e.target.value) || 0,
+                                  })
+                                }
+                                className="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs outline-none focus:border-sky-500"
+                              />
+                            </div>
+                          </>
+                        )}
+                        <div className={samePriceForVariants ? 'col-span-8 sm:col-span-3' : 'col-span-8 sm:col-span-2'}>
+                          <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Stock</label>
+                          <input
+                            type="number"
+                            min={0}
+                            value={row.stockQuantity}
+                            onChange={(e) =>
+                              updateVariantRow(index, {
+                                stockQuantity: Math.max(0, Number(e.target.value) || 0),
+                              })
+                            }
+                            className="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs outline-none focus:border-sky-500"
+                          />
+                        </div>
+                        <div className="col-span-4 sm:col-span-2 flex justify-end pb-0.5">
+                          <button
+                            type="button"
+                            onClick={() => removeVariantRow(index)}
+                            className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 cursor-pointer"
+                            title="Remove variant"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Merchandising tags — pick only from Control → Tags list */}
@@ -732,15 +969,27 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
               {/* Stock Quantity & Status Switches */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Live Stock Quantity (Units) *</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    {variants.length > 0 ? 'Total stock (from variants)' : 'Live Stock Quantity (Units) *'}
+                  </label>
                   <input
                     type="number"
                     min="0"
-                    required
-                    value={formData.stockQuantity}
+                    required={variants.length === 0}
+                    disabled={variants.length > 0}
+                    value={
+                      variants.length > 0
+                        ? variants.reduce((s, v) => s + (Number(v.stockQuantity) || 0), 0)
+                        : formData.stockQuantity
+                    }
                     onChange={e => setFormData({ ...formData, stockQuantity: Math.max(0, parseInt(e.target.value) || 0) })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-slate-900 outline-none focus:border-sky-500"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-slate-900 outline-none focus:border-sky-500 disabled:opacity-60"
                   />
+                  {variants.length > 0 && (
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      Stock is managed per variant above.
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2 p-2.5 bg-slate-50 border border-slate-200 rounded-lg self-end">
@@ -770,8 +1019,10 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                 </div>
               </div>
 
-              {/* Submit CTA */}
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              </div>
+
+              {/* Submit CTA — stays visible while form scrolls */}
+              <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-slate-100 shrink-0 bg-white rounded-b-xl">
                 <button
                   type="button"
                   onClick={handleCloseModal}

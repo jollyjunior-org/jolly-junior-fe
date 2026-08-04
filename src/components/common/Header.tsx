@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Search, Heart, ShoppingBag, User, Flame,
   MessageSquare, Menu,
@@ -7,8 +8,11 @@ import { BrandLogo } from './BrandLogo';
 import { useShopStore } from '../../store/useShopStore';
 import { Product } from '../../types';
 import * as customerService from '@/services/customer-service';
+import { productPath } from '@/utils/product-path';
+import { goToShop, goToHome } from '@/utils/navigate-shop';
 
 export const Header: React.FC = () => {
+  const router = useRouter();
   const {
     products,
     categories,
@@ -17,9 +21,6 @@ export const Header: React.FC = () => {
     getCartCount,
     setCartOpen,
     setWishlistOpen,
-    setCurrentView,
-    setFilter,
-    setSelectedProductDetail,
     setMobileMenuOpen,
     setAuthModalOpen,
     setAccountPanelOpen,
@@ -27,7 +28,7 @@ export const Header: React.FC = () => {
     liveSales,
     filter,
     activeCategorySlug,
-    setActiveCategorySlug,
+    currentView,
   } = useShopStore();
 
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
@@ -93,13 +94,14 @@ export const Header: React.FC = () => {
     name: string;
     slug: string;
     badge: string | null;
-    kind: 'shop-all' | 'category' | 'section' | 'sale';
+    kind: 'home' | 'shop-all' | 'category' | 'section' | 'sale';
     sourceType?: string;
     sourceValue?: string | null;
     saleKey?: string;
   };
 
   const navCategories: NavItem[] = [
+    { name: 'Home', slug: 'home', badge: null, kind: 'home' },
     { name: 'Shop All', slug: 'all', badge: null, kind: 'shop-all' },
     ...liveSales.map((s) => ({
       name: s.title,
@@ -130,8 +132,17 @@ export const Header: React.FC = () => {
 
   /** Is this nav item the currently selected one? */
   const isNavActive = (item: NavItem) => {
+    if (item.kind === 'home') {
+      return currentView === 'home';
+    }
     if (item.kind === 'shop-all') {
-      return !filter.categoryId && !filter.saleKey && filter.categoryIds.length === 0 && !filter.onSaleOnly;
+      return (
+        currentView === 'shop' &&
+        !filter.categoryId &&
+        !filter.saleKey &&
+        filter.categoryIds.length === 0 &&
+        !filter.onSaleOnly
+      );
     }
     if (item.kind === 'sale') return filter.saleKey === item.saleKey;
     if (item.kind === 'category') {
@@ -148,65 +159,87 @@ export const Header: React.FC = () => {
   };
 
   const handleCategoryClick = (item: NavItem) => {
-    setCurrentView('shop');
-    if (item.kind === 'shop-all' || item.slug === 'all') {
-      setFilter({
+    if (item.kind === 'home') {
+      goToHome(router);
+    } else if (item.kind === 'shop-all' || item.slug === 'all') {
+      goToShop(router, {
         categoryId: null,
         categoryIds: [],
         searchQuery: '',
         onSaleOnly: false,
         saleKey: null,
       });
-      setActiveCategorySlug(null);
     } else if (item.kind === 'sale' && item.saleKey) {
-      setFilter({
+      goToShop(router, {
         saleKey: item.saleKey,
         categoryId: null,
         categoryIds: [],
         onSaleOnly: false,
         searchQuery: '',
       });
-      setActiveCategorySlug(null);
     } else if (item.kind === 'section') {
       if (item.sourceType === 'rule' && item.sourceValue === 'sale') {
-        setFilter({ categoryId: null, categoryIds: [], onSaleOnly: true, searchQuery: '', saleKey: null });
+        goToShop(router, {
+          categoryId: null,
+          categoryIds: [],
+          onSaleOnly: true,
+          searchQuery: '',
+          saleKey: null,
+        });
       } else if (item.sourceType === 'badge' && item.sourceValue === 'New') {
-        setFilter({ categoryId: null, categoryIds: [], sortBy: 'newest', searchQuery: '', saleKey: null });
+        goToShop(router, {
+          categoryId: null,
+          categoryIds: [],
+          sortBy: 'newest',
+          searchQuery: '',
+          saleKey: null,
+        });
       } else if (item.sourceType === 'badge' && item.sourceValue === 'Best Seller') {
-        setFilter({ categoryId: null, categoryIds: [], sortBy: 'rating', searchQuery: '', saleKey: null });
+        goToShop(router, {
+          categoryId: null,
+          categoryIds: [],
+          sortBy: 'rating',
+          searchQuery: '',
+          saleKey: null,
+        });
       } else if (item.sourceType === 'category' && item.sourceValue) {
         const cat = categories.find((c) => c.id === item.sourceValue);
         const slug = cat?.slug || item.sourceValue;
-        setFilter({ categoryId: slug, categoryIds: [slug], searchQuery: '', saleKey: null });
-        setActiveCategorySlug(slug);
-      } else if (item.sourceType === 'tag' && item.sourceValue) {
-        setFilter({ searchQuery: '', saleKey: null, categoryId: null, categoryIds: [] });
+        goToShop(router, {
+          categoryId: slug,
+          categoryIds: [slug],
+          searchQuery: '',
+          saleKey: null,
+        });
       } else {
-        setFilter({ categoryId: null, categoryIds: [], searchQuery: '', saleKey: null });
+        goToShop(router, {
+          categoryId: null,
+          categoryIds: [],
+          searchQuery: '',
+          saleKey: null,
+        });
       }
     } else {
-      setFilter({
+      goToShop(router, {
         categoryId: item.slug,
         categoryIds: [item.slug],
         searchQuery: '',
         onSaleOnly: false,
         saleKey: null,
       });
-      setActiveCategorySlug(item.slug);
     }
     setHoveredCategory(null);
   };
 
   const handleSelectSearchResult = (product: Product) => {
-    setSelectedProductDetail(product);
     setIsSearchFocused(false);
     setSearchQuery('');
+    router.push(productPath(product));
   };
 
   const runSearch = () => {
     if (!searchQuery.trim()) return;
-    setFilter({ searchQuery: searchQuery.trim(), saleKey: null });
-    setCurrentView('shop');
+    goToShop(router, { searchQuery: searchQuery.trim(), saleKey: null });
     setIsSearchFocused(false);
   };
 
@@ -245,17 +278,7 @@ export const Header: React.FC = () => {
           </button>
           <BrandLogo
             size="md"
-            onNavigateHome={() => {
-              setFilter({
-                categoryId: null,
-                categoryIds: [],
-                saleKey: null,
-                searchQuery: '',
-                onSaleOnly: false,
-              });
-              setActiveCategorySlug(null);
-              setCurrentView('home');
-            }}
+            onNavigateHome={() => goToHome(router)}
           />
         </div>
 
@@ -424,8 +447,12 @@ export const Header: React.FC = () => {
                             key={sub}
                             type="button"
                             onClick={() => {
-                              setFilter({ categoryId: cat.slug, categoryIds: [cat.slug], searchQuery: sub });
-                              setCurrentView('shop');
+                              goToShop(router, {
+                                categoryId: cat.slug,
+                                categoryIds: [cat.slug],
+                                searchQuery: sub,
+                              });
+                              setHoveredCategory(null);
                               setHoveredCategory(null);
                             }}
                             className="w-full text-left text-xs font-semibold text-[#5A5A40] hover:text-[#FFB347] py-1 cursor-pointer"

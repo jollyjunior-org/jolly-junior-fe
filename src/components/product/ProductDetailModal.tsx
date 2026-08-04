@@ -44,10 +44,15 @@ export const ProductDetailModal: React.FC = () => {
 
   const isWishlisted = isInWishlist(product.id);
   const currentPrice = selectedVariant ? selectedVariant.price : product.price;
-
-  const stockQty = product.stockQuantity ?? (product.inStock ? 10 : 0);
+  // Prefer selected variant stock when options exist
+  const stockQty = selectedVariant
+    ? selectedVariant.stockQuantity ?? 0
+    : product.stockQuantity ?? (product.inStock ? 10 : 0);
   const comingSoon = isComingSoonProduct(product);
-  const isAvailable = !comingSoon && product.inStock && stockQty > 0;
+  const variantAvailable = selectedVariant
+    ? selectedVariant.inStock && (selectedVariant.stockQuantity ?? 0) > 0
+    : product.inStock && stockQty > 0;
+  const isAvailable = !comingSoon && variantAvailable;
   const isLowStock = isAvailable && stockQty <= (product.lowStockThreshold || 5);
 
   // Bundle offer product

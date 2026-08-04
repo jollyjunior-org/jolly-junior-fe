@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Sparkles, ArrowRight } from 'lucide-react';
 import { useShopStore } from '@/store/useShopStore';
+import { goToShop } from '@/utils/navigate-shop';
 
 /**
  * Homepage hero slider — each slide is a category (image/name/description from Categories).
  */
 export const HeroSlider: React.FC = () => {
+  const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const { setCurrentView, setFilter, storefrontConfig } = useShopStore();
+  const { storefrontConfig } = useShopStore();
 
   const slides = storefrontConfig.heroSlides || [];
 
@@ -40,17 +43,21 @@ export const HeroSlider: React.FC = () => {
       window.open(value, '_blank', 'noopener,noreferrer');
       return;
     }
-    setCurrentView('shop');
     if (type === 'shop') {
-      setFilter({ categoryId: null, searchQuery: '' });
+      goToShop(router, { categoryId: null, categoryIds: [], searchQuery: '', saleKey: null });
     } else {
-      setFilter({ categoryId: value || null, searchQuery: '' });
+      goToShop(router, {
+        categoryId: value || null,
+        categoryIds: value ? [value] : [],
+        searchQuery: '',
+        saleKey: null,
+      });
     }
   };
 
   return (
     <section
-      className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6"
+      className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >

@@ -1,39 +1,46 @@
 import type { FilterState } from '@/types';
 
 /**
- * Keep shop filters in the URL so refresh restores category / sale / search.
- * Example: ?view=shop&category=educational-toys&sale=azaadi-sale
+ * Build storefront shop href always on `/` (never under /product/...).
+ * Example: /?view=shop&category=baby-toys&categories=baby-toys
+ */
+export function buildShopHref(filter: Partial<FilterState> & { view?: 'shop' | 'home' }): string {
+  const params = new URLSearchParams();
+  const view = filter.view ?? 'shop';
+  if (view === 'shop') params.set('view', 'shop');
+
+  if (filter.categoryId) params.set('category', filter.categoryId);
+  if (filter.categoryIds?.length) params.set('categories', filter.categoryIds.join(','));
+  if (filter.saleKey) params.set('sale', filter.saleKey);
+  if (filter.searchQuery) params.set('q', filter.searchQuery);
+  if (filter.onSaleOnly) params.set('deals', '1');
+
+  const qs = params.toString();
+  return qs ? `/?${qs}` : '/';
+}
+
+/**
+ * Keep shop filters in the URL on the home route `/`.
+ * Uses history only when already on `/` — product pages must use Next router.push(buildShopHref).
  */
 export function syncShopUrl(
   view: string,
   filter: FilterState,
 ): void {
   if (typeof window === 'undefined') return;
-  // Don't fight admin routes
   if (window.location.pathname.toLowerCase().includes('/jj/admin')) return;
 
-  const params = new URLSearchParams(window.location.search);
-  if (view === 'shop') params.set('view', 'shop');
-  else params.delete('view');
+  const path = window.location.pathname.replace(/\/+$/, '') || '/';
+  // Never stick shop query params on /product/... — leave those routes alone here
+  if (path !== '/' && path !== '') return;
 
-  if (filter.categoryId) params.set('category', filter.categoryId);
-  else params.delete('category');
-
-  if (filter.categoryIds?.length) params.set('categories', filter.categoryIds.join(','));
-  else params.delete('categories');
-
-  if (filter.saleKey) params.set('sale', filter.saleKey);
-  else params.delete('sale');
-
-  if (filter.searchQuery) params.set('q', filter.searchQuery);
-  else params.delete('q');
-
-  if (filter.onSaleOnly) params.set('deals', '1');
-  else params.delete('deals');
-
-  const qs = params.toString();
-  const next = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
-  window.history.replaceState(null, '', next);
+  const href = buildShopHref({
+    ...filter,
+    view: view === 'shop' || Boolean(filter.categoryId || filter.saleKey || filter.categoryIds?.length)
+      ? 'shop'
+      : 'home',
+  });
+  window.history.replaceState(null, '', href);
 }
 
 /** Read shop filter bits from the current URL. */

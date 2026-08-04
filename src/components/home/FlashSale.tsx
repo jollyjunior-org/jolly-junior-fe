@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Flame, Clock, ArrowRight } from 'lucide-react';
 import { ProductCard } from '../product/ProductCard';
-import { useShopStore } from '../../store/useShopStore';
 import * as storefrontService from '@/services/storefront-service';
 import type { CampaignConfig, Product } from '@/types';
+import { goToShop } from '@/utils/navigate-shop';
 
 /** Compute Days:Hours:Minutes:Seconds left until endsAt ISO string. */
 function diffToParts(endsAt: string | null | undefined, serverSkewMs: number) {
@@ -26,7 +27,7 @@ function diffToParts(endsAt: string | null | undefined, serverSkewMs: number) {
  * (flash or seasonal like Azaadi / 11.11), with real countdown + tagged products.
  */
 export const FlashSale: React.FC = () => {
-  const { setCurrentView, setFilter } = useShopStore();
+  const router = useRouter();
   const [campaign, setCampaign] = useState<CampaignConfig | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [isLive, setIsLive] = useState(false);
@@ -103,9 +104,9 @@ export const FlashSale: React.FC = () => {
   };
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="rounded-3xl p-6 sm:p-8 border border-[#F5F2ED] shadow-xs" style={bgStyle}>
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
+      <div className="rounded-3xl p-4 sm:p-6 border border-[#F5F2ED] shadow-xs" style={bgStyle}>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-3">
             <div
               className="w-12 h-12 rounded-2xl text-white flex items-center justify-center shadow-md animate-bounce"
@@ -169,24 +170,23 @@ export const FlashSale: React.FC = () => {
             Tag products with this campaign&apos;s tags in Admin to show them here.
           </p>
         ) : (
-          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} compact />
             ))}
           </div>
         )}
 
-        <div className="mt-6 text-center">
+        <div className="mt-4 text-center">
           <button
-            onClick={() => {
-              setFilter({
+            onClick={() =>
+              goToShop(router, {
                 saleKey: campaign.key,
                 onSaleOnly: false,
                 categoryId: null,
                 categoryIds: [],
-              });
-              setCurrentView('shop');
-            }}
+              })
+            }
             className="inline-flex items-center gap-2 px-6 py-2.5 bg-white text-[#5A5A40] hover:bg-[#5A5A40] hover:text-white border border-[#F5F2ED] font-bold text-xs rounded-full shadow-xs transition-all cursor-pointer"
           >
             <span>See All</span>

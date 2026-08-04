@@ -1,7 +1,16 @@
-/node_modules
-*.json
-package-lock.json
-*.json
-*.example
-package-lock.json
-*.json
+# Next.js
+.next/
+out/
+
+# deps
+node_modules/
+
+# env
+.env
+.env.local
+.env.*.local
+
+# misc
+dist/
+*.log
+.DS_Store

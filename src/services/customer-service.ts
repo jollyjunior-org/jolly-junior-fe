@@ -107,6 +107,54 @@ export async function searchStoreProducts(q: string): Promise<Product[]> {
   return (data.items || []).map((p) => mapProduct(p));
 }
 
+/**
+ * Products for one category (slug or id) — store category API.
+ * Args: categoryRef — category slug/uuid; optional query string extras.
+ * Returns: Product[]
+ */
+export async function fetchCategoryProducts(
+  categoryRef: string,
+  opts?: { page?: number; pageSize?: number; sort?: string; inStock?: boolean },
+): Promise<{ items: Product[]; total: number }> {
+  const params = new URLSearchParams();
+  params.set('page', String(opts?.page || 1));
+  params.set('page_size', String(opts?.pageSize || 48));
+  if (opts?.sort) params.set('sort', opts.sort);
+  if (opts?.inStock != null) params.set('in_stock', String(opts.inStock));
+  const data = await apiFetch<{ items: Record<string, unknown>[]; total: number }>(
+    publicEndpoints.categoryProducts(categoryRef, params.toString()),
+    { skipAuth: true },
+  );
+  return { items: (data.items || []).map((p) => mapProduct(p)), total: data.total || 0 };
+}
+
+/**
+ * Store product list with optional multi-category + search.
+ * Args: opts — category slugs, q, sort, pagination
+ * Returns: Product[] page
+ */
+export async function fetchStoreProducts(opts?: {
+  categoryIds?: string[];
+  q?: string;
+  sort?: string;
+  inStock?: boolean;
+  page?: number;
+  pageSize?: number;
+}): Promise<{ items: Product[]; total: number }> {
+  const params = new URLSearchParams();
+  params.set('page', String(opts?.page || 1));
+  params.set('page_size', String(opts?.pageSize || 48));
+  if (opts?.categoryIds?.length) params.set('category_ids', opts.categoryIds.join(','));
+  if (opts?.q) params.set('q', opts.q);
+  if (opts?.sort) params.set('sort', opts.sort);
+  if (opts?.inStock != null) params.set('in_stock', String(opts.inStock));
+  const data = await apiFetch<{ items: Record<string, unknown>[]; total: number }>(
+    publicEndpoints.storeProducts(params.toString()),
+    { skipAuth: true },
+  );
+  return { items: (data.items || []).map((p) => mapProduct(p)), total: data.total || 0 };
+}
+
 /** Fetch live sales for nav. */
 export async function fetchLiveSales(): Promise<
   Array<{

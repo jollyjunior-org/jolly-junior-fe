@@ -1,10 +1,11 @@
 export interface ProductVariant {
   id: string;
-  name: string; // e.g., 'Small', 'Medium', 'Large', or 'Pastel Blue', 'Soft Pink'
+  name: string; // e.g., 'Pink', 'Blue', 'Small'
   price: number;
   originalPrice?: number;
   image?: string;
   inStock: boolean;
+  stockQuantity: number;
 }
 
 export interface ProductReview {

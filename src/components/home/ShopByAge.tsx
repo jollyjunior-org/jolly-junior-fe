@@ -1,10 +1,11 @@
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { Baby, Sparkles, Heart, Rocket, Smile } from 'lucide-react';
-import { useShopStore } from '../../store/useShopStore';
+import { goToShop } from '@/utils/navigate-shop';
 
 export const ShopByAge: React.FC = () => {
-  const { setCurrentView, setFilter } = useShopStore();
+  const router = useRouter();
 
   const ageGroups = [
     {
@@ -55,13 +56,12 @@ export const ShopByAge: React.FC = () => {
   ];
 
   const handleAgeSelect = (ageCode: string) => {
-    setFilter({ ageGroup: ageCode, categoryId: null });
-    setCurrentView('shop');
+    goToShop(router, { ageGroup: ageCode, categoryId: null, categoryIds: [], saleKey: null });
   };
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="text-center max-w-xl mx-auto mb-8">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
+      <div className="text-center max-w-xl mx-auto mb-4">
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#A0D2EB]/20 text-[#5A5A40] text-xs font-bold mb-2">
           👶 Tailored Growth Milestones
         </span>

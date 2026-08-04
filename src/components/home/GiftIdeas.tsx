@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Gift, Sparkles, Check, ArrowRight } from 'lucide-react';
 import { ProductCard } from '../product/ProductCard';
 import { useShopStore } from '../../store/useShopStore';
+import { goToShop } from '@/utils/navigate-shop';
 
 export const GiftIdeas: React.FC = () => {
+  const router = useRouter();
   const [selectedAge, setSelectedAge] = useState<string>('0-6M');
   const [selectedBudget, setSelectedBudget] = useState<'all' | 'under-2000' | '2000-5000' | '5000-plus'>('all');
-  const { setCurrentView, setFilter, products, categories } = useShopStore();
+  const { products, categories } = useShopStore();
 
   const disabledCategorySlugs = new Set(
     categories.filter(c => c.isEnabled === false).map(c => c.slug)
@@ -28,9 +31,9 @@ export const GiftIdeas: React.FC = () => {
   });
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="bg-[#FDFD96]/30 rounded-3xl p-6 sm:p-10 border border-[#F5F2ED] shadow-xs">
-        <div className="max-w-2xl text-center mx-auto mb-8">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
+      <div className="bg-[#FDFD96]/30 rounded-3xl p-4 sm:p-6 border border-[#F5F2ED] shadow-xs">
+        <div className="max-w-2xl text-center mx-auto mb-4">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-[#5A5A40] text-xs font-bold shadow-2xs mb-2">
             <Gift className="w-3.5 h-3.5 text-[#FFB347]" />
             <span>Interactive Gift Assistant</span>
@@ -44,7 +47,7 @@ export const GiftIdeas: React.FC = () => {
         </div>
 
         {/* Filter Controls */}
-        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-xs border border-[#F5F2ED] max-w-3xl mx-auto mb-8 space-y-4">
+        <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-xs border border-[#F5F2ED] max-w-3xl mx-auto mb-4 space-y-3">
           {/* Age Selection */}
           <div>
             <label className="block text-xs font-bold text-[#8C8C70] uppercase tracking-wider mb-2">
@@ -98,10 +101,10 @@ export const GiftIdeas: React.FC = () => {
         </div>
 
         {/* Curated Gift Results Grid */}
-        <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {filteredGifts.length > 0 ? (
             filteredGifts.slice(0, 4).map((p) => (
-              <ProductCard key={p.id} product={p} />
+              <ProductCard key={p.id} product={p} compact />
             ))
           ) : (
             <div className="col-span-full py-10 text-center bg-white rounded-2xl p-6">
@@ -120,12 +123,16 @@ export const GiftIdeas: React.FC = () => {
           )}
         </div>
 
-        <div className="mt-8 text-center">
+        <div className="mt-4 text-center">
           <button
-            onClick={() => {
-              setFilter({ categoryId: 'gift-sets' });
-              setCurrentView('shop');
-            }}
+            onClick={() =>
+              goToShop(router, {
+                categoryId: 'gift-sets',
+                categoryIds: ['gift-sets'],
+                saleKey: null,
+                searchQuery: '',
+              })
+            }
             className="inline-flex items-center gap-2 px-6 py-3 bg-[#5A5A40] hover:bg-[#FFB347] text-white font-extrabold text-xs rounded-full shadow-md transition-all cursor-pointer"
           >
             <span>Explore All Baby Shower Gift Hampers</span>

@@ -42,6 +42,17 @@ export function mapProduct(p: Record<string, unknown>, categorySlugById?: Map<st
           color: String(t.color ?? '#F97316'),
         }))
       : [],
+    variants: Array.isArray(p.variants)
+      ? (p.variants as Record<string, unknown>[]).map((v) => ({
+          id: String(v.id),
+          name: String(v.name ?? ''),
+          price: Number(v.price ?? 0),
+          originalPrice: v.original_price != null ? Number(v.original_price) : undefined,
+          inStock: Boolean(v.in_stock ?? true),
+          stockQuantity: Number(v.stock_quantity ?? 0),
+          image: v.image ? String(v.image) : undefined,
+        }))
+      : [],
   };
 }
 

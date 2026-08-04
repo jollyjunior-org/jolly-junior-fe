@@ -1,10 +1,13 @@
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
+import { goToShop } from '@/utils/navigate-shop';
 
 export const FeaturedCategories: React.FC = () => {
-  const { setCurrentView, setFilter, storefrontConfig, categories, products } = useShopStore();
+  const router = useRouter();
+  const { storefrontConfig, categories, products } = useShopStore();
 
   const activeCategories = (
     (storefrontConfig.featuredCategories?.length
@@ -29,14 +32,18 @@ export const FeaturedCategories: React.FC = () => {
     });
 
   const handleCategorySelect = (slug: string) => {
-    setFilter({ categoryId: slug });
-    setCurrentView('shop');
+    goToShop(router, {
+      categoryId: slug,
+      categoryIds: [slug],
+      saleKey: null,
+      searchQuery: '',
+    });
   };
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
       {/* Section Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 gap-3">
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#A0D2EB]/20 text-[#5A5A40] text-xs font-bold mb-2">
             <Sparkles className="w-3.5 h-3.5 text-[#FFB347]" />
@@ -51,10 +58,14 @@ export const FeaturedCategories: React.FC = () => {
         </div>
 
         <button
-          onClick={() => {
-            setFilter({ categoryId: null });
-            setCurrentView('shop');
-          }}
+          onClick={() =>
+            goToShop(router, {
+              categoryId: null,
+              categoryIds: [],
+              saleKey: null,
+              searchQuery: '',
+            })
+          }
           className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FFB347] hover:text-[#5A5A40] group cursor-pointer"
         >
           <span>View All Categories</span>

@@ -11,9 +11,16 @@ import { useShopStore } from '@/store/useShopStore';
  */
 export const FeedbackModal: React.FC = () => {
   const { showToast } = useShopStore();
-  const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
-  const token = params.get('token') || '';
-  const open = params.get('view') === 'feedback' && Boolean(token);
+  const [token, setToken] = useState('');
+  const [open, setOpen] = useState(false);
+
+  // Read query only on client after mount (avoids SSR/client HTML mismatch)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const t = params.get('token') || '';
+    setToken(t);
+    setOpen(params.get('view') === 'feedback' && Boolean(t));
+  }, []);
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);

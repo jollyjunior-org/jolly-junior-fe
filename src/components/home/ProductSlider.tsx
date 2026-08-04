@@ -1,8 +1,10 @@
 import React, { useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, ArrowRight, Sparkles } from 'lucide-react';
 import { Product } from '../../types';
 import { ProductCard } from '../product/ProductCard';
 import { useShopStore } from '../../store/useShopStore';
+import { goToShop } from '@/utils/navigate-shop';
 
 interface ProductSliderProps {
   title: string;
@@ -21,8 +23,9 @@ export const ProductSlider: React.FC<ProductSliderProps> = ({
   badge = 'Handpicked',
   badgeColor = 'bg-[#A0D2EB]/20 text-[#5A5A40]'
 }) => {
+  const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { setCurrentView, setFilter, categories } = useShopStore();
+  const { categories } = useShopStore();
 
   const disabledCategorySlugs = new Set(
     categories.filter(c => c.isEnabled === false).map(c => c.slug)
@@ -43,19 +46,21 @@ export const ProductSlider: React.FC<ProductSliderProps> = ({
     }
   };
 
+  /** Open shop and load that category from the API. */
   const handleViewAll = () => {
-    if (categoryFilterSlug) {
-      setFilter({ categoryId: categoryFilterSlug });
-    } else {
-      setFilter({ categoryId: null });
-    }
-    setCurrentView('shop');
+    const slug = categoryFilterSlug || null;
+    goToShop(router, {
+      categoryId: slug,
+      categoryIds: slug ? [slug] : [],
+      saleKey: null,
+      searchQuery: '',
+    });
   };
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-3 gap-3">
         <div>
           {badge && (
             <div className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold mb-2 ${badgeColor}`}>
@@ -102,17 +107,17 @@ export const ProductSlider: React.FC<ProductSliderProps> = ({
         </div>
       </div>
 
-      {/* Horizontal Swipeable Container */}
+      {/* Horizontal swipe — 2 cards visible on mobile */}
       <div
         ref={scrollRef}
-        className="flex gap-4 overflow-x-auto no-scrollbar pb-4 pt-1 snap-x snap-mandatory"
+        className="flex gap-2 sm:gap-4 overflow-x-auto no-scrollbar pb-2 pt-1 snap-x snap-mandatory"
       >
         {visibleProducts.map((product) => (
           <div
             key={product.id}
-            className="w-[260px] sm:w-[280px] shrink-0 snap-start"
+            className="w-[calc(50%-4px)] sm:w-[240px] md:w-[260px] shrink-0 snap-start"
           >
-            <ProductCard product={product} />
+            <ProductCard product={product} compact />
           </div>
         ))}
       </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 
 interface BrandLogoProps {
   className?: string;
@@ -16,6 +16,12 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isWinking, setIsWinking] = useState(false);
+  // Unique SVG paint ids so multiple logos on one page don't collide
+  const uid = useId().replace(/:/g, '');
+  const bearFur = `bearFur-${uid}`;
+  const innerEar = `innerEar-${uid}`;
+  const snoutGrad = `snoutGrad-${uid}`;
+  const crownGrad = `crownGrad-${uid}`;
 
   const containerSizes = {
     sm: 'w-10 h-10',
@@ -75,20 +81,20 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
               className="w-full h-full drop-shadow-xs overflow-visible"
             >
               <defs>
-                {/* Bear Fur Gradients */}
-                <linearGradient id="bearFur" x1="0%" y1="0%" x2="0%" y2="100%">
+                {/* Bear Fur Gradients — unique ids per instance */}
+                <linearGradient id={bearFur} x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stopColor="#FFAA33" />
                   <stop offset="100%" stopColor="#E68A00" />
                 </linearGradient>
-                <linearGradient id="innerEar" x1="0%" y1="0%" x2="0%" y2="100%">
+                <linearGradient id={innerEar} x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stopColor="#FFC0CB" />
                   <stop offset="100%" stopColor="#FF94A8" />
                 </linearGradient>
-                <linearGradient id="snoutGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <linearGradient id={snoutGrad} x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stopColor="#FFF9E6" />
                   <stop offset="100%" stopColor="#FFEBB3" />
                 </linearGradient>
-                <linearGradient id="crownGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <linearGradient id={crownGrad} x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stopColor="#FFD700" />
                   <stop offset="100%" stopColor="#FF9900" />
                 </linearGradient>
@@ -96,20 +102,20 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 
               {/* 1. Ears with Wiggle Animation */}
               <g className="animate-ear-left">
-                <circle cx="28" cy="28" r="14" fill="url(#bearFur)" stroke="#C67600" strokeWidth="2" />
-                <circle cx="28" cy="28" r="8" fill="url(#innerEar)" />
+                <circle cx="28" cy="28" r="14" fill={`url(#${bearFur})`} stroke="#C67600" strokeWidth="2" />
+                <circle cx="28" cy="28" r="8" fill={`url(#${innerEar})`} />
               </g>
               <g className="animate-ear-right">
-                <circle cx="72" cy="28" r="14" fill="url(#bearFur)" stroke="#C67600" strokeWidth="2" />
-                <circle cx="72" cy="28" r="8" fill="url(#innerEar)" />
+                <circle cx="72" cy="28" r="14" fill={`url(#${bearFur})`} stroke="#C67600" strokeWidth="2" />
+                <circle cx="72" cy="28" r="8" fill={`url(#${innerEar})`} />
               </g>
 
               {/* 2. Main Head */}
-              <ellipse cx="50" cy="54" rx="34" ry="30" fill="url(#bearFur)" stroke="#C67600" strokeWidth="2.5" />
+              <ellipse cx="50" cy="54" rx="34" ry="30" fill={`url(#${bearFur})`} stroke="#C67600" strokeWidth="2.5" />
 
               {/* 3. Tiny Party Crown with Star */}
               <g transform="translate(38, 12)">
-                <polygon points="0,15 6,0 12,12 18,0 24,15" fill="url(#crownGrad)" stroke="#B36B00" strokeWidth="1.5" />
+                <polygon points="0,15 6,0 12,12 18,0 24,15" fill={`url(#${crownGrad})`} stroke="#B36B00" strokeWidth="1.5" />
                 <circle cx="12" cy="-3" r="3" fill="#FF4D4D" />
                 <path d="M 12 -5 L 13 -1 L 17 -1 L 14 1 L 15 5 L 12 3 L 9 5 L 10 1 L 7 -1 L 11 -1 Z" fill="#FFFFFF" transform="scale(0.5) translate(12, -8)" />
               </g>
@@ -119,7 +125,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
               <ellipse cx="72" cy="58" rx="7" ry="4" fill="#FFB7CE" opacity="0.85" className="animate-pulse-soft" />
 
               {/* 5. Snout & Nose */}
-              <ellipse cx="50" cy="62" rx="15" ry="11" fill="url(#snoutGrad)" stroke="#D9A05B" strokeWidth="1.5" />
+              <ellipse cx="50" cy="62" rx="15" ry="11" fill={`url(#${snoutGrad})`} stroke="#D9A05B" strokeWidth="1.5" />
               {/* Cute Shiny Nose */}
               <path d="M 44 56 Q 50 53 56 56 Q 50 64 44 56 Z" fill="#4A2E10" />
               <ellipse cx="48" cy="56" rx="2" ry="1" fill="#FFFFFF" opacity="0.8" />
@@ -130,8 +136,8 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
                 <path d="M 47 65 Q 50 71 53 65 Z" fill="#FF6B8B" />
               )}
 
-              {/* 6. Cartoon Eyes (Normal or Wink) */}
-              {isWinking || (isHovered && Math.random() > 0.5) ? (
+              {/* 6. Cartoon Eyes (Normal or Wink) — no Math.random (breaks SSR hydration) */}
+              {isWinking || isHovered ? (
                 /* Winking Face */
                 <g>
                   {/* Left Eye - Wide Open & Happy */}
@@ -158,8 +164,8 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 
               {/* 7. Cute Waving Paw on Right */}
               <g className={`animate-paw-wave ${isHovered ? 'scale-110' : ''}`}>
-                <ellipse cx="80" cy="74" rx="7" ry="9" fill="url(#bearFur)" stroke="#C67600" strokeWidth="2" transform="rotate(-20 80 74)" />
-                <ellipse cx="80" cy="74" rx="4" ry="5" fill="url(#innerEar)" transform="rotate(-20 80 74)" />
+                <ellipse cx="80" cy="74" rx="7" ry="9" fill={`url(#${bearFur})`} stroke="#C67600" strokeWidth="2" transform="rotate(-20 80 74)" />
+                <ellipse cx="80" cy="74" rx="4" ry="5" fill={`url(#${innerEar})`} transform="rotate(-20 80 74)" />
               </g>
 
               {/* 8. JJ Badge Bowtie */}

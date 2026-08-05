@@ -14,7 +14,6 @@ import { AdminStock } from './AdminStock';
 import { AdminInventory } from './AdminInventory';
 import { AdminSettings } from './AdminSettings';
 import { AdminControl } from './AdminControl';
-import { AdminPromos } from './AdminPromos';
 
 export const AdminDashboard: React.FC = () => {
   const { 
@@ -34,7 +33,7 @@ export const AdminDashboard: React.FC = () => {
     isLoadingAdminData
   } = useShopStore();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'stock' | 'inventory' | 'categories' | 'control' | 'orders' | 'users' | 'promos' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'stock' | 'inventory' | 'categories' | 'control' | 'orders' | 'users' | 'settings'>('overview');
   const [openAddProductModal, setOpenAddProductModal] = useState(false);
   const [openAddCategoryModal, setOpenAddCategoryModal] = useState(false);
 
@@ -236,18 +235,6 @@ export const AdminDashboard: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setActiveTab('promos')}
-              className={`px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg text-xs font-bold cursor-pointer flex items-center gap-1.5 whitespace-nowrap transition-colors border ${
-                activeTab === 'promos'
-                  ? 'bg-sky-500 text-slate-950 border-sky-400'
-                  : 'bg-slate-900/60 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
-              }`}
-            >
-              <Tag className="w-4 h-4" />
-              <span>Promos</span>
-            </button>
-
-            <button
               onClick={() => setActiveTab('settings')}
               className={`px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg text-xs font-bold cursor-pointer flex items-center gap-1.5 whitespace-nowrap transition-colors border ${
                 activeTab === 'settings'
@@ -301,8 +288,6 @@ export const AdminDashboard: React.FC = () => {
         {activeTab === 'orders' && <AdminOrders />}
 
         {activeTab === 'users' && <AdminUsers />}
-
-        {activeTab === 'promos' && <AdminPromos />}
 
         {activeTab === 'settings' && <AdminSettings />}
       </main>

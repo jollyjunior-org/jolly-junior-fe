@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Loader2, Cloud, AlertCircle, CheckCircle2, Truck } from 'lucide-react';
+import { Save, Loader2, Cloud, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useShopStore } from '@/store/useShopStore';
 import { fetchSettings, saveSettings } from '@/services/settings-service';
 
@@ -14,8 +14,6 @@ export const AdminSettings: React.FC = () => {
     cloudinary_cloud_name: '',
     cloudinary_api_key: '',
     cloudinary_api_secret: '',
-    delivery_fee: 250,
-    free_delivery_threshold: 3000,
   });
 
   /** Load Cloudinary + delivery settings from admin API. */
@@ -28,8 +26,6 @@ export const AdminSettings: React.FC = () => {
         cloudinary_cloud_name: data.cloudinary_cloud_name || '',
         cloudinary_api_key: data.cloudinary_api_key || '',
         cloudinary_api_secret: data.cloudinary_api_secret || '',
-        delivery_fee: Number(data.delivery_fee ?? 250),
-        free_delivery_threshold: Number(data.free_delivery_threshold ?? 3000),
       });
     } catch (err) {
       console.error('Failed to load settings', err);
@@ -50,8 +46,6 @@ export const AdminSettings: React.FC = () => {
     try {
       await saveSettings({
         ...formData,
-        delivery_fee: Number(formData.delivery_fee),
-        free_delivery_threshold: Number(formData.free_delivery_threshold),
       });
       setMessage({ type: 'success', text: 'System settings updated successfully!' });
     } catch (err: unknown) {
@@ -152,51 +146,6 @@ export const AdminSettings: React.FC = () => {
           </div>
         </div>
 
-        <div>
-          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
-            <Truck className="w-5 h-5 text-amber-500" />
-            <h3 className="text-sm font-bold text-slate-800">Delivery & Free Shipping</h3>
-          </div>
-          <p className="text-xs text-slate-500 mb-4">
-            Controls cart and checkout delivery fee. Free delivery when cart reaches the threshold.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Delivery fee (Rs.)
-              </label>
-              <input
-                type="number"
-                min={0}
-                value={formData.delivery_fee}
-                onChange={(e) =>
-                  setFormData({ ...formData, delivery_fee: Number(e.target.value) || 0 })
-                }
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-sky-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Free delivery over (Rs.)
-              </label>
-              <input
-                type="number"
-                min={0}
-                value={formData.free_delivery_threshold}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    free_delivery_threshold: Number(e.target.value) || 0,
-                  })
-                }
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-sky-500"
-              />
-              <p className="text-[10px] text-slate-500 mt-1">
-                Default example: free on orders over Rs. 3,000
-              </p>
-            </div>
-          </div>
-        </div>
 
         <div className="pt-4 flex justify-end">
           <button

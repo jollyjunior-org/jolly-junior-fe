@@ -49,6 +49,8 @@ const emptyStorefront: StorefrontConfig = {
   heroSlides: [],
   homeSections: [],
   navSectionChips: [],
+  footerInstagramUrl: undefined,
+  footerFacebookUrl: undefined,
 };
 
 interface ShopStore {

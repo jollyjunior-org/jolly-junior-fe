@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Trash2, Save, Loader2, Image as ImageIcon, Tag as TagIcon, LayoutGrid, SlidersHorizontal, Flame } from 'lucide-react';
+import { Plus, Trash2, Save, Loader2, Image as ImageIcon, Tag as TagIcon, LayoutGrid, SlidersHorizontal, Flame, Truck, Instagram } from 'lucide-react';
 import { useShopStore } from '@/store/useShopStore';
 import { AdminCampaigns } from '@/components/admin/AdminCampaigns';
+import { AdminPromos } from '@/components/admin/AdminPromos';
+import { fetchSettings, saveSettings } from '@/services/settings-service';
 import * as storefrontService from '@/services/storefront-service';
 import type { StoreTag, HeroSlideConfig, HomeSectionConfig } from '@/types';
 
-type ControlTab = 'nav' | 'tags' | 'hero' | 'sections' | 'campaigns';
+type ControlTab = 'nav' | 'tags' | 'hero' | 'sections' | 'campaigns' | 'promos' | 'store';
 
 /**
- * Admin Control tab — manage storefront nav, tags, hero slides, home rails.
+ * Admin Control tab — manage storefront nav, tags, hero slides, home rails, promo codes, and store settings.
  * Hero slides pick a category only — image/name/description come from Categories.
  */
 export const AdminControl: React.FC = () => {
@@ -44,6 +46,14 @@ export const AdminControl: React.FC = () => {
     tag_id: '',
   });
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
+  const [settingsForm, setSettingsForm] = useState({
+    delivery_fee: 250,
+    free_delivery_threshold: 3000,
+    instagram_url: '',
+    facebook_url: '',
+  });
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [settingsSaving, setSettingsSaving] = useState(false);
 
   /** Load CMS lists for the Control tab. */
   const loadAll = async () => {
@@ -67,7 +77,25 @@ export const AdminControl: React.FC = () => {
 
   useEffect(() => {
     loadAll();
+    loadSettings();
   }, []);
+
+  const loadSettings = async () => {
+    setSettingsLoading(true);
+    try {
+      const data = await fetchSettings();
+      setSettingsForm({
+        delivery_fee: Number(data.delivery_fee ?? 250),
+        free_delivery_threshold: Number(data.free_delivery_threshold ?? 3000),
+        instagram_url: String(data.footer_instagram_url ?? ''),
+        facebook_url: String(data.footer_facebook_url ?? ''),
+      });
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Failed to load store settings');
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
 
   const refreshPublic = async () => {
     await fetchStorefrontConfig();
@@ -263,7 +291,24 @@ export const AdminControl: React.FC = () => {
       tag_id: sec.tagId || '',
     });
   };
-
+  const handleSaveStoreSettings = async () => {
+    setSettingsSaving(true);
+    try {
+      await saveSettings({
+        delivery_fee: Number(settingsForm.delivery_fee),
+        free_delivery_threshold: Number(settingsForm.free_delivery_threshold),
+        footer_instagram_url: settingsForm.instagram_url || null,
+        footer_facebook_url: settingsForm.facebook_url || null,
+      });
+      showToast('Store settings saved');
+      await loadSettings();
+      await refreshPublic();
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Failed to save store settings');
+    } finally {
+      setSettingsSaving(false);
+    }
+  };
   const handleDeleteSection = async (id: string) => {
     if (!confirm('Delete this home section?')) return;
     try {
@@ -282,6 +327,8 @@ export const AdminControl: React.FC = () => {
     { id: 'campaigns', label: 'Flash / Sales', icon: <Flame className="w-3.5 h-3.5" /> },
     { id: 'hero', label: 'Hero Slider', icon: <ImageIcon className="w-3.5 h-3.5" /> },
     { id: 'sections', label: 'Home Sections', icon: <SlidersHorizontal className="w-3.5 h-3.5" /> },
+    { id: 'promos', label: 'Promos', icon: <TagIcon className="w-3.5 h-3.5" /> },
+    { id: 'store', label: 'Store Settings', icon: <Truck className="w-3.5 h-3.5" /> },
   ];
 
   return (
@@ -673,7 +720,13 @@ export const AdminControl: React.FC = () => {
           <div className="space-y-2">
             {slides.map((slide) => (
               <div key={slide.id} className="bg-white rounded-2xl border border-slate-200 p-3 flex gap-3">
-                <img src={slide.imageUrl} alt="" className="w-24 h-16 object-cover rounded-xl" />
+                {slide.imageUrl ? (
+                  <img src={slide.imageUrl} alt="" className="w-24 h-16 object-cover rounded-xl" />
+                ) : (
+                  <div className="w-24 h-16 rounded-xl bg-slate-200 flex items-center justify-center text-[10px] text-slate-500">
+                    No image
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-black text-slate-900 truncate">{slide.title}</div>
                   <div className="text-[10px] text-slate-500">
@@ -864,6 +917,107 @@ export const AdminControl: React.FC = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {tab === 'promos' && <AdminPromos />}
+
+      {tab === 'store' && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <Truck className="w-5 h-5 text-amber-500" />
+              <div>
+                <h3 className="text-sm font-black text-slate-900">Store shipping settings</h3>
+                <p className="text-[11px] text-slate-500">
+                  Control the delivery fee and free shipping threshold used by checkout and cart pricing.
+                </p>
+              </div>
+            </div>
+
+            {settingsLoading ? (
+              <div className="flex items-center gap-2 text-slate-500 text-sm">
+                <Loader2 className="w-4 h-4 animate-spin" /> Loading store settings…
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Delivery fee (Rs.)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={settingsForm.delivery_fee}
+                    onChange={(e) =>
+                      setSettingsForm({ ...settingsForm, delivery_fee: Number(e.target.value) || 0 })
+                    }
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-sky-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Free delivery over (Rs.)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={settingsForm.free_delivery_threshold}
+                    onChange={(e) =>
+                      setSettingsForm({
+                        ...settingsForm,
+                        free_delivery_threshold: Number(e.target.value) || 0,
+                      })
+                    }
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-sky-500"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <Instagram className="w-5 h-5 text-pink-500" />
+              <div>
+                <h3 className="text-sm font-black text-slate-900">Footer social links</h3>
+                <p className="text-[11px] text-slate-500">
+                  Update the Instagram and Facebook links shown in the website footer.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Instagram URL</label>
+                <input
+                  type="url"
+                  placeholder="https://www.instagram.com/YourHandle/"
+                  value={settingsForm.instagram_url}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, instagram_url: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-sky-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Facebook URL</label>
+                <input
+                  type="url"
+                  placeholder="https://www.facebook.com/YourPage"
+                  value={settingsForm.facebook_url}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, facebook_url: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-sky-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={handleSaveStoreSettings}
+              disabled={settingsLoading || settingsSaving}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-2xl text-xs font-bold transition-colors disabled:opacity-60"
+            >
+              {settingsSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Save store settings
+            </button>
           </div>
         </div>
       )}

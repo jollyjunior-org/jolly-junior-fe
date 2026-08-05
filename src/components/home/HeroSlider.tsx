@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Sparkles, ArrowRight } from 'lucide-react';
 import { useShopStore } from '@/store/useShopStore';
 import { goToShop } from '@/utils/navigate-shop';
+import type { HeroSlideConfig } from '@/types';
 
 /**
  * Homepage hero slider — each slide is a category (image/name/description from Categories).
@@ -14,7 +15,9 @@ export const HeroSlider: React.FC = () => {
   const [isPaused, setIsPaused] = useState(false);
   const { storefrontConfig } = useShopStore();
 
-  const slides = storefrontConfig.heroSlides || [];
+  const slides = (storefrontConfig.heroSlides || []).filter(
+    (slide): slide is HeroSlideConfig & { imageUrl: string } => Boolean(slide.imageUrl),
+  );
 
   useEffect(() => {
     if (isPaused || slides.length <= 1) return;

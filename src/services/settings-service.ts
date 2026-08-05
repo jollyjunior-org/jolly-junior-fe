@@ -15,6 +15,8 @@ export type SystemSettingsPayload = {
   smtp_use_ssl?: boolean;
   delivery_fee?: number;
   free_delivery_threshold?: number;
+  footer_instagram_url?: string | null;
+  footer_facebook_url?: string | null;
 };
 
 /** GET system settings (Cloudinary + SMTP). */

@@ -166,11 +166,15 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
             <div key={cat.id} className="bg-white rounded-xl border border-[#E2E8F0] overflow-hidden flex flex-col justify-between">
               {/* Category Image & Color Bar */}
               <div className="relative h-28 bg-slate-100 overflow-hidden">
-                <img
-                  src={cat.image}
-                  alt={cat.name}
-                  className="w-full h-full object-cover"
-                />
+                {cat.image ? (
+                  <img
+                    src={cat.image}
+                    alt={cat.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-slate-200" />
+                )}
                 <div 
                   className="absolute bottom-0 left-0 right-0 h-1" 
                   style={{ backgroundColor: cat.color }} 

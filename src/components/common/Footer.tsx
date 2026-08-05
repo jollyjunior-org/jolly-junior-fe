@@ -24,8 +24,8 @@ export const Footer: React.FC = () => {
   };
 
   const topCategories = storefrontConfig.footerCategories || [];
-  const instagramUrl = 'https://www.instagram.com/JollyJuniorsStore/';
-  const facebookUrl = 'https://www.facebook.com/';
+  const instagramUrl = storefrontConfig.footerInstagramUrl || 'https://www.instagram.com/JollyJuniorsStore/';
+  const facebookUrl = storefrontConfig.footerFacebookUrl || 'https://www.facebook.com/';
 
   return (
     <footer className="relative bg-white border-t border-[#F5F2ED] pt-12 pb-24 md:pb-12 mt-16 text-[#5A5A40]">

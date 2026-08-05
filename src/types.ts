@@ -55,7 +55,7 @@ export interface Category {
   name: string;
   slug: string;
   description: string;
-  image: string;
+  image?: string;
   iconName: string;
   color: string; // pastel background tint for cards
   itemCount: number;
@@ -111,7 +111,7 @@ export interface HeroSlideConfig {
   badge?: string;
   title: string;
   subtitle?: string;
-  imageUrl: string;
+  imageUrl?: string;
   buttonText: string;
   accentColor: string;
   linkType: string;
@@ -157,6 +157,8 @@ export interface StorefrontConfig {
   heroSlides: HeroSlideConfig[];
   homeSections: HomeSectionConfig[];
   navSectionChips: NavSectionChip[];
+  footerInstagramUrl?: string;
+  footerFacebookUrl?: string;
 }
 
 export interface CartItem {

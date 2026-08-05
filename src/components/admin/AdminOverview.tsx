@@ -261,11 +261,15 @@ export const AdminOverview: React.FC<AdminOverviewProps> = ({
               return (
                 <div key={cat.id} className="flex items-center justify-between text-xs p-2.5 bg-slate-50 rounded-lg border border-slate-100">
                   <div className="flex items-center gap-2.5">
-                    <img 
-                      src={cat.image} 
-                      alt={cat.name} 
-                      className="w-8 h-8 rounded-md object-cover border border-slate-200" 
-                    />
+                    {cat.image ? (
+                      <img 
+                        src={cat.image} 
+                        alt={cat.name} 
+                        className="w-8 h-8 rounded-md object-cover border border-slate-200" 
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-md bg-slate-200 border border-slate-200" />
+                    )}
                     <div>
                       <div className="font-bold text-slate-800">{cat.name}</div>
                       <div className="text-[10px] text-slate-500">{(cat.subcategories || []).length} Subcategories</div>

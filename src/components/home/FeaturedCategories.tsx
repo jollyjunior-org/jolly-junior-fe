@@ -87,12 +87,16 @@ export const FeaturedCategories: React.FC = () => {
             style={{ backgroundColor: cat.color }}
           >
             {/* Background Image with Hover Zoom */}
-            <img
-              src={cat.image}
-              alt={cat.name}
-              referrerPolicy="no-referrer"
-              className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out"
-            />
+            {cat.image ? (
+              <img
+                src={cat.image}
+                alt={cat.name}
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out"
+              />
+            ) : (
+              <div className="w-full h-full bg-slate-200" />
+            )}
 
             {/* Gradient Overlay for Readability */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-5 flex flex-col justify-end text-white">

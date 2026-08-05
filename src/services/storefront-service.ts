@@ -39,7 +39,7 @@ function mapStorefrontConfig(raw: Record<string, unknown>): StorefrontConfig {
       badge: s.badge ? String(s.badge) : undefined,
       title: String(s.title ?? ''),
       subtitle: s.subtitle ? String(s.subtitle) : undefined,
-      imageUrl: String(s.image_url ?? s.imageUrl ?? ''),
+      imageUrl: s.image_url ? String(s.image_url) : s.imageUrl ? String(s.imageUrl) : undefined,
       buttonText: String(s.button_text ?? s.buttonText ?? 'Shop Now'),
       accentColor: String(s.accent_color ?? s.accentColor ?? '#F59E0B'),
       linkType: String(s.link_type ?? s.linkType ?? 'category'),
@@ -79,7 +79,19 @@ function mapStorefrontConfig(raw: Record<string, unknown>): StorefrontConfig {
     sortOrder: Number(c.sort_order ?? 0),
   }));
 
-  return { tags, navCategories, featuredCategories, footerCategories, heroSlides, homeSections, navSectionChips };
+  return {
+    tags,
+    navCategories,
+    featuredCategories,
+    footerCategories,
+    heroSlides,
+    homeSections,
+    navSectionChips,
+    footerInstagramUrl:
+      String(raw.footerInstagramUrl ?? raw.footer_instagram_url ?? '') || undefined,
+    footerFacebookUrl:
+      String(raw.footerFacebookUrl ?? raw.footer_facebook_url ?? '') || undefined,
+  };
 }
 
 /**
@@ -126,7 +138,7 @@ export async function fetchAdminHeroSlides(): Promise<HeroSlideConfig[]> {
     badge: s.badge ? String(s.badge) : undefined,
     title: String(s.title ?? ''),
     subtitle: s.subtitle ? String(s.subtitle) : undefined,
-    imageUrl: String(s.image_url ?? ''),
+    imageUrl: s.image_url ? String(s.image_url) : undefined,
     buttonText: String(s.button_text ?? 'Shop Now'),
     accentColor: String(s.accent_color ?? '#F59E0B'),
     linkType: String(s.link_type ?? 'category'),

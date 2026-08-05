@@ -16,7 +16,7 @@ export function mapProduct(p: Record<string, unknown>, categorySlugById?: Map<st
     categoryId,
     categorySlug: slugFromMap || String(p.category_slug ?? p.categorySlug ?? ''),
     categoryName: String(p.category_name ?? p.categoryName ?? 'Uncategorized'),
-    images: (p.images as string[]) || [],
+    images: ((p.images as string[]) || []).filter(Boolean),
     badge: p.badge as Product['badge'],
     discountBadge: parseDiscountPercentValue(
       (p.discount_badge ?? p.discountBadge) as string | number | null | undefined,
@@ -62,7 +62,7 @@ export function mapCategory(c: Record<string, unknown>): Category {
     id: String(c.id),
     name: String(c.name ?? ''),
     slug: String(c.slug ?? ''),
-    image: String(c.image ?? ''),
+    image: c.image ? String(c.image) : undefined,
     description: String(c.description ?? ''),
     itemCount: Number(c.item_count ?? c.itemCount ?? 0),
     color: String(c.color ?? '#FEF3C7'),

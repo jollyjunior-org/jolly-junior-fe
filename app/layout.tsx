@@ -2,8 +2,11 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'JollyJuniors — Toys & Baby Care',
+  title: 'JollyJuniors | Toys & Baby Care',
   description: 'Montessori toys, baby care, and gift hampers in Pakistan.',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 /**

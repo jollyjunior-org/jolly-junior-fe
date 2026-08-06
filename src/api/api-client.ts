@@ -25,7 +25,27 @@ async function parseBody(res: Response): Promise<unknown> {
 }
 
 /**
- * Shared HTTP client — attaches Bearer token and throws on non-OK responses.
+ * Determine effective authentication mode based on URL or explicit options.
+ * Public storefront APIs default to 'none' (NO Bearer token attached).
+ */
+function resolveAuthMode(url: string, explicitAuthMode?: AuthMode, skipAuth?: boolean): AuthMode {
+  if (skipAuth || explicitAuthMode === 'none') {
+    return 'none';
+  }
+  if (explicitAuthMode) {
+    return explicitAuthMode;
+  }
+  if (url.includes('/admin/') || url.includes('/admin')) {
+    return 'admin';
+  }
+  if (url.includes('/store/me/') || url.includes('/store/me')) {
+    return 'customer';
+  }
+  return 'none';
+}
+
+/**
+ * Shared HTTP client — attaches Bearer token for protected routes and throws on non-OK responses.
  * Args: url — full request URL; options — fetch options + skipAuth / authMode
  * Returns: typed response body
  */
@@ -33,12 +53,15 @@ export async function apiClient<T = unknown>(
   url: string,
   options: RequestOptions = {},
 ): Promise<T> {
-  const { skipAuth, authMode = 'admin', headers: extraHeaders, ...rest } = options;
+  const { skipAuth, authMode: explicitAuthMode, headers: extraHeaders, ...rest } = options;
+  const effectiveAuthMode = resolveAuthMode(url, explicitAuthMode, skipAuth);
   const headers = new Headers(extraHeaders);
 
-  if (!skipAuth && authMode !== 'none') {
-    const token = authMode === 'customer' ? getCustomerToken() : getAccessToken();
-    if (token) headers.set('Authorization', `Bearer ${token}`);
+  if (effectiveAuthMode !== 'none') {
+    const token = effectiveAuthMode === 'customer' ? getCustomerToken() : getAccessToken();
+    if (token) {
+      headers.set('Authorization', `Bearer ${token.trim()}`);
+    }
   }
 
   // Don't force JSON content-type for FormData (multipart uploads)
@@ -50,8 +73,8 @@ export async function apiClient<T = unknown>(
   const res = await fetch(url, { ...rest, headers });
   const body = await parseBody(res);
 
-  if (res.status === 401 && !skipAuth) {
-    if (authMode === 'customer') clearCustomerToken();
+  if (res.status === 401 && effectiveAuthMode !== 'none' && !skipAuth) {
+    if (effectiveAuthMode === 'customer') clearCustomerToken();
     else clearAuthStorage();
   }
 

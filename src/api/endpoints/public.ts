@@ -45,4 +45,5 @@ export const publicEndpoints = {
   testimonialInvite: (token: string) =>
     `${PUBLIC_API_BASE_URL}/store/testimonials/invite/${encodeURIComponent(token)}`,
   storeUpload: () => `${PUBLIC_API_BASE_URL}/store/upload`,
+  createOrder: () => `${PUBLIC_API_BASE_URL}/store/orders`,
 } as const;

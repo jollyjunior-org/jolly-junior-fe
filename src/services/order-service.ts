@@ -1,5 +1,6 @@
 import { apiFetch } from '@/api/api-client';
 import { adminEndpoints } from '@/api/endpoints/admin';
+import { publicEndpoints } from '@/api/endpoints/public';
 import { mapOrder, mapOrderReturn } from '@/services/mappers';
 import type { Order, OrderReturn } from '@/types';
 
@@ -18,7 +19,7 @@ export async function fetchAdminOrders(): Promise<Order[]> {
  * Returns: mapped Order
  */
 export async function createOrder(payload: Record<string, unknown>): Promise<Order> {
-  const created = await apiFetch<Record<string, unknown>>(adminEndpoints.orders(), {
+  const created = await apiFetch<Record<string, unknown>>(publicEndpoints.createOrder(), {
     method: 'POST',
     body: JSON.stringify(payload),
     skipAuth: true,

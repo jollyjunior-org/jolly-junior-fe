@@ -56,6 +56,8 @@ export async function apiClient<T = unknown>(
   const { skipAuth, authMode: explicitAuthMode, headers: extraHeaders, ...rest } = options;
   const effectiveAuthMode = resolveAuthMode(url, explicitAuthMode, skipAuth);
   const headers = new Headers(extraHeaders);
+  // Skip ngrok free account browser warning page (which returns HTML & breaks CORS)
+  headers.set('ngrok-skip-browser-warning', 'true');
 
   if (effectiveAuthMode !== 'none') {
     const token = effectiveAuthMode === 'customer' ? getCustomerToken() : getAccessToken();

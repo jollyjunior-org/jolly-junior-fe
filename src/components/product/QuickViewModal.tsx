@@ -28,7 +28,7 @@ export const QuickViewModal: React.FC = () => {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
-          className="relative bg-white rounded-3xl shadow-2xl border border-[#F1F5F9] max-w-2xl w-full p-6 sm:p-8 overflow-hidden"
+          className="relative bg-white rounded-xl shadow-2xl border border-[#F1F5F9] max-w-2xl w-full p-6 sm:p-8 overflow-hidden"
         >
           <button
             onClick={() => setQuickViewProduct(null)}
@@ -38,7 +38,7 @@ export const QuickViewModal: React.FC = () => {
           </button>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
-            <div className="aspect-square rounded-2xl overflow-hidden bg-[#FFFDF8] border border-[#F1F5F9]">
+            <div className="aspect-square rounded-lg overflow-hidden bg-[#FFFDF8] border border-[#F1F5F9]">
               <img
                 src={product.images[0]}
                 alt={product.name}

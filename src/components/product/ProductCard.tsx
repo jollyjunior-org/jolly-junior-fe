@@ -167,7 +167,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={openProductPage}
-      className="group relative bg-white rounded-3xl overflow-hidden border border-[#F5F2ED] shadow-2xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between cursor-pointer"
+      className="group relative bg-white rounded-xl overflow-hidden border border-[#F5F2ED] shadow-2xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between cursor-pointer"
     >
       <div className="relative aspect-4/3 w-full bg-[#FFFDF8] overflow-hidden">
         <img

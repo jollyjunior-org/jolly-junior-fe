@@ -85,7 +85,7 @@ export const ShopByAge: React.FC = () => {
               transition={{ delay: idx * 0.08 }}
               whileHover={{ y: -6 }}
               onClick={() => handleAgeSelect(group.code)}
-              className={`${group.bgColor} ${group.borderColor} border rounded-3xl p-5 text-center cursor-pointer shadow-2xs hover:shadow-lg transition-all duration-300 flex flex-col items-center justify-between min-h-[160px]`}
+              className={`${group.bgColor} ${group.borderColor} border rounded-xl p-5 text-center cursor-pointer shadow-2xs hover:shadow-lg transition-all duration-300 flex flex-col items-center justify-between min-h-[160px]`}
             >
               <div className={`w-12 h-12 rounded-2xl bg-white/80 backdrop-blur-xs flex items-center justify-center ${group.textColor} shadow-xs mb-3`}>
                 <Icon className="w-6 h-6 stroke-[2.5]" />

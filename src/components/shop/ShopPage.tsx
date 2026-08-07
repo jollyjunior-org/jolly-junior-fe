@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo } from 'react';
-import { Filter, X, RotateCcw, Search, Sparkles } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Filter, X, RotateCcw, Search, Sparkles, ChevronDown } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
 import { ProductCard } from '../product/ProductCard';
 
@@ -80,9 +80,11 @@ export const ShopPage: React.FC = () => {
           ? `Search: ${filter.searchQuery}`
           : 'All Products & Essentials';
 
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
-      <div className="bg-gradient-to-r from-[#FCE7F3] via-[#FFF7ED] to-[#E0E7FF] rounded-3xl p-6 sm:p-8 border border-[#F1F5F9] shadow-2xs">
+      <div className="bg-gradient-to-r from-[#FCE7F3] via-[#FFF7ED] to-[#E0E7FF] rounded-xl p-6 sm:p-8 border border-[#F1F5F9] shadow-2xs">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-white text-[#EC4899] text-xs font-bold shadow-2xs mb-2">
@@ -102,21 +104,33 @@ export const ShopPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <div className="space-y-6 bg-white p-5 rounded-3xl border border-[#F1F5F9] shadow-xs h-fit">
+        <div className="space-y-6 bg-white p-5 rounded-xl border border-[#F1F5F9] shadow-xs h-fit">
           <div className="flex items-center justify-between pb-3 border-b border-[#F1F5F9]">
-            <div className="flex items-center gap-2 text-sm font-black text-[#1E293B]">
-              <Filter className="w-4 h-4 text-[#EC4899]" />
-              <span>Filter Catalog</span>
-            </div>
+            <button
+              type="button"
+              onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
+              className="flex items-center gap-2 text-sm font-black text-[#1E293B] lg:cursor-default w-full sm:w-auto justify-between sm:justify-start"
+            >
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-[#EC4899]" />
+                <span>Filter Catalog</span>
+              </div>
+              <ChevronDown
+                className={`w-4 h-4 text-[#64748B] lg:hidden transition-transform duration-200 ${
+                  isMobileFilterOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
             <button
               onClick={resetFilter}
-              className="text-xs text-[#EC4899] hover:underline flex items-center gap-1 font-bold cursor-pointer"
+              className="text-xs text-[#EC4899] hover:underline flex items-center gap-1 font-bold cursor-pointer ml-auto"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Reset</span>
             </button>
           </div>
 
+          <div className={`${isMobileFilterOpen ? 'block' : 'hidden'} lg:block space-y-6`}>
           {/* Live sales */}
           {liveSales.length > 0 && (
             <div>
@@ -241,6 +255,7 @@ export const ShopPage: React.FC = () => {
               <option value="newest">New Arrivals First</option>
             </select>
           </div>
+          </div>
         </div>
 
         <div className="lg:col-span-3 space-y-6">
@@ -250,7 +265,7 @@ export const ShopPage: React.FC = () => {
             filter.ageGroup ||
             filter.onSaleOnly ||
             filter.saleKey) && (
-            <div className="flex flex-wrap items-center gap-2 p-3 bg-white rounded-2xl border border-[#F1F5F9]">
+            <div className="flex flex-wrap items-center gap-2 p-3 bg-white rounded-lg border border-[#F1F5F9]">
               <span className="text-xs font-bold text-[#64748B]">Active Filters:</span>
               {filter.saleKey && (
                 <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-bold">
@@ -286,7 +301,7 @@ export const ShopPage: React.FC = () => {
           )}
 
           {shopLoading && filteredProducts.length === 0 ? (
-            <div className="py-16 text-center bg-white rounded-3xl p-8 border border-[#F1F5F9]">
+            <div className="py-16 text-center bg-white rounded-xl p-8 border border-[#F1F5F9]">
               <p className="text-sm font-bold text-[#64748B]">Loading products…</p>
             </div>
           ) : filteredProducts.length > 0 ? (
@@ -296,7 +311,7 @@ export const ShopPage: React.FC = () => {
               ))}
             </div>
           ) : (
-            <div className="py-16 text-center bg-white rounded-3xl p-8 border border-[#F1F5F9] space-y-3">
+            <div className="py-16 text-center bg-white rounded-xl p-8 border border-[#F1F5F9] space-y-3">
               <Search className="w-12 h-12 text-slate-300 mx-auto" />
               <h3 className="text-base font-extrabold text-[#1E293B]">
                 No products found matching your search.

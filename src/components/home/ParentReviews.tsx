@@ -62,7 +62,7 @@ export const ParentReviews: React.FC = () => {
           return (
             <div
               key={r.id}
-              className="bg-white rounded-3xl p-6 border border-[#F5F2ED] shadow-xs hover:shadow-md transition-shadow relative flex flex-col justify-between"
+              className="bg-white rounded-xl p-6 border border-[#F5F2ED] shadow-xs hover:shadow-md transition-shadow relative flex flex-col justify-between"
             >
               <Quote className="absolute top-4 right-4 w-8 h-8 text-[#FFB7CE]/30" />
               <div>

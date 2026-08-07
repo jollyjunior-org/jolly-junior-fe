@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronLeft, ChevronRight, Sparkles, ArrowRight } from 'lucide-react';
+import { Sparkles, ArrowRight } from 'lucide-react';
 import { useShopStore } from '@/store/useShopStore';
 import { goToShop } from '@/utils/navigate-shop';
 import type { HeroSlideConfig } from '@/types';
@@ -64,7 +64,7 @@ export const HeroSlider: React.FC = () => {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div className="relative rounded-3xl overflow-hidden shadow-sm border border-[#F5F2ED] bg-[#FFFDF8] h-[380px] sm:h-[460px] md:h-[500px]">
+      <div className="relative rounded-xl overflow-hidden shadow-sm border border-[#F5F2ED] bg-[#FFFDF8] h-[380px] sm:h-[460px] md:h-[500px]">
         <AnimatePresence mode="wait">
           <motion.div
             key={slide.id}
@@ -135,34 +135,17 @@ export const HeroSlider: React.FC = () => {
         </AnimatePresence>
 
         {slides.length > 1 && (
-          <>
-            <button
-              onClick={() =>
-                setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length)
-              }
-              className="absolute left-4 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-white/80 hover:bg-white text-[#5A5A40] shadow-md backdrop-blur-xs transition-all cursor-pointer z-20 hover:scale-110"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setCurrentIndex((prev) => (prev + 1) % slides.length)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-white/80 hover:bg-white text-[#5A5A40] shadow-md backdrop-blur-xs transition-all cursor-pointer z-20 hover:scale-110"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-
-            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20 bg-black/20 backdrop-blur-xs px-3 py-1.5 rounded-full">
-              {slides.map((s, idx) => (
-                <button
-                  key={s.id}
-                  onClick={() => setCurrentIndex(idx)}
-                  className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
-                    idx === currentIndex ? 'w-7 bg-white' : 'w-2.5 bg-white/50 hover:bg-white/80'
-                  }`}
-                />
-              ))}
-            </div>
-          </>
+          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20 bg-black/20 backdrop-blur-xs px-3 py-1.5 rounded-full">
+            {slides.map((s, idx) => (
+              <button
+                key={s.id}
+                onClick={() => setCurrentIndex(idx)}
+                className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
+                  idx === currentIndex ? 'w-7 bg-white' : 'w-2.5 bg-white/50 hover:bg-white/80'
+                }`}
+              />
+            ))}
+          </div>
         )}
       </div>
     </section>

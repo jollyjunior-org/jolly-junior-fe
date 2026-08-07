@@ -76,7 +76,7 @@ export const InstagramGallery: React.FC = () => {
           {posts.map((p) => (
             <div
               key={p.id}
-              className="group relative rounded-2xl overflow-hidden aspect-square bg-[#F5F2ED] cursor-pointer border border-[#F5F2ED]"
+              className="group relative rounded-lg overflow-hidden aspect-square bg-[#F5F2ED] cursor-pointer border border-[#F5F2ED]"
             >
               <img
                 src={p.image}
@@ -102,7 +102,7 @@ export const InstagramGallery: React.FC = () => {
       </div>
 
       {/* Newsletter Box */}
-      <div className="bg-[#5A5A40] rounded-3xl p-8 sm:p-12 text-white relative overflow-hidden shadow-lg">
+      <div className="bg-[#5A5A40] rounded-xl p-8 sm:p-12 text-white relative overflow-hidden shadow-lg">
         {/* Soft Background circles */}
         <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/5 blur-xl"></div>
         <div className="absolute -bottom-12 -left-12 w-48 h-48 rounded-full bg-white/5 blur-xl"></div>

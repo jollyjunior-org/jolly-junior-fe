@@ -87,7 +87,7 @@ export const ProductDetailModal: React.FC = () => {
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="relative bg-white rounded-3xl shadow-2xl border border-[#F1F5F9] max-w-4xl w-full overflow-hidden max-h-[92vh] flex flex-col"
+          className="relative bg-white rounded-xl shadow-2xl border border-[#F1F5F9] max-w-4xl w-full overflow-hidden max-h-[92vh] flex flex-col"
         >
           {/* Close Button */}
           <button
@@ -101,7 +101,7 @@ export const ProductDetailModal: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Left Column: Image Gallery & Video */}
               <div className="space-y-4">
-                <div className="relative aspect-square rounded-2xl overflow-hidden bg-[#FFFDF8] border border-[#F1F5F9] shadow-xs">
+                <div className="relative aspect-square rounded-lg overflow-hidden bg-[#FFFDF8] border border-[#F1F5F9] shadow-xs">
                   {isVideoPlaying && product.videoPreviewUrl ? (
                     <video
                       src={product.videoPreviewUrl}
@@ -237,7 +237,7 @@ export const ProductDetailModal: React.FC = () => {
                   )}
 
                   {/* Live Stock Status Indicator */}
-                  <div className="mt-4 p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs font-bold">
+                  <div className="mt-4 p-3 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between text-xs font-bold">
                     <span className="text-slate-600">Inventory Status:</span>
                     {comingSoon ? (
                       <span className="px-2.5 py-1 rounded-full bg-slate-200 text-slate-700 font-extrabold">
@@ -355,7 +355,7 @@ export const ProductDetailModal: React.FC = () => {
 
             {/* Bundle Offer: Frequently Bought Together */}
             {bundleProduct && (
-              <div className="bg-[#FFFDF8] rounded-2xl p-4 sm:p-5 border border-[#FEF3C7] flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="bg-[#FFFDF8] rounded-lg p-4 sm:p-5 border border-[#FEF3C7] flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-[#E2E8F0]">
                     <img

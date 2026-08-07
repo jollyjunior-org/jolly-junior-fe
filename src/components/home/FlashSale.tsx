@@ -105,7 +105,7 @@ export const FlashSale: React.FC = () => {
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
-      <div className="rounded-3xl p-4 sm:p-6 border border-[#F5F2ED] shadow-xs" style={bgStyle}>
+      <div className="rounded-xl p-4 sm:p-6 border border-[#F5F2ED] shadow-xs" style={bgStyle}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-3">
             <div

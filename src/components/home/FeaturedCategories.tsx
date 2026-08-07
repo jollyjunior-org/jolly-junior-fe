@@ -83,7 +83,7 @@ export const FeaturedCategories: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.4, delay: index * 0.05 }}
             onClick={() => handleCategorySelect(cat.slug)}
-            className="group relative rounded-3xl overflow-hidden cursor-pointer shadow-xs hover:shadow-xl transition-all duration-300 h-64 sm:h-72 border border-[#F5F2ED]"
+            className="group relative rounded-xl overflow-hidden cursor-pointer shadow-xs hover:shadow-xl transition-all duration-300 h-64 sm:h-72 border border-[#F5F2ED]"
             style={{ backgroundColor: cat.color }}
           >
             {/* Background Image with Hover Zoom */}

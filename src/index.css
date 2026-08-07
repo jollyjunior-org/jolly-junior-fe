@@ -2,7 +2,7 @@
 
 @layer base {
   body {
-    background-color: #FFFDF8;
+    background-color: #F8FBF6;
     color: #334155;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     overflow-x: hidden;
@@ -166,7 +166,7 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #FFFDF8;
+  background: #F8FBF6;
 }
 ::-webkit-scrollbar-thumb {
   background: #F1F5F9;

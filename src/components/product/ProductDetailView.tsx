@@ -113,7 +113,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
         <button
           type="button"
           onClick={() => router.back()}
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#5A5A40] hover:text-[#FFB347] cursor-pointer"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1C2B1E] hover:text-[#C8A96A] cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
@@ -121,7 +121,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
         <button
           type="button"
           onClick={handleShare}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F5F2ED] text-[#5A5A40] text-xs font-bold hover:bg-[#FFB347] hover:text-white transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#DDE8DC] text-[#1C2B1E] text-xs font-bold hover:bg-[#C8A96A] hover:text-white transition-colors cursor-pointer"
         >
           <Share2 className="w-3.5 h-3.5" />
           Share product
@@ -132,7 +132,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Gallery */}
           <div className="space-y-4">
-            <div className="relative aspect-square rounded-lg overflow-hidden bg-[#FFFDF8] border border-[#F1F5F9]">
+            <div className="relative aspect-square rounded-lg overflow-hidden bg-[#F8FBF6] border border-[#F1F5F9]">
               {isVideoPlaying && product.videoPreviewUrl ? (
                 <video
                   src={product.videoPreviewUrl}
@@ -182,7 +182,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
                   }}
                   className={`w-16 h-16 rounded-xl overflow-hidden border-2 shrink-0 cursor-pointer ${
                     selectedImage === img && !isVideoPlaying
-                      ? 'border-[#EC4899] scale-105'
+                      ? 'border-[#3D6B4F] scale-105'
                       : 'border-transparent opacity-70 hover:opacity-100'
                   }`}
                 >
@@ -208,11 +208,11 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
                       searchQuery: '',
                     });
                   }}
-                  className="text-xs font-bold text-[#EC4899] bg-[#FCE7F3] px-2.5 py-0.5 rounded-full cursor-pointer hover:bg-[#F9A8D4]"
+                  className="text-xs font-bold text-[#3D6B4F] bg-[#E8F0E4] px-2.5 py-0.5 rounded-full cursor-pointer hover:bg-[#F9A8D4]"
                 >
                   {product.categoryName}
                 </button>
-                <span className="text-xs font-extrabold text-[#D97706] bg-[#FEF3C7] px-2.5 py-0.5 rounded-full">
+                <span className="text-xs font-extrabold text-[#4A7A58] bg-[#EEF5E8] px-2.5 py-0.5 rounded-full">
                   Age: {product.ageGroup}
                 </span>
               </div>
@@ -225,7 +225,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
                   type="button"
                   onClick={() => toggleWishlist(product.id)}
                   className={`p-2 rounded-full shrink-0 cursor-pointer ${
-                    isWishlisted ? 'bg-[#FFB7CE] text-white' : 'bg-[#F5F2ED] text-[#5A5A40]'
+                    isWishlisted ? 'bg-[#B5C9A8] text-white' : 'bg-[#DDE8DC] text-[#1C2B1E]'
                   }`}
                   title="Wishlist"
                 >
@@ -282,7 +282,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
                             ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed line-through'
                             : selectedVariant?.id === v.id
                               ? 'bg-[#1E293B] text-white border-[#1E293B] cursor-pointer'
-                              : 'bg-[#FFFDF8] text-[#334155] border-[#E2E8F0] cursor-pointer'
+                              : 'bg-[#F8FBF6] text-[#334155] border-[#E2E8F0] cursor-pointer'
                         }`}
                       >
                         {v.name}
@@ -297,7 +297,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
                 {comingSoon ? (
                   <span className="px-2.5 py-1 rounded-full bg-slate-200 text-slate-700">Coming Soon</span>
                 ) : !isAvailable ? (
-                  <span className="px-2.5 py-1 rounded-full bg-rose-100 text-rose-800">Out of Stock</span>
+                  <span className="px-2.5 py-1 rounded-full bg-[#DDE8DC] text-[#1C2B1E]">Out of Stock</span>
                 ) : isLowStock ? (
                   <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800">
                     Low Stock ({stockQty})
@@ -311,7 +311,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
 
               <div className="mt-4 flex items-center gap-4">
                 <span className="text-xs font-bold text-[#64748B] uppercase">Quantity</span>
-                <div className="flex items-center border border-[#E2E8F0] rounded-full p-1 bg-[#FFFDF8]">
+                <div className="flex items-center border border-[#E2E8F0] rounded-full p-1 bg-[#F8FBF6]">
                   <button
                     type="button"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -395,7 +395,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
         </div>
 
         {bundleProduct && (
-          <div className="bg-[#FFFDF8] rounded-lg p-4 border border-[#FEF3C7] flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="bg-[#F8FBF6] rounded-lg p-4 border border-[#EEF5E8] flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <img
                 src={bundleProduct.images[0]}
@@ -404,7 +404,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
                 referrerPolicy="no-referrer"
               />
               <div>
-                <span className="text-[10px] font-extrabold uppercase text-[#D97706] bg-[#FEF3C7] px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-extrabold uppercase text-[#4A7A58] bg-[#EEF5E8] px-2 py-0.5 rounded-full">
                   Frequently Bought Together
                 </span>
                 <h4 className="text-xs font-bold mt-1">Add {bundleProduct.name}</h4>
@@ -416,7 +416,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
             <button
               type="button"
               onClick={handleAddBundleToCart}
-              className="px-5 py-2.5 rounded-full bg-[#FEF3C7] text-[#D97706] text-xs font-extrabold flex items-center gap-1.5 cursor-pointer"
+              className="px-5 py-2.5 rounded-full bg-[#EEF5E8] text-[#4A7A58] text-xs font-extrabold flex items-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               Add Both to Cart
@@ -437,7 +437,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
                 onClick={() => setActiveTab(tab.id)}
                 className={`py-2 text-xs font-extrabold border-b-2 cursor-pointer ${
                   activeTab === tab.id
-                    ? 'border-[#EC4899] text-[#EC4899]'
+                    ? 'border-[#3D6B4F] text-[#3D6B4F]'
                     : 'border-transparent text-[#64748B]'
                 }`}
               >
@@ -461,7 +461,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
               <div className="space-y-4">
                 {product.reviews && product.reviews.length > 0 ? (
                   product.reviews.map((rev) => (
-                    <div key={rev.id} className="p-3 rounded-xl bg-[#FFFDF8] border border-[#F1F5F9]">
+                    <div key={rev.id} className="p-3 rounded-xl bg-[#F8FBF6] border border-[#F1F5F9]">
                       <div className="flex justify-between">
                         <span className="font-bold text-sm">{rev.userName}</span>
                         <span className="text-[10px] text-slate-400">{rev.date}</span>

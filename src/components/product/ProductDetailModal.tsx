@@ -101,7 +101,7 @@ export const ProductDetailModal: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Left Column: Image Gallery & Video */}
               <div className="space-y-4">
-                <div className="relative aspect-square rounded-lg overflow-hidden bg-[#FFFDF8] border border-[#F1F5F9] shadow-xs">
+                <div className="relative aspect-square rounded-lg overflow-hidden bg-[#F8FBF6] border border-[#F1F5F9] shadow-xs">
                   {isVideoPlaying && product.videoPreviewUrl ? (
                     <video
                       src={product.videoPreviewUrl}
@@ -150,7 +150,7 @@ export const ProductDetailModal: React.FC = () => {
                       }}
                       className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
                         selectedImage === img && !isVideoPlaying
-                          ? 'border-[#EC4899] scale-105 shadow-xs'
+                          ? 'border-[#3D6B4F] scale-105 shadow-xs'
                           : 'border-transparent opacity-70 hover:opacity-100'
                       }`}
                     >
@@ -169,10 +169,10 @@ export const ProductDetailModal: React.FC = () => {
               <div className="flex flex-col justify-between space-y-5">
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#EC4899] bg-[#FCE7F3] px-2.5 py-0.5 rounded-full">
+                    <span className="text-xs font-bold text-[#3D6B4F] bg-[#E8F0E4] px-2.5 py-0.5 rounded-full">
                       {product.categoryName}
                     </span>
-                    <span className="text-xs font-extrabold text-[#D97706] bg-[#FEF3C7] px-2.5 py-0.5 rounded-full">
+                    <span className="text-xs font-extrabold text-[#4A7A58] bg-[#EEF5E8] px-2.5 py-0.5 rounded-full">
                       Age: {product.ageGroup}
                     </span>
                   </div>
@@ -226,7 +226,7 @@ export const ProductDetailModal: React.FC = () => {
                             className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer border ${
                               selectedVariant?.id === v.id
                                 ? 'bg-[#1E293B] text-white border-[#1E293B] shadow-xs'
-                                : 'bg-[#FFFDF8] hover:bg-[#FEF3C7] text-[#334155] border-[#E2E8F0]'
+                                : 'bg-[#F8FBF6] hover:bg-[#EEF5E8] text-[#334155] border-[#E2E8F0]'
                             }`}
                           >
                             {v.name}
@@ -244,7 +244,7 @@ export const ProductDetailModal: React.FC = () => {
                         Coming Soon — not for sale yet
                       </span>
                     ) : !isAvailable ? (
-                      <span className="px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 font-extrabold flex items-center gap-1">
+                      <span className="px-2.5 py-1 rounded-full bg-[#DDE8DC] text-[#1C2B1E] font-extrabold flex items-center gap-1">
                         🔴 Currently Out of Stock
                       </span>
                     ) : isLowStock ? (
@@ -263,7 +263,7 @@ export const ProductDetailModal: React.FC = () => {
                     <span className="text-xs font-bold text-[#64748B] uppercase tracking-wider">
                       Quantity:
                     </span>
-                    <div className="flex items-center border border-[#E2E8F0] rounded-full p-1 bg-[#FFFDF8]">
+                    <div className="flex items-center border border-[#E2E8F0] rounded-full p-1 bg-[#F8FBF6]">
                       <button
                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
                         disabled={!isAvailable}
@@ -355,7 +355,7 @@ export const ProductDetailModal: React.FC = () => {
 
             {/* Bundle Offer: Frequently Bought Together */}
             {bundleProduct && (
-              <div className="bg-[#FFFDF8] rounded-lg p-4 sm:p-5 border border-[#FEF3C7] flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="bg-[#F8FBF6] rounded-lg p-4 sm:p-5 border border-[#EEF5E8] flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-[#E2E8F0]">
                     <img
@@ -366,7 +366,7 @@ export const ProductDetailModal: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] font-extrabold uppercase text-[#D97706] bg-[#FEF3C7] px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-extrabold uppercase text-[#4A7A58] bg-[#EEF5E8] px-2 py-0.5 rounded-full">
                       Frequently Bought Together
                     </span>
                     <h4 className="text-xs font-bold text-[#1E293B] mt-1">
@@ -380,7 +380,7 @@ export const ProductDetailModal: React.FC = () => {
 
                 <button
                   onClick={handleAddBundleToCart}
-                  className="px-5 py-2.5 rounded-full bg-[#FEF3C7] hover:bg-[#FDE68A] text-[#D97706] text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors"
+                  className="px-5 py-2.5 rounded-full bg-[#EEF5E8] hover:bg-[#FDE68A] text-[#4A7A58] text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Add Both to Cart</span>
@@ -401,7 +401,7 @@ export const ProductDetailModal: React.FC = () => {
                     onClick={() => setActiveTab(tab.id as any)}
                     className={`py-2 text-xs font-extrabold border-b-2 transition-colors cursor-pointer ${
                       activeTab === tab.id
-                        ? 'border-[#EC4899] text-[#EC4899]'
+                        ? 'border-[#3D6B4F] text-[#3D6B4F]'
                         : 'border-transparent text-[#64748B] hover:text-[#1E293B]'
                     }`}
                   >
@@ -430,7 +430,7 @@ export const ProductDetailModal: React.FC = () => {
                   <div className="space-y-4">
                     {product.reviews && product.reviews.length > 0 ? (
                       product.reviews.map((rev) => (
-                        <div key={rev.id} className="p-3 rounded-xl bg-[#FFFDF8] border border-[#F1F5F9] space-y-1">
+                        <div key={rev.id} className="p-3 rounded-xl bg-[#F8FBF6] border border-[#F1F5F9] space-y-1">
                           <div className="flex items-center justify-between">
                             <span className="font-bold text-[#1E293B]">{rev.userName}</span>
                             <span className="text-[10px] text-slate-400">{rev.date}</span>

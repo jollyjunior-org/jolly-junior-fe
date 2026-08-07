@@ -78,9 +78,9 @@ export const CartDrawer: React.FC = () => {
           className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col justify-between"
         >
           {/* Header */}
-          <div className="p-4 sm:p-5 border-b border-[#F1F5F9] flex items-center justify-between bg-[#FFFDF8]">
+          <div className="p-4 sm:p-5 border-b border-[#F1F5F9] flex items-center justify-between bg-[#F8FBF6]">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-full bg-[#FCE7F3] text-[#EC4899]">
+              <div className="p-2 rounded-full bg-[#E8F0E4] text-[#3D6B4F]">
                 <ShoppingBag className="w-5 h-5" />
               </div>
               <div>
@@ -98,8 +98,8 @@ export const CartDrawer: React.FC = () => {
           </div>
 
           {/* Free Shipping Progress Bar */}
-          <div className="bg-[#FEF3C7] p-3.5 border-b border-[#FDE68A]">
-            <div className="text-xs font-bold text-[#D97706] flex items-center justify-between mb-1.5">
+          <div className="bg-[#EEF5E8] p-3.5 border-b border-[#FDE68A]">
+            <div className="text-xs font-bold text-[#4A7A58] flex items-center justify-between mb-1.5">
               <span>
                 {progress.isFree ? '🎉 Congratulations! You unlocked Free Express Shipping!' : `Add Rs. ${progress.remaining.toLocaleString()} more for FREE Delivery`}
               </span>
@@ -121,7 +121,7 @@ export const CartDrawer: React.FC = () => {
                 return (
                   <div
                     key={`${item.product.id}-${item.variant?.id || 'std'}-${idx}`}
-                    className="p-3 bg-[#FFFDF8] rounded-2xl border border-[#F1F5F9] flex gap-3 items-center"
+                    className="p-3 bg-[#F8FBF6] rounded-2xl border border-[#F1F5F9] flex gap-3 items-center"
                   >
                     <img
                       src={item.product.images[0]}
@@ -135,7 +135,7 @@ export const CartDrawer: React.FC = () => {
                         {item.product.name}
                       </h4>
                       {item.variant && (
-                        <p className="text-[10px] text-[#EC4899] font-medium">
+                        <p className="text-[10px] text-[#3D6B4F] font-medium">
                           Variant: {item.variant.name}
                         </p>
                       )}
@@ -187,7 +187,7 @@ export const CartDrawer: React.FC = () => {
                       searchQuery: '',
                     });
                   }}
-                  className="px-5 py-2 bg-[#EC4899] text-white text-xs font-bold rounded-full cursor-pointer shadow-xs"
+                  className="px-5 py-2 bg-[#3D6B4F] text-white text-xs font-bold rounded-full cursor-pointer shadow-xs"
                 >
                   Start Shopping Toys & Essentials
                 </button>
@@ -197,7 +197,7 @@ export const CartDrawer: React.FC = () => {
 
           {/* Footer Checkout Summary */}
           {cart.length > 0 && (
-            <div className="p-4 sm:p-5 border-t border-[#F1F5F9] bg-[#FFFDF8] space-y-3">
+            <div className="p-4 sm:p-5 border-t border-[#F1F5F9] bg-[#F8FBF6] space-y-3">
               {/* Promo Code Form */}
               <form onSubmit={handleApplyPromo} className="flex gap-2">
                 <div className="relative flex-1">
@@ -207,7 +207,7 @@ export const CartDrawer: React.FC = () => {
                     placeholder="Promo code"
                     value={promoInput}
                     onChange={(e) => setPromoInput(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-white border border-[#E2E8F0] rounded-xl text-xs font-semibold uppercase outline-none focus:border-[#EC4899]"
+                    className="w-full pl-9 pr-3 py-2 bg-white border border-[#E2E8F0] rounded-xl text-xs font-semibold uppercase outline-none focus:border-[#3D6B4F]"
                   />
                 </div>
                 <button
@@ -250,7 +250,7 @@ export const CartDrawer: React.FC = () => {
                   </span>
                 </div>
                 {!progress.isFree && progress.remaining > 0 && (
-                  <p className="text-[10px] text-[#8C8C70]">
+                  <p className="text-[10px] text-[#5C7060]">
                     Add Rs. {progress.remaining.toLocaleString()} more for free delivery
                   </p>
                 )}

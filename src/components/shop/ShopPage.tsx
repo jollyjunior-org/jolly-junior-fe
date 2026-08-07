@@ -84,10 +84,10 @@ export const ShopPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
-      <div className="bg-gradient-to-r from-[#FCE7F3] via-[#FFF7ED] to-[#E0E7FF] rounded-xl p-6 sm:p-8 border border-[#F1F5F9] shadow-2xs">
+      <div className="bg-gradient-to-r from-[#E8F0E4] via-[#F0F7EC] to-[#DDE8DC] rounded-xl p-6 sm:p-8 border border-[#F1F5F9] shadow-2xs">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-white text-[#EC4899] text-xs font-bold shadow-2xs mb-2">
+            <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-white text-[#3D6B4F] text-xs font-bold shadow-2xs mb-2">
               <Sparkles className="w-3.5 h-3.5" />
               <span>{filter.saleKey ? 'Sale Campaign' : 'Jolly Store Catalog'}</span>
             </span>
@@ -112,7 +112,7 @@ export const ShopPage: React.FC = () => {
               className="flex items-center gap-2 text-sm font-black text-[#1E293B] lg:cursor-default w-full sm:w-auto justify-between sm:justify-start"
             >
               <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-[#EC4899]" />
+                <Filter className="w-4 h-4 text-[#3D6B4F]" />
                 <span>Filter Catalog</span>
               </div>
               <ChevronDown
@@ -123,7 +123,7 @@ export const ShopPage: React.FC = () => {
             </button>
             <button
               onClick={resetFilter}
-              className="text-xs text-[#EC4899] hover:underline flex items-center gap-1 font-bold cursor-pointer ml-auto"
+              className="text-xs text-[#3D6B4F] hover:underline flex items-center gap-1 font-bold cursor-pointer ml-auto"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Reset</span>
@@ -150,7 +150,7 @@ export const ShopPage: React.FC = () => {
                     }
                     className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer ${
                       filter.saleKey === sale.key
-                        ? 'bg-rose-100 text-rose-700'
+                        ? 'bg-[#DDE8DC] text-[#1C2B1E]'
                         : 'text-[#475569] hover:bg-slate-50'
                     }`}
                   >
@@ -172,7 +172,7 @@ export const ShopPage: React.FC = () => {
                   type="checkbox"
                   checked={selectedSlugs.size === 0}
                   onChange={() => setFilter({ categoryId: null, categoryIds: [] })}
-                  className="accent-[#EC4899] w-4 h-4 rounded"
+                  className="accent-[#3D6B4F] w-4 h-4 rounded"
                 />
                 <span>All Categories</span>
               </label>
@@ -187,7 +187,7 @@ export const ShopPage: React.FC = () => {
                       type="checkbox"
                       checked={checked}
                       onChange={() => toggleCategory(cat.slug)}
-                      className="accent-[#EC4899] w-4 h-4 rounded"
+                      className="accent-[#3D6B4F] w-4 h-4 rounded"
                     />
                     <span className="flex-1">{cat.name}</span>
                     <span className="text-[10px] opacity-70">({cat.itemCount})</span>
@@ -208,8 +208,8 @@ export const ShopPage: React.FC = () => {
                   onClick={() => setFilter({ ageGroup: filter.ageGroup === age ? null : age })}
                   className={`px-3 py-1 rounded-full text-xs font-bold cursor-pointer transition-all ${
                     filter.ageGroup === age
-                      ? 'bg-[#EC4899] text-white shadow-xs'
-                      : 'bg-[#FFFDF8] hover:bg-[#FCE7F3] text-[#334155] border border-[#E2E8F0]'
+                      ? 'bg-[#3D6B4F] text-white shadow-xs'
+                      : 'bg-[#F8FBF6] hover:bg-[#E8F0E4] text-[#334155] border border-[#E2E8F0]'
                   }`}
                 >
                   {age}
@@ -224,7 +224,7 @@ export const ShopPage: React.FC = () => {
                 type="checkbox"
                 checked={filter.onSaleOnly}
                 onChange={(e) => setFilter({ onSaleOnly: e.target.checked })}
-                className="accent-[#EC4899] w-4 h-4 rounded-md"
+                className="accent-[#3D6B4F] w-4 h-4 rounded-md"
               />
               <span>Discounted Deals Only</span>
             </label>
@@ -233,7 +233,7 @@ export const ShopPage: React.FC = () => {
                 type="checkbox"
                 checked={filter.inStockOnly}
                 onChange={(e) => setFilter({ inStockOnly: e.target.checked })}
-                className="accent-[#EC4899] w-4 h-4 rounded-md"
+                className="accent-[#3D6B4F] w-4 h-4 rounded-md"
               />
               <span>In Stock Only</span>
             </label>
@@ -246,7 +246,7 @@ export const ShopPage: React.FC = () => {
             <select
               value={filter.sortBy}
               onChange={(e) => setFilter({ sortBy: e.target.value as typeof filter.sortBy })}
-              className="w-full p-2 bg-[#FFFDF8] border border-[#E2E8F0] rounded-xl text-xs font-bold text-[#1E293B] outline-none"
+              className="w-full p-2 bg-[#F8FBF6] border border-[#E2E8F0] rounded-xl text-xs font-bold text-[#1E293B] outline-none"
             >
               <option value="featured">Featured / Recommended</option>
               <option value="price-low-high">Price: Low to High</option>
@@ -268,7 +268,7 @@ export const ShopPage: React.FC = () => {
             <div className="flex flex-wrap items-center gap-2 p-3 bg-white rounded-lg border border-[#F1F5F9]">
               <span className="text-xs font-bold text-[#64748B]">Active Filters:</span>
               {filter.saleKey && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-bold">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#DDE8DC] text-[#1C2B1E] text-xs font-bold">
                   Sale: {activeSale?.title || filter.saleKey}
                   <X className="w-3 h-3 cursor-pointer ml-1" onClick={() => setFilter({ saleKey: null })} />
                 </span>
@@ -276,20 +276,20 @@ export const ShopPage: React.FC = () => {
               {[...selectedSlugs].map((slug) => (
                 <span
                   key={slug}
-                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#FEF3C7] text-[#D97706] text-xs font-bold"
+                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#EEF5E8] text-[#4A7A58] text-xs font-bold"
                 >
                   {enabledCategories.find((c) => c.slug === slug)?.name || slug}
                   <X className="w-3 h-3 cursor-pointer ml-1" onClick={() => toggleCategory(slug)} />
                 </span>
               ))}
               {filter.ageGroup && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#E0E7FF] text-[#3B82F6] text-xs font-bold">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#DDE8DC] text-[#3B82F6] text-xs font-bold">
                   Age: {filter.ageGroup}
                   <X className="w-3 h-3 cursor-pointer ml-1" onClick={() => setFilter({ ageGroup: null })} />
                 </span>
               )}
               {filter.searchQuery && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#FCE7F3] text-[#EC4899] text-xs font-bold">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#E8F0E4] text-[#3D6B4F] text-xs font-bold">
                   &quot;{filter.searchQuery}&quot;
                   <X
                     className="w-3 h-3 cursor-pointer ml-1"
@@ -321,7 +321,7 @@ export const ShopPage: React.FC = () => {
               </p>
               <button
                 onClick={resetFilter}
-                className="mt-2 px-4 py-2 bg-[#EC4899] text-white text-xs font-bold rounded-full cursor-pointer"
+                className="mt-2 px-4 py-2 bg-[#3D6B4F] text-white text-xs font-bold rounded-full cursor-pointer"
               >
                 Clear Filters
               </button>

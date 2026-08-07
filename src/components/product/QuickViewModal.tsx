@@ -38,7 +38,7 @@ export const QuickViewModal: React.FC = () => {
           </button>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
-            <div className="aspect-square rounded-lg overflow-hidden bg-[#FFFDF8] border border-[#F1F5F9]">
+            <div className="aspect-square rounded-lg overflow-hidden bg-[#F8FBF6] border border-[#F1F5F9]">
               <img
                 src={product.images[0]}
                 alt={product.name}
@@ -48,7 +48,7 @@ export const QuickViewModal: React.FC = () => {
             </div>
 
             <div className="space-y-3">
-              <span className="text-[10px] font-bold text-[#EC4899] bg-[#FCE7F3] px-2.5 py-0.5 rounded-full uppercase">
+              <span className="text-[10px] font-bold text-[#3D6B4F] bg-[#E8F0E4] px-2.5 py-0.5 rounded-full uppercase">
                 {product.categoryName} • Age {product.ageGroup}
               </span>
 

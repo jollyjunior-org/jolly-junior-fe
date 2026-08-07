@@ -21,7 +21,7 @@ export const ProductSlider: React.FC<ProductSliderProps> = ({
   products,
   categoryFilterSlug,
   badge = 'Handpicked',
-  badgeColor = 'bg-[#A0D2EB]/20 text-[#5A5A40]'
+  badgeColor = 'bg-[#8FAF7E]/20 text-[#1C2B1E]'
 }) => {
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -64,15 +64,15 @@ export const ProductSlider: React.FC<ProductSliderProps> = ({
         <div>
           {badge && (
             <div className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold mb-2 ${badgeColor}`}>
-              <Sparkles className="w-3.5 h-3.5 text-[#FFB347]" />
+              <Sparkles className="w-3.5 h-3.5 text-[#C8A96A]" />
               <span>{badge}</span>
             </div>
           )}
-          <h2 className="text-xl sm:text-2xl font-black text-[#5A5A40] tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-black text-[#1C2B1E] tracking-tight">
             {title}
           </h2>
           {subtitle && (
-            <p className="text-xs sm:text-sm text-[#8C8C70] font-medium mt-0.5">
+            <p className="text-xs sm:text-sm text-[#5C7060] font-medium mt-0.5">
               {subtitle}
             </p>
           )}
@@ -83,14 +83,14 @@ export const ProductSlider: React.FC<ProductSliderProps> = ({
           <div className="hidden sm:flex items-center gap-1.5">
             <button
               onClick={() => scroll('left')}
-              className="p-2 rounded-full border border-[#F5F2ED] hover:bg-[#F5F2ED] text-[#5A5A40] transition-all cursor-pointer"
+              className="p-2 rounded-full border border-[#DDE8DC] hover:bg-[#DDE8DC] text-[#1C2B1E] transition-all cursor-pointer"
               title="Scroll Left"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={() => scroll('right')}
-              className="p-2 rounded-full border border-[#F5F2ED] hover:bg-[#F5F2ED] text-[#5A5A40] transition-all cursor-pointer"
+              className="p-2 rounded-full border border-[#DDE8DC] hover:bg-[#DDE8DC] text-[#1C2B1E] transition-all cursor-pointer"
               title="Scroll Right"
             >
               <ChevronRight className="w-4 h-4" />
@@ -99,7 +99,7 @@ export const ProductSlider: React.FC<ProductSliderProps> = ({
 
           <button
             onClick={handleViewAll}
-            className="inline-flex items-center gap-1 text-xs font-bold text-[#FFB347] hover:text-[#5A5A40] cursor-pointer"
+            className="inline-flex items-center gap-1 text-xs font-bold text-[#C8A96A] hover:text-[#1C2B1E] cursor-pointer"
           >
             <span>View All</span>
             <ArrowRight className="w-4 h-4" />

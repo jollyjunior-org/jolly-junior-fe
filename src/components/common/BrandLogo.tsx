@@ -60,10 +60,10 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       {/* Cartoon Mascot Emblem - "Jolly the Cub" */}
       <div className="relative flex items-center justify-center">
         {/* Soft Glowing Aura on Hover */}
-        <div className={`absolute -inset-1 bg-gradient-to-tr from-[#FFB7CE] via-[#FFB347] to-[#A0D2EB] rounded-full blur-xs opacity-40 transition-opacity duration-300 ${isHovered ? 'opacity-90 scale-105' : ''}`} />
+        <div className={`absolute -inset-1 bg-gradient-to-tr from-[#B5C9A8] via-[#C8A96A] to-[#8FAF7E] rounded-full blur-xs opacity-40 transition-opacity duration-300 ${isHovered ? 'opacity-90 scale-105' : ''}`} />
 
         {/* Outer Circular Badge */}
-        <div className={`${containerSizes[size]} relative rounded-full bg-gradient-to-b from-[#FFFDF8] to-[#FFF3DC] border-2 border-[#FFB347]/40 shadow-sm overflow-visible flex items-center justify-center transform transition-transform duration-300 ${isHovered ? 'scale-105' : ''}`}>
+        <div className={`${containerSizes[size]} relative rounded-full bg-gradient-to-b from-[#F8FBF6] to-[#FFF3DC] border-2 border-[#C8A96A]/40 shadow-sm overflow-visible flex items-center justify-center transform transition-transform duration-300 ${isHovered ? 'scale-105' : ''}`}>
           
           {/* Floating Sparkles on Hover */}
           {(isHovered || isWinking) && (
@@ -121,8 +121,8 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
               </g>
 
               {/* 4. Rosy Cheeks */}
-              <ellipse cx="28" cy="58" rx="7" ry="4" fill="#FFB7CE" opacity="0.85" className="animate-pulse-soft" />
-              <ellipse cx="72" cy="58" rx="7" ry="4" fill="#FFB7CE" opacity="0.85" className="animate-pulse-soft" />
+              <ellipse cx="28" cy="58" rx="7" ry="4" fill="#B5C9A8" opacity="0.85" className="animate-pulse-soft" />
+              <ellipse cx="72" cy="58" rx="7" ry="4" fill="#B5C9A8" opacity="0.85" className="animate-pulse-soft" />
 
               {/* 5. Snout & Nose */}
               <ellipse cx="50" cy="62" rx="15" ry="11" fill={`url(#${snoutGrad})`} stroke="#D9A05B" strokeWidth="1.5" />
@@ -182,18 +182,18 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 
       {/* Brand Text Styling */}
       <div className="flex flex-col justify-center">
-        <div className={`font-extrabold tracking-tight flex items-center gap-0.5 text-[#5A5A40] ${textSizes[size]}`}>
-          <span className="text-[#FFB347] font-black group-hover:animate-bounce inline-block">J</span>
-          <span className="group-hover:text-[#FFB347] transition-colors">olly</span>
-          <span className="text-[#A0D2EB] font-black group-hover:animate-bounce inline-block" style={{ animationDelay: '0.1s' }}>J</span>
-          <span className="group-hover:text-[#A0D2EB] transition-colors">uniors</span>
-          <span className="text-[#FFB7CE] font-black text-xl animate-pulse">.</span>
+        <div className={`font-extrabold tracking-tight flex items-center gap-0.5 text-[#1C2B1E] ${textSizes[size]}`}>
+          <span className="text-[#C8A96A] font-black group-hover:animate-bounce inline-block">J</span>
+          <span className="group-hover:text-[#C8A96A] transition-colors">olly</span>
+          <span className="text-[#8FAF7E] font-black group-hover:animate-bounce inline-block" style={{ animationDelay: '0.1s' }}>J</span>
+          <span className="group-hover:text-[#8FAF7E] transition-colors">uniors</span>
+          <span className="text-[#B5C9A8] font-black text-xl animate-pulse">.</span>
         </div>
 
         {showSubtitle && (
-          <span className={`${subtitleSizes[size]} font-bold tracking-wider text-[#8C8C70] uppercase -mt-0.5 flex items-center gap-1`}>
+          <span className={`${subtitleSizes[size]} font-bold tracking-wider text-[#5C7060] uppercase -mt-0.5 flex items-center gap-1`}>
             <span>Baby Care & Sustainable Toys</span>
-            <span className={`inline-block transition-transform duration-300 ${isHovered ? 'rotate-12 scale-125 text-[#FFB347]' : 'text-slate-400'}`}>🎈</span>
+            <span className={`inline-block transition-transform duration-300 ${isHovered ? 'rotate-12 scale-125 text-[#C8A96A]' : 'text-slate-400'}`}>🎈</span>
           </span>
         )}
       </div>

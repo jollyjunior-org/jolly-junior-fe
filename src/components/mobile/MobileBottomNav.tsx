@@ -23,7 +23,7 @@ export const MobileBottomNav: React.FC = () => {
         type="button"
         onClick={() => goToHome(router)}
         className={`flex flex-col items-center gap-0.5 text-[10px] font-bold cursor-pointer ${
-          currentView === 'home' ? 'text-[#EC4899]' : 'text-slate-500'
+          currentView === 'home' ? 'text-[#3D6B4F]' : 'text-slate-500'
         }`}
       >
         <Home className="w-5 h-5" />
@@ -41,7 +41,7 @@ export const MobileBottomNav: React.FC = () => {
           })
         }
         className={`flex flex-col items-center gap-0.5 text-[10px] font-bold cursor-pointer ${
-          currentView === 'shop' ? 'text-[#EC4899]' : 'text-slate-500'
+          currentView === 'shop' ? 'text-[#3D6B4F]' : 'text-slate-500'
         }`}
       >
         <Grid className="w-5 h-5" />
@@ -56,7 +56,7 @@ export const MobileBottomNav: React.FC = () => {
         <div className="relative">
           <Heart className="w-5 h-5" />
           {wishlist.length > 0 && (
-            <span className="absolute -top-1 -right-1.5 w-3.5 h-3.5 rounded-full bg-[#EC4899] text-white text-[9px] font-black flex items-center justify-center">
+            <span className="absolute -top-1 -right-1.5 w-3.5 h-3.5 rounded-full bg-[#3D6B4F] text-white text-[9px] font-black flex items-center justify-center">
               {wishlist.length}
             </span>
           )}

@@ -141,7 +141,7 @@ export const CheckoutModal: React.FC = () => {
         {currentView === 'checkout' ? (
           <div className="space-y-6">
             <div className="border-b border-[#F1F5F9] pb-4">
-              <span className="text-xs font-bold text-[#EC4899] bg-[#FCE7F3] px-3 py-1 rounded-full">
+              <span className="text-xs font-bold text-[#3D6B4F] bg-[#E8F0E4] px-3 py-1 rounded-full">
                 🔒 Secure 256-Bit Encrypted Checkout
               </span>
               <h2 className="text-xl font-black text-[#1E293B] mt-2">
@@ -165,7 +165,7 @@ export const CheckoutModal: React.FC = () => {
                       placeholder="e.g. Sarah Khan"
                       value={formData.fullName}
                       onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                      className="w-full px-3.5 py-2.5 bg-[#FFFDF8] border border-[#E2E8F0] rounded-xl text-xs font-semibold outline-none focus:border-[#EC4899]"
+                      className="w-full px-3.5 py-2.5 bg-[#F8FBF6] border border-[#E2E8F0] rounded-xl text-xs font-semibold outline-none focus:border-[#3D6B4F]"
                     />
                   </div>
 
@@ -177,7 +177,7 @@ export const CheckoutModal: React.FC = () => {
                       placeholder="0300 1234567"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full px-3.5 py-2.5 bg-[#FFFDF8] border border-[#E2E8F0] rounded-xl text-xs font-semibold outline-none focus:border-[#EC4899]"
+                      className="w-full px-3.5 py-2.5 bg-[#F8FBF6] border border-[#E2E8F0] rounded-xl text-xs font-semibold outline-none focus:border-[#3D6B4F]"
                     />
                   </div>
                 </div>
@@ -190,7 +190,7 @@ export const CheckoutModal: React.FC = () => {
                     placeholder="House / Apartment #, Street Name, Area"
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-[#FFFDF8] border border-[#E2E8F0] rounded-xl text-xs font-semibold outline-none focus:border-[#EC4899]"
+                    className="w-full px-3.5 py-2.5 bg-[#F8FBF6] border border-[#E2E8F0] rounded-xl text-xs font-semibold outline-none focus:border-[#3D6B4F]"
                   />
                 </div>
 
@@ -200,7 +200,7 @@ export const CheckoutModal: React.FC = () => {
                     <select
                       value={formData.city}
                       onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      className="w-full p-2.5 bg-[#FFFDF8] border border-[#E2E8F0] rounded-xl text-xs font-semibold outline-none"
+                      className="w-full p-2.5 bg-[#F8FBF6] border border-[#E2E8F0] rounded-xl text-xs font-semibold outline-none"
                     >
                       <option value="Lahore">Lahore</option>
                       <option value="Karachi">Karachi</option>
@@ -219,7 +219,7 @@ export const CheckoutModal: React.FC = () => {
                       placeholder="parent@example.com"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-3.5 py-2.5 bg-[#FFFDF8] border border-[#E2E8F0] rounded-xl text-xs font-semibold outline-none focus:border-[#EC4899]"
+                      className="w-full px-3.5 py-2.5 bg-[#F8FBF6] border border-[#E2E8F0] rounded-xl text-xs font-semibold outline-none focus:border-[#3D6B4F]"
                     />
                   </div>
                 </div>
@@ -230,17 +230,17 @@ export const CheckoutModal: React.FC = () => {
                 <h3 className="text-xs font-extrabold text-[#64748B] uppercase tracking-wider">
                   2. Payment Method
                 </h3>
-                <div className="p-3 rounded-2xl border border-[#EC4899] bg-[#FCE7F3] shadow-2xs">
+                <div className="p-3 rounded-2xl border border-[#3D6B4F] bg-[#E8F0E4] shadow-2xs">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-black text-[#1E293B]">Cash on Delivery</span>
-                    <Check className="w-4 h-4 text-[#EC4899]" />
+                    <Check className="w-4 h-4 text-[#3D6B4F]" />
                   </div>
                   <p className="text-[10px] text-[#64748B] mt-1">Pay when delivered to your doorstep</p>
                 </div>
               </div>
 
               {/* Summary Box */}
-              <div className="p-4 bg-[#FFFDF8] rounded-2xl border border-[#F1F5F9] space-y-1.5 text-xs text-[#64748B]">
+              <div className="p-4 bg-[#F8FBF6] rounded-2xl border border-[#F1F5F9] space-y-1.5 text-xs text-[#64748B]">
                 <div className="flex justify-between font-medium">
                   <span>Items Subtotal</span>
                   <span className="font-bold text-[#1E293B]">Rs. {subtotal.toLocaleString()}</span>
@@ -258,13 +258,13 @@ export const CheckoutModal: React.FC = () => {
                   </span>
                 </div>
                 {!progress.isFree && progress.remaining > 0 && (
-                  <p className="text-[10px] text-[#8C8C70]">
+                  <p className="text-[10px] text-[#5C7060]">
                     Free delivery over Rs. {progress.threshold.toLocaleString()}
                   </p>
                 )}
                 <div className="flex justify-between text-base font-black text-[#1E293B] pt-2 border-t border-[#E2E8F0]">
                   <span>Total Amount Payable</span>
-                  <span className="text-[#EC4899]">Rs. {finalTotal.toLocaleString()}</span>
+                  <span className="text-[#3D6B4F]">Rs. {finalTotal.toLocaleString()}</span>
                 </div>
               </div>
 
@@ -304,7 +304,7 @@ export const CheckoutModal: React.FC = () => {
               </p>
             </div>
 
-            <div className="p-4 bg-[#FFFDF8] rounded-2xl border border-[#F1F5F9] max-w-md mx-auto text-left space-y-2 text-xs text-slate-600">
+            <div className="p-4 bg-[#F8FBF6] rounded-2xl border border-[#F1F5F9] max-w-md mx-auto text-left space-y-2 text-xs text-slate-600">
               <p>🚚 <strong>Estimated Delivery:</strong> 1-2 Business Days</p>
               <p>📱 <strong>SMS Confirmation:</strong> Sent to {formData.phone || '0300 1234567'}</p>
               <p>📦 <strong>Package Care:</strong> Hand-sanitized & padded childproof packaging</p>

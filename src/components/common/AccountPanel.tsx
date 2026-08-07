@@ -127,8 +127,8 @@ export const AccountPanel: React.FC = () => {
     <div className="fixed inset-0 z-[75]">
       <div className="absolute inset-0 bg-black/40" onClick={() => setAccountPanelOpen(false)} />
       <aside className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-xl flex flex-col">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-[#F5F2ED]">
-          <h2 className="text-sm font-black text-[#5A5A40]">My Account</h2>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[#DDE8DC]">
+          <h2 className="text-sm font-black text-[#1C2B1E]">My Account</h2>
           <button
             type="button"
             onClick={() => setAccountPanelOpen(false)}
@@ -138,12 +138,12 @@ export const AccountPanel: React.FC = () => {
           </button>
         </div>
 
-        <div className="flex gap-1 p-3 border-b border-[#F5F2ED]">
+        <div className="flex gap-1 p-3 border-b border-[#DDE8DC]">
           <button
             type="button"
             onClick={() => setTab('profile')}
             className={`flex-1 py-2 text-xs font-bold rounded-xl cursor-pointer ${
-              tab === 'profile' ? 'bg-[#F5F2ED] text-[#5A5A40]' : 'text-slate-500'
+              tab === 'profile' ? 'bg-[#DDE8DC] text-[#1C2B1E]' : 'text-slate-500'
             }`}
           >
             Profile & Address
@@ -152,7 +152,7 @@ export const AccountPanel: React.FC = () => {
             type="button"
             onClick={() => setTab('orders')}
             className={`flex-1 py-2 text-xs font-bold rounded-xl cursor-pointer ${
-              tab === 'orders' ? 'bg-[#F5F2ED] text-[#5A5A40]' : 'text-slate-500'
+              tab === 'orders' ? 'bg-[#DDE8DC] text-[#1C2B1E]' : 'text-slate-500'
             }`}
           >
             Order History
@@ -162,7 +162,7 @@ export const AccountPanel: React.FC = () => {
         <div className="flex-1 overflow-y-auto p-4">
           {loading && (
             <div className="py-12 flex justify-center">
-              <Loader2 className="w-6 h-6 animate-spin text-[#FFB347]" />
+              <Loader2 className="w-6 h-6 animate-spin text-[#C8A96A]" />
             </div>
           )}
 
@@ -173,9 +173,9 @@ export const AccountPanel: React.FC = () => {
                   <img
                     src={avatarSrc}
                     alt={profile.name}
-                    className="w-14 h-14 rounded-full object-cover border-2 border-[#FFB347]"
+                    className="w-14 h-14 rounded-full object-cover border-2 border-[#C8A96A]"
                   />
-                  <label className="absolute -bottom-1 -right-1 p-1.5 bg-[#5A5A40] text-white rounded-full cursor-pointer">
+                  <label className="absolute -bottom-1 -right-1 p-1.5 bg-[#1C2B1E] text-white rounded-full cursor-pointer">
                     <Upload className="w-3 h-3" />
                     <input
                       type="file"
@@ -186,7 +186,7 @@ export const AccountPanel: React.FC = () => {
                   </label>
                 </div>
                 <div>
-                  <p className="text-sm font-black text-[#5A5A40]">{profile.name}</p>
+                  <p className="text-sm font-black text-[#1C2B1E]">{profile.name}</p>
                   <p className="text-[11px] text-slate-500">{profile.email}</p>
                 </div>
               </div>
@@ -239,7 +239,7 @@ export const AccountPanel: React.FC = () => {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="w-full py-2.5 bg-[#5A5A40] text-white text-xs font-bold rounded-xl cursor-pointer flex items-center justify-center gap-2"
+                  className="w-full py-2.5 bg-[#1C2B1E] text-white text-xs font-bold rounded-xl cursor-pointer flex items-center justify-center gap-2"
                 >
                   {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   Save address
@@ -265,9 +265,9 @@ export const AccountPanel: React.FC = () => {
                 <p className="text-xs text-slate-500 text-center py-10">No orders yet for this email.</p>
               ) : (
                 orders.map((o) => (
-                  <div key={o.id} className="rounded-2xl border border-[#F5F2ED] p-3 space-y-1.5">
+                  <div key={o.id} className="rounded-2xl border border-[#DDE8DC] p-3 space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-black text-[#5A5A40] flex items-center gap-1">
+                      <span className="text-xs font-black text-[#1C2B1E] flex items-center gap-1">
                         <Package className="w-3.5 h-3.5" /> {o.order_number}
                       </span>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
@@ -284,7 +284,7 @@ export const AccountPanel: React.FC = () => {
                         </li>
                       ))}
                     </ul>
-                    <p className="text-xs font-bold text-[#5A5A40]">
+                    <p className="text-xs font-bold text-[#1C2B1E]">
                       Rs. {Number(o.total_amount).toLocaleString()}
                     </p>
                   </div>

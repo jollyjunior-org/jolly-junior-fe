@@ -45,14 +45,14 @@ export const FeaturedCategories: React.FC = () => {
       {/* Section Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 gap-3">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#A0D2EB]/20 text-[#5A5A40] text-xs font-bold mb-2">
-            <Sparkles className="w-3.5 h-3.5 text-[#FFB347]" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#8FAF7E]/20 text-[#1C2B1E] text-xs font-bold mb-2">
+            <Sparkles className="w-3.5 h-3.5 text-[#C8A96A]" />
             <span>Discover by Category</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-[#5A5A40] tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-black text-[#1C2B1E] tracking-tight">
             Explore Jolly Collections
           </h2>
-          <p className="text-xs sm:text-sm text-[#8C8C70] font-medium mt-1">
+          <p className="text-xs sm:text-sm text-[#5C7060] font-medium mt-1">
             Carefully curated baby essentials & educational toys for every growth milestone
           </p>
         </div>
@@ -66,7 +66,7 @@ export const FeaturedCategories: React.FC = () => {
               searchQuery: '',
             })
           }
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FFB347] hover:text-[#5A5A40] group cursor-pointer"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#C8A96A] hover:text-[#1C2B1E] group cursor-pointer"
         >
           <span>View All Categories</span>
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -83,7 +83,7 @@ export const FeaturedCategories: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.4, delay: index * 0.05 }}
             onClick={() => handleCategorySelect(cat.slug)}
-            className="group relative rounded-xl overflow-hidden cursor-pointer shadow-xs hover:shadow-xl transition-all duration-300 h-64 sm:h-72 border border-[#F5F2ED]"
+            className="group relative rounded-xl overflow-hidden cursor-pointer shadow-xs hover:shadow-xl transition-all duration-300 h-64 sm:h-72 border border-[#DDE8DC]"
             style={{ backgroundColor: cat.color }}
           >
             {/* Background Image with Hover Zoom */}
@@ -106,7 +106,7 @@ export const FeaturedCategories: React.FC = () => {
                   {cat.itemCount} Items
                 </span>
 
-                <h3 className="text-base sm:text-lg font-black leading-tight text-white group-hover:text-[#FFB347] transition-colors">
+                <h3 className="text-base sm:text-lg font-black leading-tight text-white group-hover:text-[#C8A96A] transition-colors">
                   {cat.name}
                 </h3>
 
@@ -117,8 +117,8 @@ export const FeaturedCategories: React.FC = () => {
 
               {/* Hover Arrow Badge */}
               <div className="mt-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300 pt-1 border-t border-white/20">
-                <span className="text-[11px] font-bold text-[#FFB347]">Shop Now</span>
-                <span className="w-6 h-6 rounded-full bg-white text-[#5A5A40] flex items-center justify-center text-xs shadow-xs">
+                <span className="text-[11px] font-bold text-[#C8A96A]">Shop Now</span>
+                <span className="w-6 h-6 rounded-full bg-white text-[#1C2B1E] flex items-center justify-center text-xs shadow-xs">
                   →
                 </span>
               </div>

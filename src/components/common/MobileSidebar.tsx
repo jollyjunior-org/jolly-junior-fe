@@ -46,8 +46,8 @@ export const MobileSidebar: React.FC = () => {
         onClick={() => setMobileMenuOpen(false)}
       />
       <aside className="absolute left-0 top-0 bottom-0 w-[82%] max-w-sm bg-white shadow-xl flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-[#F5F2ED]">
-          <span className="font-black text-[#5A5A40]">Menu</span>
+        <div className="flex items-center justify-between p-4 border-b border-[#DDE8DC]">
+          <span className="font-black text-[#1C2B1E]">Menu</span>
           <button type="button" onClick={() => setMobileMenuOpen(false)} className="p-2">
             <X className="w-5 h-5" />
           </button>
@@ -56,7 +56,7 @@ export const MobileSidebar: React.FC = () => {
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {liveSales.length > 0 && (
             <div className="space-y-2">
-              <div className="text-[10px] font-black uppercase text-[#8C8C70]">Live Sales</div>
+              <div className="text-[10px] font-black uppercase text-[#5C7060]">Live Sales</div>
               {liveSales.map((sale) => (
                 <button
                   key={sale.id}
@@ -82,11 +82,11 @@ export const MobileSidebar: React.FC = () => {
           )}
 
           <div className="space-y-1">
-            <div className="text-[10px] font-black uppercase text-[#8C8C70]">Categories</div>
+            <div className="text-[10px] font-black uppercase text-[#5C7060]">Categories</div>
             <button
               type="button"
               onClick={goHome}
-              className="w-full text-left py-2 text-sm font-bold text-[#5A5A40] flex items-center gap-2"
+              className="w-full text-left py-2 text-sm font-bold text-[#1C2B1E] flex items-center gap-2"
             >
               <Home className="w-4 h-4" />
               Home
@@ -94,7 +94,7 @@ export const MobileSidebar: React.FC = () => {
             <button
               type="button"
               onClick={() => openCategory(null)}
-              className="w-full text-left py-2 text-sm font-bold text-[#5A5A40]"
+              className="w-full text-left py-2 text-sm font-bold text-[#1C2B1E]"
             >
               Shop All
             </button>
@@ -103,10 +103,10 @@ export const MobileSidebar: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => openCategory(cat.slug)}
-                  className="w-full flex items-center justify-between py-2 text-sm font-bold text-[#5A5A40]"
+                  className="w-full flex items-center justify-between py-2 text-sm font-bold text-[#1C2B1E]"
                 >
                   {cat.name}
-                  <ChevronRight className="w-4 h-4 text-[#8C8C70]" />
+                  <ChevronRight className="w-4 h-4 text-[#5C7060]" />
                 </button>
                 {(cat.subcategories || []).map((sub) => (
                   <button
@@ -121,7 +121,7 @@ export const MobileSidebar: React.FC = () => {
                       });
                       setMobileMenuOpen(false);
                     }}
-                    className="w-full text-left pl-4 py-1.5 text-xs font-semibold text-[#8C8C70]"
+                    className="w-full text-left pl-4 py-1.5 text-xs font-semibold text-[#5C7060]"
                   >
                     {sub}
                   </button>

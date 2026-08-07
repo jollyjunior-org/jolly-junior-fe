@@ -244,8 +244,8 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md shadow-xs border-b border-[#F5F2ED]">
-      <div className="bg-[#A0D2EB] text-white text-xs py-2 px-4 font-medium border-b border-[#F5F2ED]">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md shadow-xs border-b border-[#DDE8DC]">
+      <div className="bg-[#8FAF7E] text-white text-xs py-2 px-4 font-medium border-b border-[#DDE8DC]">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
           <div className="flex items-center gap-4">
             <span className="inline-flex items-center gap-1.5 font-bold">
@@ -270,11 +270,11 @@ export const Header: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="md:hidden p-2 rounded-full hover:bg-[#F5F2ED] cursor-pointer"
+            className="md:hidden p-2 rounded-full hover:bg-[#DDE8DC] cursor-pointer"
             onClick={() => setMobileMenuOpen(true)}
             aria-label="Open menu"
           >
-            <Menu className="w-5 h-5 text-[#5A5A40]" />
+            <Menu className="w-5 h-5 text-[#1C2B1E]" />
           </button>
           <BrandLogo
             size="md"
@@ -284,7 +284,7 @@ export const Header: React.FC = () => {
 
         <div className="hidden md:block flex-1 max-w-2xl relative" ref={searchRef}>
           <div className="relative flex items-center">
-            <Search className="absolute left-4 w-5 h-5 text-[#8C8C70] pointer-events-none" />
+            <Search className="absolute left-4 w-5 h-5 text-[#5C7060] pointer-events-none" />
             <input
               type="text"
               placeholder="Search toys, feeding, baby care..."
@@ -292,21 +292,21 @@ export const Header: React.FC = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setIsSearchFocused(true)}
               onKeyDown={(e) => e.key === 'Enter' && runSearch()}
-              className="w-full pl-11 pr-24 py-2.5 bg-[#F5F2ED] border-none rounded-full text-sm font-medium text-[#5A5A40] placeholder-[#8C8C70] outline-none focus:ring-2 focus:ring-[#A0D2EB]"
+              className="w-full pl-11 pr-24 py-2.5 bg-[#DDE8DC] border-none rounded-full text-sm font-medium text-[#1C2B1E] placeholder-[#5C7060] outline-none focus:ring-2 focus:ring-[#8FAF7E]"
             />
             <button
               onClick={runSearch}
-              className="absolute right-1.5 px-4 py-1.5 bg-[#5A5A40] hover:bg-[#FFB347] text-white text-xs font-bold rounded-full cursor-pointer"
+              className="absolute right-1.5 px-4 py-1.5 bg-[#1C2B1E] hover:bg-[#C8A96A] text-white text-xs font-bold rounded-full cursor-pointer"
             >
               Search
             </button>
           </div>
 
           {isSearchFocused && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-[#F5F2ED] p-4 z-50 overflow-hidden">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-[#DDE8DC] p-4 z-50 overflow-hidden">
               {searchQuery.trim().length > 1 ? (
                 <div>
-                  <div className="text-xs font-bold text-[#8C8C70] uppercase tracking-wider mb-2">
+                  <div className="text-xs font-bold text-[#5C7060] uppercase tracking-wider mb-2">
                     {searchLoading ? 'Searching…' : `Results (${apiResults.length})`}
                   </div>
                   {apiResults.length > 0 ? (
@@ -315,7 +315,7 @@ export const Header: React.FC = () => {
                         <div
                           key={product.id}
                           onClick={() => handleSelectSearchResult(product)}
-                          className="flex items-center gap-3 p-2 rounded-xl hover:bg-[#FFFDF8] cursor-pointer"
+                          className="flex items-center gap-3 p-2 rounded-xl hover:bg-[#F8FBF6] cursor-pointer"
                         >
                           <img
                             src={product.images[0]}
@@ -324,8 +324,8 @@ export const Header: React.FC = () => {
                             className="w-12 h-12 rounded-lg object-cover bg-slate-100"
                           />
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-xs font-bold text-[#5A5A40] truncate">{product.name}</h4>
-                            <div className="text-[11px] text-[#8C8C70]">
+                            <h4 className="text-xs font-bold text-[#1C2B1E] truncate">{product.name}</h4>
+                            <div className="text-[11px] text-[#5C7060]">
                               Rs. {product.price.toLocaleString()} · {product.categoryName}
                             </div>
                           </div>
@@ -350,12 +350,12 @@ export const Header: React.FC = () => {
         <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={() => setWishlistOpen(true)}
-            className="relative p-2.5 rounded-full hover:bg-[#F5F2ED] text-[#5A5A40] cursor-pointer"
+            className="relative p-2.5 rounded-full hover:bg-[#DDE8DC] text-[#1C2B1E] cursor-pointer"
             title="Wishlist"
           >
             <Heart className="w-5 h-5" />
             {wishlist.length > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#FFB7CE] text-white text-[10px] font-extrabold flex items-center justify-center">
+              <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#B5C9A8] text-white text-[10px] font-extrabold flex items-center justify-center">
                 {wishlist.length}
               </span>
             )}
@@ -364,7 +364,7 @@ export const Header: React.FC = () => {
           {isCustomerAuthenticated ? (
             <button
               onClick={() => setAccountPanelOpen(true)}
-              className="relative p-2.5 rounded-full hover:bg-[#F5F2ED] text-[#5A5A40] cursor-pointer"
+              className="relative p-2.5 rounded-full hover:bg-[#DDE8DC] text-[#1C2B1E] cursor-pointer"
               title="My account"
             >
               <User className="w-5 h-5" />
@@ -373,7 +373,7 @@ export const Header: React.FC = () => {
           ) : (
             <button
               onClick={() => setAuthModalOpen(true)}
-              className="p-2.5 rounded-full hover:bg-[#F5F2ED] text-[#5A5A40] cursor-pointer"
+              className="p-2.5 rounded-full hover:bg-[#DDE8DC] text-[#1C2B1E] cursor-pointer"
               title="Sign in"
             >
               <User className="w-5 h-5" />
@@ -382,12 +382,12 @@ export const Header: React.FC = () => {
 
           <button
             onClick={() => setCartOpen(true)}
-            className="relative p-2.5 rounded-full bg-[#5A5A40] hover:bg-[#484833] text-white cursor-pointer"
+            className="relative p-2.5 rounded-full bg-[#1C2B1E] hover:bg-[#484833] text-white cursor-pointer"
             title="Cart"
           >
             <ShoppingBag className="w-5 h-5" />
             {getCartCount() > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#FFB7CE] text-white text-[10px] font-black flex items-center justify-center">
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#B5C9A8] text-white text-[10px] font-black flex items-center justify-center">
                 {getCartCount()}
               </span>
             )}
@@ -395,7 +395,7 @@ export const Header: React.FC = () => {
         </div>
       </div>
 
-      <nav className="border-t border-[#F5F2ED] bg-[#FFFDF8] relative hidden md:block">
+      <nav className="border-t border-[#DDE8DC] bg-[#F8FBF6] relative hidden md:block">
         <div className="max-w-7xl mx-auto px-4 flex items-center">
           <div className="flex items-center space-x-1 py-1 overflow-x-auto no-scrollbar">
             {navCategories.map((cat) => {
@@ -411,10 +411,10 @@ export const Header: React.FC = () => {
                     onClick={() => handleCategoryClick(cat)}
                     className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 cursor-pointer transition-all ${
                       active
-                        ? 'bg-[#FFB347]/25 text-[#C47A1A] ring-1 ring-[#FFB347]/50'
+                        ? 'bg-[#C8A96A]/25 text-[#C47A1A] ring-1 ring-[#C8A96A]/50'
                         : hoveredCategory === cat.slug
-                          ? 'bg-[#F5F2ED] text-[#FFB347]'
-                          : 'text-[#5A5A40] hover:text-[#FFB347] hover:bg-[#F5F2ED]'
+                          ? 'bg-[#DDE8DC] text-[#C8A96A]'
+                          : 'text-[#1C2B1E] hover:text-[#C8A96A] hover:bg-[#DDE8DC]'
                     }`}
                   >
                     {cat.kind === 'sale' && <Flame className="w-3 h-3 text-rose-500" />}
@@ -425,10 +425,10 @@ export const Header: React.FC = () => {
                           cat.kind === 'sale'
                             ? 'bg-rose-500 text-white'
                             : cat.badge.toUpperCase().includes('HOT')
-                              ? 'bg-[#FFB7CE] text-white'
+                              ? 'bg-[#B5C9A8] text-white'
                               : cat.badge.toUpperCase().includes('NEW')
-                                ? 'bg-[#B4F8C8] text-[#2E6038]'
-                                : 'bg-[#FFB347] text-white'
+                                ? 'bg-[#C6E0BC] text-[#2D5A3D]'
+                                : 'bg-[#C8A96A] text-white'
                         }`}
                       >
                         {cat.badge}
@@ -437,8 +437,8 @@ export const Header: React.FC = () => {
                   </button>
 
                   {hoveredCategory === cat.slug && cat.kind === 'category' && (
-                    <div className="absolute top-full left-0 w-[420px] bg-white rounded-2xl shadow-xl border border-[#F5F2ED] p-4 z-50">
-                      <h4 className="text-xs font-black text-[#8C8C70] uppercase tracking-wider mb-2">
+                    <div className="absolute top-full left-0 w-[420px] bg-white rounded-2xl shadow-xl border border-[#DDE8DC] p-4 z-50">
+                      <h4 className="text-xs font-black text-[#5C7060] uppercase tracking-wider mb-2">
                         {cat.name}
                       </h4>
                       <div className="space-y-1">
@@ -455,7 +455,7 @@ export const Header: React.FC = () => {
                               setHoveredCategory(null);
                               setHoveredCategory(null);
                             }}
-                            className="w-full text-left text-xs font-semibold text-[#5A5A40] hover:text-[#FFB347] py-1 cursor-pointer"
+                            className="w-full text-left text-xs font-semibold text-[#1C2B1E] hover:text-[#C8A96A] py-1 cursor-pointer"
                           >
                             {sub}
                           </button>

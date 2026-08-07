@@ -12,45 +12,45 @@ export const ShopByAge: React.FC = () => {
       code: '0-6M',
       title: '0 - 6 Months',
       subtitle: 'Newborn Discovery & Soft Rattles',
-      bgColor: 'bg-[#B5C9A8]/20', // pink tint
-      textColor: 'text-[#1C2B1E]',
-      borderColor: 'border-[#DDE8DC]',
+      bgColor: 'bg-[#D9F1F5]/40',
+      textColor: 'text-[#263238]',
+      borderColor: 'border-[#D9F1F5]',
       icon: Baby
     },
     {
       code: '6-12M',
       title: '6 - 12 Months',
       subtitle: 'First Teethers & Crawling Toys',
-      bgColor: 'bg-[#C8A96A]/20', // honey tint
-      textColor: 'text-[#1C2B1E]',
-      borderColor: 'border-[#DDE8DC]',
+      bgColor: 'bg-[#DDBB8A]/25',
+      textColor: 'text-[#263238]',
+      borderColor: 'border-[#D9F1F5]',
       icon: Smile
     },
     {
       code: '1-3Y',
       title: '1 - 3 Years',
       subtitle: 'Montessori Puzzles & Stacking',
-      bgColor: 'bg-[#8FAF7E]/20', // sky blue tint
-      textColor: 'text-[#1C2B1E]',
-      borderColor: 'border-[#DDE8DC]',
+      bgColor: 'bg-[#FFD52F]/25',
+      textColor: 'text-[#263238]',
+      borderColor: 'border-[#D9F1F5]',
       icon: Sparkles
     },
     {
       code: '3-5Y',
       title: '3 - 5 Years',
       subtitle: 'Pre-school Math & Activity Cubes',
-      bgColor: 'bg-[#C6E0BC]/30', // mint tint
-      textColor: 'text-[#1C2B1E]',
-      borderColor: 'border-[#DDE8DC]',
+      bgColor: 'bg-[#D9F1F5]/60',
+      textColor: 'text-[#263238]',
+      borderColor: 'border-[#D9F1F5]',
       icon: Rocket
     },
     {
       code: '5Y+',
       title: '5+ Years',
       subtitle: 'Outdoor Balance Bikes & Play Tents',
-      bgColor: 'bg-[#EEF5E8]/50', // yellow tint
-      textColor: 'text-[#1C2B1E]',
-      borderColor: 'border-[#DDE8DC]',
+      bgColor: 'bg-[#F47C4C]/15',
+      textColor: 'text-[#263238]',
+      borderColor: 'border-[#D9F1F5]',
       icon: Heart
     }
   ];
@@ -61,19 +61,13 @@ export const ShopByAge: React.FC = () => {
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
-      <div className="text-center max-w-xl mx-auto mb-4">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#8FAF7E]/20 text-[#1C2B1E] text-xs font-bold mb-2">
-          👶 Tailored Growth Milestones
+      <div className="flex items-center mb-4">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0798AE]/15 text-[#0798AE] text-xs font-bold">
+          👶 Shop by Age
         </span>
-        <h2 className="text-2xl sm:text-3xl font-black text-[#1C2B1E] tracking-tight">
-          Shop by Baby Age Group
-        </h2>
-        <p className="text-xs sm:text-sm text-[#5C7060] font-medium mt-1">
-          Every stage of childhood deserves age-appropriate toys that foster learning & joy
-        </p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {ageGroups.map((group, idx) => {
           const Icon = group.icon;
           return (
@@ -83,28 +77,17 @@ export const ShopByAge: React.FC = () => {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.08 }}
-              whileHover={{ y: -6 }}
+              whileHover={{ y: -4 }}
               onClick={() => handleAgeSelect(group.code)}
-              className={`${group.bgColor} ${group.borderColor} border rounded-xl p-5 text-center cursor-pointer shadow-2xs hover:shadow-lg transition-all duration-300 flex flex-col items-center justify-between min-h-[160px]`}
+              className={`${group.bgColor} ${group.borderColor} border rounded-xl p-4 text-center cursor-pointer shadow-2xs hover:shadow-md transition-all duration-300 flex flex-col items-center gap-2`}
             >
-              <div className={`w-12 h-12 rounded-2xl bg-white/80 backdrop-blur-xs flex items-center justify-center ${group.textColor} shadow-xs mb-3`}>
-                <Icon className="w-6 h-6 stroke-[2.5]" />
+              <div className={`w-10 h-10 rounded-xl bg-white/80 backdrop-blur-xs flex items-center justify-center ${group.textColor} shadow-xs`}>
+                <Icon className="w-5 h-5 stroke-[2.5]" />
               </div>
-
-              <div>
-                <span className={`text-xs font-black uppercase tracking-wider ${group.textColor}`}>
-                  {group.code}
-                </span>
-                <h3 className="text-sm font-extrabold text-[#1E293B] mt-0.5">
+              <div className="pt-0.5">
+                <h3 className="text-xs font-extrabold text-[#263238] leading-tight">
                   {group.title}
                 </h3>
-                <p className="text-[11px] text-[#64748B] font-medium line-clamp-2 mt-1">
-                  {group.subtitle}
-                </p>
-              </div>
-
-              <div className={`mt-3 text-[11px] font-bold ${group.textColor} underline`}>
-                Shop Stage →
               </div>
             </motion.div>
           );

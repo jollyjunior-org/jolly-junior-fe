@@ -42,21 +42,12 @@ export const FeaturedCategories: React.FC = () => {
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
-      {/* Section Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 gap-3">
-        <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#8FAF7E]/20 text-[#1C2B1E] text-xs font-bold mb-2">
-            <Sparkles className="w-3.5 h-3.5 text-[#C8A96A]" />
-            <span>Discover by Category</span>
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-[#1C2B1E] tracking-tight">
-            Explore Jolly Collections
-          </h2>
-          <p className="text-xs sm:text-sm text-[#5C7060] font-medium mt-1">
-            Carefully curated baby essentials & educational toys for every growth milestone
-          </p>
+      {/* Section Header — badge + View All on same line */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0798AE]/15 text-[#0798AE] text-xs font-bold">
+          <Sparkles className="w-3.5 h-3.5 text-[#FFD52F]" />
+          <span>Discover by Category</span>
         </div>
-
         <button
           onClick={() =>
             goToShop(router, {
@@ -66,10 +57,10 @@ export const FeaturedCategories: React.FC = () => {
               searchQuery: '',
             })
           }
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#C8A96A] hover:text-[#1C2B1E] group cursor-pointer"
+          className="inline-flex items-center gap-1 text-xs font-bold text-[#0798AE] hover:text-[#0798AE] group cursor-pointer"
         >
-          <span>View All Categories</span>
-          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          <span>View All</span>
+          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
         </button>
       </div>
 
@@ -83,7 +74,7 @@ export const FeaturedCategories: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.4, delay: index * 0.05 }}
             onClick={() => handleCategorySelect(cat.slug)}
-            className="group relative rounded-xl overflow-hidden cursor-pointer shadow-xs hover:shadow-xl transition-all duration-300 h-64 sm:h-72 border border-[#DDE8DC]"
+            className="group relative rounded-xl overflow-hidden cursor-pointer shadow-xs hover:shadow-xl transition-all duration-300 h-64 sm:h-72 border border-[#D9F1F5]"
             style={{ backgroundColor: cat.color }}
           >
             {/* Background Image with Hover Zoom */}
@@ -99,26 +90,17 @@ export const FeaturedCategories: React.FC = () => {
             )}
 
             {/* Gradient Overlay for Readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-5 flex flex-col justify-end text-white">
-              <div className="transform group-hover:-translate-y-1 transition-transform duration-300 space-y-1">
-                {/* Item Count Pill */}
-                <span className="inline-block px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[10px] font-extrabold text-white border border-white/30 mb-1">
-                  {cat.itemCount} Items
-                </span>
-
-                <h3 className="text-base sm:text-lg font-black leading-tight text-white group-hover:text-[#C8A96A] transition-colors">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent p-4 flex flex-col justify-end text-white">
+              <div className="transform group-hover:-translate-y-1 transition-transform duration-300">
+                <h3 className="text-sm sm:text-base font-black leading-tight text-white group-hover:text-[#FFD52F] transition-colors">
                   {cat.name}
                 </h3>
-
-                <p className="text-[11px] text-slate-200 line-clamp-1 opacity-90 font-medium">
-                  {cat.description}
-                </p>
               </div>
 
               {/* Hover Arrow Badge */}
-              <div className="mt-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300 pt-1 border-t border-white/20">
-                <span className="text-[11px] font-bold text-[#C8A96A]">Shop Now</span>
-                <span className="w-6 h-6 rounded-full bg-white text-[#1C2B1E] flex items-center justify-center text-xs shadow-xs">
+              <div className="mt-2 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300 pt-1 border-t border-white/20">
+                <span className="text-[11px] font-bold text-[#FFD52F]">Shop Now</span>
+                <span className="w-6 h-6 rounded-full bg-white text-[#0798AE] flex items-center justify-center text-xs shadow-xs">
                   →
                 </span>
               </div>

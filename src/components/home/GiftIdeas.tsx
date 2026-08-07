@@ -32,25 +32,19 @@ export const GiftIdeas: React.FC = () => {
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
-      <div className="bg-[#EEF5E8]/30 rounded-xl p-4 sm:p-6 border border-[#DDE8DC] shadow-xs">
-        <div className="max-w-2xl text-center mx-auto mb-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-[#1C2B1E] text-xs font-bold shadow-2xs mb-2">
-            <Gift className="w-3.5 h-3.5 text-[#C8A96A]" />
-            <span>Interactive Gift Assistant</span>
+      <div className="bg-[#FFFDF7]/30 rounded-xl p-4 sm:p-6 border border-[#D9F1F5] shadow-xs">
+        <div className="flex items-center mb-4">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white text-[#0798AE] text-xs font-bold shadow-2xs">
+            <Gift className="w-3.5 h-3.5 text-[#FFD52F]" />
+            <span>Gift Finder</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-[#1C2B1E] tracking-tight">
-            Find the Perfect Gift for Little Ones
-          </h2>
-          <p className="text-xs sm:text-sm text-[#5C7060] font-medium mt-1">
-            Select baby age & your budget to discover curated toys, hampers and essentials
-          </p>
         </div>
 
         {/* Filter Controls */}
-        <div className="bg-white rounded-xl p-4 sm:p-5 shadow-xs border border-[#DDE8DC] max-w-3xl mx-auto mb-4 space-y-3">
+        <div className="bg-white rounded-xl p-4 sm:p-5 shadow-xs border border-[#D9F1F5] max-w-3xl mx-auto mb-4 space-y-3">
           {/* Age Selection */}
           <div>
-            <label className="block text-xs font-bold text-[#5C7060] uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-[#0798AE] uppercase tracking-wider mb-2">
               1. Choose Baby Age:
             </label>
             <div className="flex flex-wrap gap-2">
@@ -60,8 +54,8 @@ export const GiftIdeas: React.FC = () => {
                   onClick={() => setSelectedAge(age)}
                   className={`px-4 py-2 rounded-full text-xs font-extrabold transition-all cursor-pointer ${
                     selectedAge === age
-                      ? 'bg-[#1C2B1E] text-white shadow-xs'
-                      : 'bg-[#F8FBF6] hover:bg-[#DDE8DC] text-[#1C2B1E] border border-[#DDE8DC]'
+                      ? 'bg-[#0798AE] text-white shadow-xs'
+                      : 'bg-[#FFFDF7] hover:bg-[#D9F1F5] text-[#0798AE] border border-[#D9F1F5]'
                   }`}
                 >
                   {selectedAge === age && <Check className="w-3.5 h-3.5 inline mr-1" />}
@@ -73,7 +67,7 @@ export const GiftIdeas: React.FC = () => {
 
           {/* Budget Selection */}
           <div>
-            <label className="block text-xs font-bold text-[#5C7060] uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-[#0798AE] uppercase tracking-wider mb-2">
               2. Select Price Budget:
             </label>
             <div className="flex flex-wrap gap-2">
@@ -88,8 +82,8 @@ export const GiftIdeas: React.FC = () => {
                   onClick={() => setSelectedBudget(b.id as any)}
                   className={`px-4 py-2 rounded-full text-xs font-extrabold transition-all cursor-pointer ${
                     selectedBudget === b.id
-                      ? 'bg-[#C8A96A] text-white shadow-xs'
-                      : 'bg-[#F8FBF6] hover:bg-[#DDE8DC] text-[#1C2B1E] border border-[#DDE8DC]'
+                      ? 'bg-[#FFD52F] text-white shadow-xs'
+                      : 'bg-[#FFFDF7] hover:bg-[#D9F1F5] text-[#0798AE] border border-[#D9F1F5]'
                   }`}
                 >
                   {selectedBudget === b.id && <Check className="w-3.5 h-3.5 inline mr-1" />}
@@ -109,13 +103,13 @@ export const GiftIdeas: React.FC = () => {
           ) : (
             <div className="col-span-full py-10 text-center bg-white rounded-2xl p-6">
               <Gift className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-              <p className="text-xs font-bold text-[#1C2B1E]">No products match this exact combination.</p>
+              <p className="text-xs font-bold text-[#0798AE]">No products match this exact combination.</p>
               <button
                 onClick={() => {
                   setSelectedAge('0-6M');
                   setSelectedBudget('all');
                 }}
-                className="mt-3 px-4 py-1.5 bg-[#DDE8DC] text-[#1C2B1E] text-xs font-bold rounded-full cursor-pointer"
+                className="mt-3 px-4 py-1.5 bg-[#D9F1F5] text-[#0798AE] text-xs font-bold rounded-full cursor-pointer"
               >
                 Reset Filters
               </button>
@@ -133,7 +127,7 @@ export const GiftIdeas: React.FC = () => {
                 searchQuery: '',
               })
             }
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#1C2B1E] hover:bg-[#C8A96A] text-white font-extrabold text-xs rounded-full shadow-md transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#0798AE] hover:bg-[#48B8CA] text-white font-extrabold text-xs rounded-full shadow-md transition-all cursor-pointer"
           >
             <span>Explore All Baby Shower Gift Hampers</span>
             <ArrowRight className="w-4 h-4" />

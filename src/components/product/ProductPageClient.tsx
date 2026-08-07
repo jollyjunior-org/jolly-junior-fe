@@ -95,7 +95,7 @@ export default function ProductPageClient() {
   }, [slug, products]);
 
   return (
-    <div className="min-h-screen flex flex-col relative bg-[#F8FBF6] text-[#334155]">
+    <div className="min-h-screen flex flex-col relative bg-[#FFFDF7] text-[#263238]">
       <BackgroundDecorations />
       <Header />
       <MobileSidebar />
@@ -104,12 +104,12 @@ export default function ProductPageClient() {
 
       <main className="flex-1 relative z-10">
         {loading && (
-          <div className="py-24 text-center text-sm font-medium text-[#5C7060]">Loading product…</div>
+          <div className="py-24 text-center text-sm font-medium text-[#0798AE]">Loading product…</div>
         )}
         {!loading && notFound && (
           <div className="py-24 text-center space-y-2">
-            <h1 className="text-lg font-black text-[#1C2B1E]">Product not found</h1>
-            <p className="text-xs text-[#5C7060]">This link may be old or the item was unpublished.</p>
+            <h1 className="text-lg font-black text-[#0798AE]">Product not found</h1>
+            <p className="text-xs text-[#0798AE]">This link may be old or the item was unpublished.</p>
           </div>
         )}
         {!loading && product && <ProductDetailView product={product} />}

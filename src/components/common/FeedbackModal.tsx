@@ -133,25 +133,25 @@ export const FeedbackModal: React.FC = () => {
           <X className="w-4 h-4" />
         </button>
 
-        <h2 className="text-lg font-black text-[#1C2B1E] mb-1">Share your happy moment</h2>
+        <h2 className="text-lg font-black text-[#0798AE] mb-1">Share your happy moment</h2>
         <p className="text-xs text-slate-500 mb-4">
           One short note + one photo after delivery — it may appear on our homepage.
         </p>
 
         {loading && (
           <div className="py-10 flex justify-center">
-            <Loader2 className="w-6 h-6 animate-spin text-[#C8A96A]" />
+            <Loader2 className="w-6 h-6 animate-spin text-[#FFD52F]" />
           </div>
         )}
         {error && <p className="text-sm text-rose-600 font-medium py-6">{error}</p>}
         {done && (
           <div className="py-10 text-center space-y-2">
             <CheckCircle className="w-10 h-10 text-emerald-500 mx-auto" />
-            <p className="font-bold text-[#1C2B1E]">Thank you, parent!</p>
+            <p className="font-bold text-[#0798AE]">Thank you, parent!</p>
             <button
               type="button"
               onClick={close}
-              className="mt-2 px-4 py-2 bg-[#1C2B1E] text-white text-xs font-bold rounded-full cursor-pointer"
+              className="mt-2 px-4 py-2 bg-[#0798AE] text-white text-xs font-bold rounded-full cursor-pointer"
             >
               Back to shop
             </button>
@@ -185,7 +185,7 @@ export const FeedbackModal: React.FC = () => {
                   className="cursor-pointer"
                 >
                   <Star
-                    className={`w-5 h-5 ${n <= form.rating ? 'fill-[#C8A96A] text-[#C8A96A]' : 'text-slate-300'}`}
+                    className={`w-5 h-5 ${n <= form.rating ? 'fill-[#FFD52F] text-[#FFD52F]' : 'text-slate-300'}`}
                   />
                 </button>
               ))}
@@ -221,7 +221,7 @@ export const FeedbackModal: React.FC = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-2.5 bg-[#1C2B1E] text-white text-sm font-bold rounded-xl cursor-pointer flex items-center justify-center gap-2"
+              className="w-full py-2.5 bg-[#0798AE] text-white text-sm font-bold rounded-xl cursor-pointer flex items-center justify-center gap-2"
             >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               Submit feedback

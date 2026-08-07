@@ -38,7 +38,7 @@ export const QuickViewModal: React.FC = () => {
           </button>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
-            <div className="aspect-square rounded-lg overflow-hidden bg-[#F8FBF6] border border-[#F1F5F9]">
+            <div className="aspect-square rounded-lg overflow-hidden bg-[#FFFDF7] border border-[#F1F5F9]">
               <img
                 src={product.images[0]}
                 alt={product.name}
@@ -48,21 +48,21 @@ export const QuickViewModal: React.FC = () => {
             </div>
 
             <div className="space-y-3">
-              <span className="text-[10px] font-bold text-[#3D6B4F] bg-[#E8F0E4] px-2.5 py-0.5 rounded-full uppercase">
+              <span className="text-[10px] font-bold text-[#0798AE] bg-[#D9F1F5] px-2.5 py-0.5 rounded-full uppercase">
                 {product.categoryName} • Age {product.ageGroup}
               </span>
 
-              <h2 className="text-base font-black text-[#1E293B] leading-tight">
+              <h2 className="text-base font-black text-[#263238] leading-tight">
                 {product.name}
               </h2>
 
               <div className="flex items-center gap-1 text-[#F59E0B]">
                 <Star className="w-3.5 h-3.5 fill-current" />
-                <span className="text-xs font-bold text-[#1E293B]">{product.rating}</span>
+                <span className="text-xs font-bold text-[#263238]">{product.rating}</span>
                 <span className="text-xs text-slate-400">({product.reviewCount})</span>
               </div>
 
-              <div className="text-xl font-black text-[#1E293B]">
+              <div className="text-xl font-black text-[#263238]">
                 Rs. {product.price.toLocaleString()}
               </div>
 

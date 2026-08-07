@@ -90,8 +90,8 @@ export const FlashSale: React.FC = () => {
     return null;
   }
 
-  const bg = campaign.backgroundColor || '#EEF5E8';
-  const accent = campaign.accentColor || '#C8A96A';
+  const bg = campaign.backgroundColor || '#FFFDF7';
+  const accent = campaign.accentColor || '#FFD52F';
   const bgStyle: React.CSSProperties = {
     backgroundColor: `${bg}66`,
     ...(campaign.backgroundImageUrl
@@ -105,7 +105,7 @@ export const FlashSale: React.FC = () => {
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
-      <div className="rounded-xl p-4 sm:p-6 border border-[#DDE8DC] shadow-xs" style={bgStyle}>
+      <div className="rounded-xl p-4 sm:p-6 border border-[#D9F1F5] shadow-xs" style={bgStyle}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-3">
             <div
@@ -116,7 +116,7 @@ export const FlashSale: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-xl sm:text-2xl font-black text-[#1C2B1E] tracking-tight">
+                <h2 className="text-xl sm:text-2xl font-black text-[#0798AE] tracking-tight">
                   {campaign.title}
                 </h2>
                 {campaign.badgeText && (
@@ -129,44 +129,44 @@ export const FlashSale: React.FC = () => {
                 )}
               </div>
               {campaign.subtitle && (
-                <p className="text-xs text-[#5C7060] font-medium mt-0.5">{campaign.subtitle}</p>
+                <p className="text-xs text-[#0798AE] font-medium mt-0.5">{campaign.subtitle}</p>
               )}
             </div>
           </div>
 
           {campaign.endsAt && (
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 bg-white/90 backdrop-blur-xs px-4 py-2.5 rounded-2xl border border-[#DDE8DC] shadow-2xs self-start md:self-auto">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 bg-white/90 backdrop-blur-xs px-4 py-2.5 rounded-2xl border border-[#D9F1F5] shadow-2xs self-start md:self-auto">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" style={{ color: accent }} />
-                <span className="text-xs font-bold text-[#1C2B1E]">Ends in:</span>
+                <span className="text-xs font-bold text-[#0798AE]">Ends in:</span>
               </div>
-              <div className="flex flex-wrap items-center gap-1.5 font-black text-sm text-[#1C2B1E]">
-                <span className="bg-[#1C2B1E] text-white px-2 py-1 rounded-md min-w-8 text-center">
+              <div className="flex flex-wrap items-center gap-1.5 font-black text-sm text-[#0798AE]">
+                <span className="bg-[#0798AE] text-white px-2 py-1 rounded-md min-w-8 text-center">
                   {String(timeLeft.days).padStart(2, '0')}
                 </span>
-                <span className="text-[10px] font-bold text-[#5C7060]">Days</span>
+                <span className="text-[10px] font-bold text-[#0798AE]">Days</span>
                 <span>:</span>
-                <span className="bg-[#1C2B1E] text-white px-2 py-1 rounded-md min-w-8 text-center">
+                <span className="bg-[#0798AE] text-white px-2 py-1 rounded-md min-w-8 text-center">
                   {String(timeLeft.hours).padStart(2, '0')}
                 </span>
-                <span className="text-[10px] font-bold text-[#5C7060]">Hours</span>
+                <span className="text-[10px] font-bold text-[#0798AE]">Hours</span>
                 <span>:</span>
-                <span className="bg-[#1C2B1E] text-white px-2 py-1 rounded-md min-w-8 text-center">
+                <span className="bg-[#0798AE] text-white px-2 py-1 rounded-md min-w-8 text-center">
                   {String(timeLeft.minutes).padStart(2, '0')}
                 </span>
-                <span className="text-[10px] font-bold text-[#5C7060]">Minutes</span>
+                <span className="text-[10px] font-bold text-[#0798AE]">Minutes</span>
                 <span>:</span>
-                <span className="bg-[#1C2B1E] text-white px-2 py-1 rounded-md min-w-8 text-center">
+                <span className="bg-[#0798AE] text-white px-2 py-1 rounded-md min-w-8 text-center">
                   {String(timeLeft.seconds).padStart(2, '0')}
                 </span>
-                <span className="text-[10px] font-bold text-[#5C7060]">Seconds</span>
+                <span className="text-[10px] font-bold text-[#0798AE]">Seconds</span>
               </div>
             </div>
           )}
         </div>
 
         {products.length === 0 ? (
-          <p className="text-sm text-[#5C7060] font-medium text-center py-8">
+          <p className="text-sm text-[#0798AE] font-medium text-center py-8">
             Tag products with this campaign&apos;s tags in Admin to show them here.
           </p>
         ) : (
@@ -187,7 +187,7 @@ export const FlashSale: React.FC = () => {
                 categoryIds: [],
               })
             }
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-white text-[#1C2B1E] hover:bg-[#1C2B1E] hover:text-white border border-[#DDE8DC] font-bold text-xs rounded-full shadow-xs transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-white text-[#0798AE] hover:bg-[#0798AE] hover:text-white border border-[#D9F1F5] font-bold text-xs rounded-full shadow-xs transition-all cursor-pointer"
           >
             <span>See All</span>
             <ArrowRight className="w-4 h-4" />

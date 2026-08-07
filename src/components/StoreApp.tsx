@@ -124,7 +124,7 @@ export default function StoreApp() {
   });
 
   return (
-    <div className="min-h-screen flex flex-col relative bg-[#F8FBF6] text-[#334155] selection:bg-[#E8F0E4] selection:text-[#3D6B4F]">
+    <div className="min-h-screen flex flex-col relative bg-[#FFFDF7] text-[#263238] selection:bg-[#D9F1F5] selection:text-[#0798AE]">
       <BackgroundDecorations />
       <Header />
       <MobileSidebar />
@@ -155,7 +155,7 @@ export default function StoreApp() {
                     products={sectionProducts}
                     categoryFilterSlug={categorySlug}
                     badge={section.sectionBadge}
-                    badgeColor="bg-[#EEF5E8] text-[#4A7A58]"
+                    badgeColor="bg-[#FFFDF7] text-[#0798AE]"
                   />
                   {index === 1 && <GiftIdeas />}
                 </React.Fragment>

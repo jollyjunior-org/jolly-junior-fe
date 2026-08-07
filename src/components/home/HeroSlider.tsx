@@ -64,7 +64,7 @@ export const HeroSlider: React.FC = () => {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div className="relative rounded-xl overflow-hidden shadow-sm border border-[#DDE8DC] bg-[#F8FBF6] h-[380px] sm:h-[460px] md:h-[500px]">
+      <div className="relative rounded-xl overflow-hidden shadow-sm border border-[#D9F1F5] bg-[#FFFDF7] h-[380px] sm:h-[460px] md:h-[500px]">
         <AnimatePresence mode="wait">
           <motion.div
             key={slide.id}
@@ -90,7 +90,7 @@ export const HeroSlider: React.FC = () => {
                     transition={{ delay: 0.2 }}
                     className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold text-white border border-white/30"
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-[#C8A96A]" />
+                    <Sparkles className="w-3.5 h-3.5 text-[#FFD52F]" />
                     <span>{slide.badge}</span>
                   </motion.div>
                 )}
@@ -123,10 +123,10 @@ export const HeroSlider: React.FC = () => {
                 >
                   <button
                     onClick={handleSlideClick}
-                    className="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-[#1C2B1E] text-white font-extrabold text-xs sm:text-sm shadow-md hover:bg-[#C8A96A] transition-all cursor-pointer transform hover:scale-105"
+                    className="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-[#FFD52F] text-[#263238] font-extrabold text-xs sm:text-sm shadow-md hover:bg-[#0798AE] hover:text-white transition-all cursor-pointer transform hover:scale-105 group"
                   >
                     <span>{slide.buttonText}</span>
-                    <ArrowRight className="w-4 h-4 text-white" />
+                    <ArrowRight className="w-4 h-4 text-[#263238] group-hover:text-white transition-colors" />
                   </button>
                 </motion.div>
               </div>

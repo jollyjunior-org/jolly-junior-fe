@@ -28,14 +28,14 @@ export const WishlistDrawer: React.FC = () => {
           className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col justify-between"
         >
           {/* Header */}
-          <div className="p-4 sm:p-5 border-b border-[#F1F5F9] flex items-center justify-between bg-[#F8FBF6]">
+          <div className="p-4 sm:p-5 border-b border-[#F1F5F9] flex items-center justify-between bg-[#FFFDF7]">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-full bg-[#E8F0E4] text-[#3D6B4F]">
+              <div className="p-2 rounded-full bg-[#D9F1F5] text-[#0798AE]">
                 <Heart className="w-5 h-5 fill-current" />
               </div>
               <div>
-                <h3 className="font-extrabold text-[#1E293B] text-base">Your Wishlist Saved Items</h3>
-                <span className="text-xs text-[#64748B] font-medium">{wishlist.length} saved</span>
+                <h3 className="font-extrabold text-[#263238] text-base">Your Wishlist Saved Items</h3>
+                <span className="text-xs text-[#607D80] font-medium">{wishlist.length} saved</span>
               </div>
             </div>
 
@@ -53,7 +53,7 @@ export const WishlistDrawer: React.FC = () => {
               wishlistedProducts.map((product) => (
                 <div
                   key={product.id}
-                  className="p-3 bg-[#F8FBF6] rounded-2xl border border-[#F1F5F9] flex gap-3 items-center justify-between"
+                  className="p-3 bg-[#FFFDF7] rounded-2xl border border-[#F1F5F9] flex gap-3 items-center justify-between"
                 >
                   <div className="flex gap-3 items-center min-w-0">
                     <img
@@ -63,10 +63,10 @@ export const WishlistDrawer: React.FC = () => {
                       className="w-16 h-16 rounded-xl object-cover border border-[#E2E8F0] shrink-0"
                     />
                     <div className="min-w-0">
-                      <h4 className="text-xs font-bold text-[#1E293B] truncate">
+                      <h4 className="text-xs font-bold text-[#263238] truncate">
                         {product.name}
                       </h4>
-                      <p className="text-xs font-black text-[#3D6B4F] mt-0.5">
+                      <p className="text-xs font-black text-[#0798AE] mt-0.5">
                         Rs. {product.price.toLocaleString()}
                       </p>
                     </div>
@@ -75,7 +75,7 @@ export const WishlistDrawer: React.FC = () => {
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => addToCart(product)}
-                      className="p-2 rounded-full bg-[#3D6B4F] text-white hover:bg-[#BE185D] cursor-pointer shadow-xs"
+                      className="p-2 rounded-full bg-[#0798AE] text-white hover:bg-[#BE185D] cursor-pointer shadow-xs"
                       title="Add to Cart"
                     >
                       <ShoppingBag className="w-4 h-4" />

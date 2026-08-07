@@ -41,16 +41,10 @@ export const ParentReviews: React.FC = () => {
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
-      <div className="text-center max-w-xl mx-auto mb-5">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#B5C9A8]/20 text-[#1C2B1E] text-xs font-bold mb-2">
-          ❤️ Loved by Thousands of Families
+      <div className="flex items-center mb-5">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0798AE]/15 text-[#0798AE] text-xs font-bold">
+          ❤️ Happy Parent Reviews
         </span>
-        <h2 className="text-2xl sm:text-3xl font-black text-[#1C2B1E] tracking-tight">
-          Happy Parent Testimonials
-        </h2>
-        <p className="text-xs sm:text-sm text-[#5C7060] font-medium mt-1">
-          Real experiences from verified parents across Pakistan who trust JollyJuniors
-        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -62,16 +56,16 @@ export const ParentReviews: React.FC = () => {
           return (
             <div
               key={r.id}
-              className="bg-white rounded-xl p-6 border border-[#DDE8DC] shadow-xs hover:shadow-md transition-shadow relative flex flex-col justify-between"
+              className="bg-white rounded-xl p-6 border border-[#D9F1F5] shadow-xs hover:shadow-md transition-shadow relative flex flex-col justify-between"
             >
-              <Quote className="absolute top-4 right-4 w-8 h-8 text-[#B5C9A8]/30" />
+              <Quote className="absolute top-4 right-4 w-8 h-8 text-[#D9F1F5]/30" />
               <div>
-                <div className="flex items-center gap-1 text-[#C8A96A] mb-3">
+                <div className="flex items-center gap-1 text-[#FFD52F] mb-3">
                   {[...Array(r.rating)].map((_, i) => (
                     <Star key={i} className="w-4 h-4 fill-current" />
                   ))}
                 </div>
-                <p className="text-xs sm:text-sm text-[#1C2B1E] leading-relaxed font-medium italic mb-4">
+                <p className="text-xs sm:text-sm text-[#0798AE] leading-relaxed font-medium italic mb-4">
                   &quot;{r.comment}&quot;
                 </p>
                 {r.photo_url && (
@@ -79,23 +73,23 @@ export const ParentReviews: React.FC = () => {
                     src={r.photo_url}
                     alt="Customer photo"
                     referrerPolicy="no-referrer"
-                    className="w-full h-36 object-cover rounded-2xl mb-4 border border-[#DDE8DC]"
+                    className="w-full h-36 object-cover rounded-2xl mb-4 border border-[#D9F1F5]"
                   />
                 )}
               </div>
-              <div className="pt-4 border-t border-[#DDE8DC] flex items-center gap-3">
+              <div className="pt-4 border-t border-[#D9F1F5] flex items-center gap-3">
                 <img
                   src={avatar}
                   alt={r.parent_name}
                   referrerPolicy="no-referrer"
-                  className="w-11 h-11 rounded-full object-cover border-2 border-[#DDE8DC]"
+                  className="w-11 h-11 rounded-full object-cover border-2 border-[#D9F1F5]"
                 />
                 <div>
                   <div className="flex items-center gap-1">
-                    <h4 className="text-xs font-black text-[#1C2B1E]">{r.parent_name}</h4>
-                    <CheckCircle className="w-3.5 h-3.5 text-[#2D5A3D] fill-[#C6E0BC]" />
+                    <h4 className="text-xs font-black text-[#0798AE]">{r.parent_name}</h4>
+                    <CheckCircle className="w-3.5 h-3.5 text-[#0798AE] fill-[#D9F1F5]" />
                   </div>
-                  <p className="text-[10px] text-[#5C7060] font-medium">
+                  <p className="text-[10px] text-[#0798AE] font-medium">
                     {r.city || 'Pakistan'}
                     {r.product_bought ? ` · ${r.product_bought}` : ''}
                   </p>

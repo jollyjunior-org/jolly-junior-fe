@@ -61,7 +61,7 @@ export const RelatedProducts: React.FC<RelatedProductsProps> = ({
   if (loading) {
     return (
       <section className="pt-4 border-t border-[#F1F5F9]">
-        <p className="text-xs font-bold text-[#64748B]">Finding similar products…</p>
+        <p className="text-xs font-bold text-[#607D80]">Finding similar products…</p>
       </section>
     );
   }
@@ -72,14 +72,14 @@ export const RelatedProducts: React.FC<RelatedProductsProps> = ({
     <section className="pt-4 border-t border-[#F1F5F9] space-y-2">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-[#C8A96A]" />
-          <h2 className="text-lg sm:text-xl font-black text-[#1E293B]">You may also like</h2>
+          <Sparkles className="w-4 h-4 text-[#FFD52F]" />
+          <h2 className="text-lg sm:text-xl font-black text-[#263238]">You may also like</h2>
         </div>
         <div className="flex items-center gap-1.5">
           <button
             type="button"
             onClick={() => scroll('left')}
-            className="p-2 rounded-full border border-[#DDE8DC] hover:bg-[#DDE8DC] text-[#1C2B1E] transition-all cursor-pointer"
+            className="p-2 rounded-full border border-[#D9F1F5] hover:bg-[#D9F1F5] text-[#0798AE] transition-all cursor-pointer"
             title="Previous"
             aria-label="Scroll related products left"
           >
@@ -88,7 +88,7 @@ export const RelatedProducts: React.FC<RelatedProductsProps> = ({
           <button
             type="button"
             onClick={() => scroll('right')}
-            className="p-2 rounded-full border border-[#DDE8DC] hover:bg-[#DDE8DC] text-[#1C2B1E] transition-all cursor-pointer"
+            className="p-2 rounded-full border border-[#D9F1F5] hover:bg-[#D9F1F5] text-[#0798AE] transition-all cursor-pointer"
             title="Next"
             aria-label="Scroll related products right"
           >

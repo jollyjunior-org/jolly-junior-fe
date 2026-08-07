@@ -58,7 +58,7 @@ export const AuthModal: React.FC = () => {
         >
           <X className="w-4 h-4" />
         </button>
-        <h2 className="text-lg font-black text-[#1C2B1E] mb-1">Sign in</h2>
+        <h2 className="text-lg font-black text-[#0798AE] mb-1">Sign in</h2>
         <p className="text-xs text-slate-500 mb-4">
           No password — we email you a 6-digit code.
         </p>
@@ -82,7 +82,7 @@ export const AuthModal: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-[#1C2B1E] text-white text-sm font-bold rounded-xl cursor-pointer flex items-center justify-center gap-2"
+              className="w-full py-2.5 bg-[#0798AE] text-white text-sm font-bold rounded-xl cursor-pointer flex items-center justify-center gap-2"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               Send code
@@ -117,7 +117,7 @@ export const AuthModal: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-[#1C2B1E] text-white text-sm font-bold rounded-xl cursor-pointer flex items-center justify-center gap-2"
+              className="w-full py-2.5 bg-[#0798AE] text-white text-sm font-bold rounded-xl cursor-pointer flex items-center justify-center gap-2"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               Verify &amp; sign in

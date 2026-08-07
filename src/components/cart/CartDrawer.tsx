@@ -78,14 +78,14 @@ export const CartDrawer: React.FC = () => {
           className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col justify-between"
         >
           {/* Header */}
-          <div className="p-4 sm:p-5 border-b border-[#F1F5F9] flex items-center justify-between bg-[#F8FBF6]">
+          <div className="p-4 sm:p-5 border-b border-[#F1F5F9] flex items-center justify-between bg-[#FFFDF7]">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-full bg-[#E8F0E4] text-[#3D6B4F]">
+              <div className="p-2 rounded-full bg-[#D9F1F5] text-[#0798AE]">
                 <ShoppingBag className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-extrabold text-[#1E293B] text-base">Your Shopping Cart</h3>
-                <span className="text-xs text-[#64748B] font-medium">{cart.length} items</span>
+                <h3 className="font-extrabold text-[#263238] text-base">Your Shopping Cart</h3>
+                <span className="text-xs text-[#607D80] font-medium">{cart.length} items</span>
               </div>
             </div>
 
@@ -98,8 +98,8 @@ export const CartDrawer: React.FC = () => {
           </div>
 
           {/* Free Shipping Progress Bar */}
-          <div className="bg-[#EEF5E8] p-3.5 border-b border-[#FDE68A]">
-            <div className="text-xs font-bold text-[#4A7A58] flex items-center justify-between mb-1.5">
+          <div className="bg-[#FFFDF7] p-3.5 border-b border-[#FDE68A]">
+            <div className="text-xs font-bold text-[#0798AE] flex items-center justify-between mb-1.5">
               <span>
                 {progress.isFree ? '🎉 Congratulations! You unlocked Free Express Shipping!' : `Add Rs. ${progress.remaining.toLocaleString()} more for FREE Delivery`}
               </span>
@@ -121,7 +121,7 @@ export const CartDrawer: React.FC = () => {
                 return (
                   <div
                     key={`${item.product.id}-${item.variant?.id || 'std'}-${idx}`}
-                    className="p-3 bg-[#F8FBF6] rounded-2xl border border-[#F1F5F9] flex gap-3 items-center"
+                    className="p-3 bg-[#FFFDF7] rounded-2xl border border-[#F1F5F9] flex gap-3 items-center"
                   >
                     <img
                       src={item.product.images[0]}
@@ -131,15 +131,15 @@ export const CartDrawer: React.FC = () => {
                     />
 
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-xs font-bold text-[#1E293B] truncate">
+                      <h4 className="text-xs font-bold text-[#263238] truncate">
                         {item.product.name}
                       </h4>
                       {item.variant && (
-                        <p className="text-[10px] text-[#3D6B4F] font-medium">
+                        <p className="text-[10px] text-[#0798AE] font-medium">
                           Variant: {item.variant.name}
                         </p>
                       )}
-                      <p className="text-xs font-black text-[#1E293B] mt-0.5">
+                      <p className="text-xs font-black text-[#263238] mt-0.5">
                         Rs. {itemPrice.toLocaleString()}
                       </p>
 
@@ -187,7 +187,7 @@ export const CartDrawer: React.FC = () => {
                       searchQuery: '',
                     });
                   }}
-                  className="px-5 py-2 bg-[#3D6B4F] text-white text-xs font-bold rounded-full cursor-pointer shadow-xs"
+                  className="px-5 py-2 bg-[#0798AE] text-white text-xs font-bold rounded-full cursor-pointer shadow-xs"
                 >
                   Start Shopping Toys & Essentials
                 </button>
@@ -197,7 +197,7 @@ export const CartDrawer: React.FC = () => {
 
           {/* Footer Checkout Summary */}
           {cart.length > 0 && (
-            <div className="p-4 sm:p-5 border-t border-[#F1F5F9] bg-[#F8FBF6] space-y-3">
+            <div className="p-4 sm:p-5 border-t border-[#F1F5F9] bg-[#FFFDF7] space-y-3">
               {/* Promo Code Form */}
               <form onSubmit={handleApplyPromo} className="flex gap-2">
                 <div className="relative flex-1">
@@ -207,13 +207,13 @@ export const CartDrawer: React.FC = () => {
                     placeholder="Promo code"
                     value={promoInput}
                     onChange={(e) => setPromoInput(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-white border border-[#E2E8F0] rounded-xl text-xs font-semibold uppercase outline-none focus:border-[#3D6B4F]"
+                    className="w-full pl-9 pr-3 py-2 bg-white border border-[#E2E8F0] rounded-xl text-xs font-semibold uppercase outline-none focus:border-[#0798AE]"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={promoLoading}
-                  className="px-4 py-2 bg-[#1E293B] text-white rounded-xl text-xs font-bold hover:bg-slate-800 cursor-pointer disabled:opacity-60"
+                  className="px-4 py-2 bg-[#263238] text-white rounded-xl text-xs font-bold hover:bg-slate-800 cursor-pointer disabled:opacity-60"
                 >
                   {promoLoading ? '…' : 'Apply'}
                 </button>
@@ -232,10 +232,10 @@ export const CartDrawer: React.FC = () => {
               )}
 
               {/* Subtotal Calculation */}
-              <div className="space-y-1 text-xs text-[#64748B] pt-1">
+              <div className="space-y-1 text-xs text-[#607D80] pt-1">
                 <div className="flex justify-between font-medium">
                   <span>Subtotal</span>
-                  <span className="font-bold text-[#1E293B]">Rs. {subtotal.toLocaleString()}</span>
+                  <span className="font-bold text-[#263238]">Rs. {subtotal.toLocaleString()}</span>
                 </div>
                 {discountAmount > 0 && (
                   <div className="flex justify-between text-[#059669] font-bold">
@@ -250,11 +250,11 @@ export const CartDrawer: React.FC = () => {
                   </span>
                 </div>
                 {!progress.isFree && progress.remaining > 0 && (
-                  <p className="text-[10px] text-[#5C7060]">
+                  <p className="text-[10px] text-[#0798AE]">
                     Add Rs. {progress.remaining.toLocaleString()} more for free delivery
                   </p>
                 )}
-                <div className="flex justify-between text-base font-black text-[#1E293B] pt-2 border-t border-[#E2E8F0]">
+                <div className="flex justify-between text-base font-black text-[#263238] pt-2 border-t border-[#E2E8F0]">
                   <span>Total</span>
                   <span>Rs. {finalTotal.toLocaleString()}</span>
                 </div>

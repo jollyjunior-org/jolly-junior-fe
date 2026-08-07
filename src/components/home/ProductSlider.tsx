@@ -108,18 +108,36 @@ export const ProductSlider: React.FC<ProductSliderProps> = ({
       </div>
 
       {/* Horizontal swipe — 2 cards visible on mobile */}
-      <div
-        ref={scrollRef}
-        className="flex gap-2 sm:gap-4 overflow-x-auto no-scrollbar pb-2 pt-1 snap-x snap-mandatory"
-      >
-        {visibleProducts.map((product) => (
-          <div
-            key={product.id}
-            className="w-[calc(50%-4px)] sm:w-[240px] md:w-[260px] shrink-0 snap-start"
-          >
-            <ProductCard product={product} compact />
-          </div>
-        ))}
+      <div className="relative">
+        {/* Mobile-only floating scroll arrows */}
+        <button
+          onClick={() => scroll('left')}
+          className="sm:hidden absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-white/90 border border-[#D9F1F5] shadow-md text-[#0798AE] -ml-1 cursor-pointer"
+          aria-label="Scroll left"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => scroll('right')}
+          className="sm:hidden absolute right-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-white/90 border border-[#D9F1F5] shadow-md text-[#0798AE] -mr-1 cursor-pointer"
+          aria-label="Scroll right"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+
+        <div
+          ref={scrollRef}
+          className="flex gap-2 sm:gap-4 overflow-x-auto no-scrollbar pb-2 pt-1 snap-x snap-mandatory"
+        >
+          {visibleProducts.map((product) => (
+            <div
+              key={product.id}
+              className="w-[calc(50%-4px)] sm:w-[240px] md:w-[260px] shrink-0 snap-start"
+            >
+              <ProductCard product={product} compact />
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

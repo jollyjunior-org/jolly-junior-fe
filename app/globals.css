@@ -160,19 +160,13 @@
   scrollbar-width: none;
 }
 
-/* Custom scrollbar for drawer & modal content */
+/* Hide page scrollbar globally — scroll still works */
+html, body {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  display: none; /* Chrome, Safari, Opera */
+  width: 0;
+  height: 0;
 }
-::-webkit-scrollbar-track {
-  background: #FFFDF8;
-}
-::-webkit-scrollbar-thumb {
-  background: #F1F5F9;
-  border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #CBD5E1;
-}
-

@@ -44,10 +44,20 @@ export const FeaturedCategories: React.FC = () => {
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
       {/* Section Header — badge + View All on same line */}
       <div className="flex items-center justify-between mb-4">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0798AE]/15 text-[#0798AE] text-xs font-bold">
+        <button
+          onClick={() =>
+            goToShop(router, {
+              categoryId: null,
+              categoryIds: [],
+              saleKey: null,
+              searchQuery: '',
+            })
+          }
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0798AE]/15 text-[#0798AE] text-xs font-bold cursor-pointer hover:opacity-80 transition-opacity"
+        >
           <Sparkles className="w-3.5 h-3.5 text-[#FFD52F]" />
           <span>Discover by Category</span>
-        </div>
+        </button>
         <button
           onClick={() =>
             goToShop(router, {

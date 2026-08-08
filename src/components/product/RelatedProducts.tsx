@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import type { Product } from '@/types';
 import { ProductCard } from '@/components/product/ProductCard';
+import { Loader } from '@/components/common/Loader';
 import * as productService from '@/services/product-service';
 
 interface RelatedProductsProps {
@@ -60,9 +61,9 @@ export const RelatedProducts: React.FC<RelatedProductsProps> = ({
 
   if (loading) {
     return (
-      <section className="pt-4 border-t border-[#F1F5F9]">
-        <p className="text-xs font-bold text-[#607D80]">Finding similar products…</p>
-      </section>
+      <div className="py-12">
+        <Loader text="Loading related products..." size="sm" />
+      </div>
     );
   }
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Filter, X, RotateCcw, Search, Sparkles, ChevronDown } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
 import { ProductCard } from '../product/ProductCard';
+import { Loader } from '../common/Loader';
 
 /**
  * Shop catalog — loads products from store APIs by category / search / sale.
@@ -301,8 +302,8 @@ export const ShopPage: React.FC = () => {
           )}
 
           {shopLoading && filteredProducts.length === 0 ? (
-            <div className="py-16 text-center bg-white rounded-xl p-8 border border-[#F1F5F9]">
-              <p className="text-sm font-bold text-[#607D80]">Loading products…</p>
+            <div className="py-8 bg-white rounded-xl border border-[#F1F5F9]">
+              <Loader text="Loading catalog..." size="md" />
             </div>
           ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5">

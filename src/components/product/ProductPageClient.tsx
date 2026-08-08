@@ -14,6 +14,7 @@ import { MobileSidebar } from '@/components/common/MobileSidebar';
 import { AuthModal } from '@/components/common/AuthModal';
 import { AccountPanel } from '@/components/common/AccountPanel';
 import { Toast } from '@/components/common/Toast';
+import { Loader } from '@/components/common/Loader';
 import { ProductDetailView } from '@/components/product/ProductDetailView';
 import * as productService from '@/services/product-service';
 import type { Product } from '@/types';
@@ -104,7 +105,7 @@ export default function ProductPageClient() {
 
       <main className="flex-1 relative z-10">
         {loading && (
-          <div className="py-24 text-center text-sm font-medium text-[#0798AE]">Loading product…</div>
+          <Loader text="Loading product..." size="lg" className="py-24" />
         )}
         {!loading && notFound && (
           <div className="py-24 text-center space-y-2">

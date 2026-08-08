@@ -15,11 +15,10 @@ function diffToParts(endsAt: string | null | undefined, serverSkewMs: number) {
   const now = Date.now() + serverSkewMs;
   const ms = Math.max(0, end - now);
   const totalSec = Math.floor(ms / 1000);
-  const days = Math.floor(totalSec / 86400);
-  const hours = Math.floor((totalSec % 86400) / 3600);
+  const hours = Math.floor(totalSec / 3600);
   const minutes = Math.floor((totalSec % 3600) / 60);
   const seconds = totalSec % 60;
-  return { days, hours, minutes, seconds, expired: ms <= 0 };
+  return { hours, minutes, seconds, expired: ms <= 0 };
 }
 
 /**
@@ -32,7 +31,7 @@ export const FlashSale: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLive, setIsLive] = useState(false);
   const [serverSkewMs, setServerSkewMs] = useState(0);
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -74,7 +73,6 @@ export const FlashSale: React.FC = () => {
     const tick = () => {
       const parts = diffToParts(campaign.endsAt, serverSkewMs);
       setTimeLeft({
-        days: parts.days,
         hours: parts.hours,
         minutes: parts.minutes,
         seconds: parts.seconds,
@@ -141,11 +139,6 @@ export const FlashSale: React.FC = () => {
                 <span className="text-xs font-bold text-[#0798AE]">Ends in:</span>
               </div>
               <div className="flex flex-wrap items-center gap-1.5 font-black text-sm text-[#0798AE]">
-                <span className="bg-[#0798AE] text-white px-2 py-1 rounded-md min-w-8 text-center">
-                  {String(timeLeft.days).padStart(2, '0')}
-                </span>
-                <span className="text-[10px] font-bold text-[#0798AE]">Days</span>
-                <span>:</span>
                 <span className="bg-[#0798AE] text-white px-2 py-1 rounded-md min-w-8 text-center">
                   {String(timeLeft.hours).padStart(2, '0')}
                 </span>

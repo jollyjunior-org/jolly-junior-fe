@@ -42,14 +42,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
     router.push(productPath(product));
   };
 
-  const handleWhatsAppOrder = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!isAvailable) return;
-    const text = encodeURIComponent(
-      `Hi JollyJuniors! 👋 I want to order:\n\n*${product.name}*\nPrice: Rs. ${product.price.toLocaleString()}\nAge: ${product.ageGroup}\nLink: JollyJuniors.com`,
-    );
-    window.open(`https://wa.me/923001234567?text=${text}`, '_blank');
-  };
 
   /** Add to cart without navigating away. */
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -285,26 +277,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
           </div>
 
           <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={handleWhatsAppOrder}
-              disabled={!isAvailable}
-              className={`p-2 rounded-full transition-colors ${
-                isAvailable
-                  ? 'bg-[#D9F1F5] text-[#0798AE] hover:bg-[#48B8CA] hover:text-white cursor-pointer'
-                  : 'bg-slate-100 text-slate-300 cursor-not-allowed'
-              }`}
-              title={
-                comingSoon
-                  ? 'Coming Soon'
-                  : isAvailable
-                    ? 'Order via WhatsApp'
-                    : 'Product Out of Stock'
-              }
-            >
-              <MessageSquare className="w-4 h-4 fill-current" />
-            </button>
-
             <button
               type="button"
               onClick={handleAddToCart}

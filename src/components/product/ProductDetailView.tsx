@@ -30,6 +30,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
     isInWishlist,
     setCurrentView,
     showToast,
+    setBuyNowItem,
   } = useShopStore();
 
   const [selectedImage, setSelectedImage] = useState(product.images[0]);
@@ -88,17 +89,10 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
     }
   };
 
-  const handleWhatsAppOrder = () => {
-    const text = encodeURIComponent(
-      `Hi JollyJuniors! 👋 I want to order:\n\n*${product.name}*\nVariant: ${selectedVariant ? selectedVariant.name : 'Standard'}\nQuantity: ${quantity}\nTotal: Rs. ${(currentPrice * quantity).toLocaleString()}\n\nLink: ${typeof window !== 'undefined' ? window.location.href : ''}\n\nAddress Details:`,
-    );
-    window.open(`https://wa.me/923001234567?text=${text}`, '_blank');
-  };
 
   const handleBuyNow = () => {
-    addToCart(product, selectedVariant, quantity);
+    setBuyNowItem({ product, variant: selectedVariant ?? undefined, quantity });
     setCurrentView('checkout');
-    router.push('/');
   };
 
   const handleAddBundleToCart = () => {
@@ -363,19 +357,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
                   {comingSoon ? 'Coming Soon' : isAvailable ? 'Buy Now' : 'Unavailable'}
                 </button>
               </div>
-              <button
-                type="button"
-                onClick={() => isAvailable && handleWhatsAppOrder()}
-                disabled={!isAvailable}
-                className={`w-full py-2.5 rounded-full font-extrabold text-xs flex items-center justify-center gap-2 ${
-                  isAvailable
-                    ? 'bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC] cursor-pointer'
-                    : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                }`}
-              >
-                <MessageSquare className="w-4 h-4" />
-                {comingSoon ? 'Coming Soon' : isAvailable ? 'Order via WhatsApp' : 'Unavailable'}
-              </button>
+
               <div className="grid grid-cols-3 gap-2 pt-3 text-[11px] font-semibold text-[#607D80] text-center border-t border-[#F1F5F9]">
                 <div className="flex flex-col items-center gap-1">
                   <Truck className="w-4 h-4 text-[#3B82F6]" />

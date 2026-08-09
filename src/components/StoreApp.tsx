@@ -24,6 +24,7 @@ import { AuthModal } from '@/components/common/AuthModal';
 import { AccountPanel } from '@/components/common/AccountPanel';
 import { FeedbackModal } from '@/components/common/FeedbackModal';
 import { Toast } from '@/components/common/Toast';
+import { ScrollToTop } from '@/components/common/ScrollToTop';
 import { MessageSquare } from 'lucide-react';
 import { productsForHomeSection } from '@/services/home-section-resolver';
 import { readShopUrl } from '@/utils/shop-url';
@@ -96,7 +97,10 @@ export default function StoreApp() {
         // Load category / store products for this URL
         void useShopStore.getState().fetchShopCatalog();
       } else if (path === '/' || path === '') {
-        setCurrentView('home');
+        const current = useShopStore.getState().currentView;
+        if (current !== 'checkout' && current !== 'order-success') {
+          setCurrentView('home');
+        }
       }
     };
 
@@ -185,6 +189,7 @@ export default function StoreApp() {
         <MessageSquare className="w-6 h-6 fill-current" />
       </a>
 
+      <ScrollToTop />
       <MobileBottomNav />
       <Toast />
     </div>

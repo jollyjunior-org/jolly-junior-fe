@@ -17,7 +17,8 @@ export const ProductDetailModal: React.FC = () => {
     addToCart, 
     toggleWishlist, 
     isInWishlist,
-    setCurrentView
+    setCurrentView,
+    setBuyNowItem
   } = useShopStore();
 
   const product = selectedProductDetail;
@@ -60,15 +61,9 @@ export const ProductDetailModal: React.FC = () => {
     ? products.find(p => p.id === product.frequentlyBoughtTogetherId)
     : null;
 
-  const handleWhatsAppOrder = () => {
-    const text = encodeURIComponent(
-      `Hi JollyJuniors! 👋 I want to order:\n\n*${product.name}*\nVariant: ${selectedVariant ? selectedVariant.name : 'Standard'}\nQuantity: ${quantity}\nTotal: Rs. ${(currentPrice * quantity).toLocaleString()}\n\nAddress Details:`
-    );
-    window.open(`https://wa.me/923001234567?text=${text}`, '_blank');
-  };
 
   const handleBuyNow = () => {
-    addToCart(product, selectedVariant, quantity);
+    setBuyNowItem({ product, variant: selectedVariant ?? undefined, quantity });
     setSelectedProductDetail(null);
     setCurrentView('checkout');
   };
@@ -313,26 +308,6 @@ export const ProductDetailModal: React.FC = () => {
                       <span>{comingSoon ? 'Coming Soon' : isAvailable ? 'Buy Now' : 'Unavailable'}</span>
                     </button>
                   </div>
-
-                  {/* Direct WhatsApp Order Button */}
-                  <button
-                    onClick={() => isAvailable && handleWhatsAppOrder()}
-                    disabled={!isAvailable}
-                    className={`w-full py-2.5 px-4 rounded-full font-extrabold text-xs flex items-center justify-center gap-2 transition-all ${
-                      isAvailable
-                        ? 'bg-[#DCFCE7] text-[#15803D] hover:bg-[#BBF7D0] border border-[#86EFAC] cursor-pointer'
-                        : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
-                    }`}
-                  >
-                    <MessageSquare className={`w-4 h-4 ${isAvailable ? 'fill-[#22C55E]' : 'fill-slate-300'}`} />
-                    <span>
-                      {comingSoon
-                        ? 'Coming Soon — WhatsApp orders unavailable'
-                        : isAvailable
-                          ? 'Instant Order via WhatsApp'
-                          : 'WhatsApp Orders Disabled (Out of Stock)'}
-                    </span>
-                  </button>
 
                   {/* Trust Badges */}
                   <div className="grid grid-cols-3 gap-2 pt-3 text-[11px] font-semibold text-[#607D80] text-center border-t border-[#F1F5F9]">

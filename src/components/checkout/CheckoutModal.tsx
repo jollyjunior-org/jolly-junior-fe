@@ -8,8 +8,10 @@ import { publicEndpoints } from '@/api/endpoints/public';
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
+import { useRouter } from 'next/navigation';
 
 export const CheckoutModal: React.FC = () => {
+  const router = useRouter();
   const { 
     cart, 
     getCartTotal, 
@@ -25,6 +27,10 @@ export const CheckoutModal: React.FC = () => {
     addOrder,
     isCustomerAuthenticated,
     customerToken,
+    buyNowItem,
+    setBuyNowItem,
+    shippingConfig,
+    showToast,
   } = useShopStore();
 
   const [formData, setFormData] = useState({
@@ -71,10 +77,27 @@ export const CheckoutModal: React.FC = () => {
 
   if (currentView !== 'checkout' && currentView !== 'order-success') return null;
 
-  const subtotal = getCartTotal();
-  const progress = getFreeShippingProgress();
-  const deliveryFee = getDeliveryFee();
-  const discountAmount = getPromoDiscountAmount();
+  const checkoutItems = buyNowItem ? [buyNowItem] : cart;
+  const isBuyNow = !!buyNowItem;
+
+  const subtotal = isBuyNow 
+    ? (buyNowItem.variant?.price ?? buyNowItem.product.price) * buyNowItem.quantity
+    : getCartTotal();
+
+  const deliveryFee = isBuyNow
+    ? (subtotal >= shippingConfig.freeDeliveryThreshold ? 0 : shippingConfig.deliveryFee)
+    : getDeliveryFee();
+
+  const progress = isBuyNow
+    ? {
+        threshold: shippingConfig.freeDeliveryThreshold,
+        remaining: Math.max(0, shippingConfig.freeDeliveryThreshold - subtotal),
+        isFree: subtotal >= shippingConfig.freeDeliveryThreshold,
+        percent: Math.min(100, (subtotal / shippingConfig.freeDeliveryThreshold) * 100),
+      }
+    : getFreeShippingProgress();
+
+  const discountAmount = isBuyNow ? 0 : getPromoDiscountAmount();
   const finalTotal = Math.max(0, subtotal - discountAmount) + deliveryFee;
 
   const triggerConfetti = () => {
@@ -105,7 +128,7 @@ export const CheckoutModal: React.FC = () => {
         totalAmount: finalTotal,
         notes: formData.notes,
         userId: formData.userId || undefined,
-        items: cart.map(c => ({
+        items: checkoutItems.map(c => ({
           productId: c.product.id,
           productName: c.product.name,
           productImage: c.product.images[0],
@@ -118,8 +141,17 @@ export const CheckoutModal: React.FC = () => {
       addOrder(newOrder);
       setLastOrderNumber(orderNum);
       setIsSubmitting(false);
-      clearCart();
-      setCurrentView('order-success');
+
+      if (isBuyNow) {
+        setBuyNowItem(null);
+      } else {
+        clearCart();
+      }
+      
+      triggerConfetti();
+      showToast('Order placed successfully!');
+      setCurrentView('home');
+      router.push('/');
       triggerConfetti();
     }, 1000);
   };
@@ -132,7 +164,17 @@ export const CheckoutModal: React.FC = () => {
         className="relative bg-white rounded-3xl shadow-2xl border border-[#F1F5F9] max-w-2xl w-full p-6 sm:p-8 overflow-hidden max-h-[92vh] overflow-y-auto"
       >
         <button
-          onClick={() => setCurrentView('home')}
+          onClick={() => {
+            if (isBuyNow) setBuyNowItem(null);
+            
+            if (window.location.pathname === '/' || window.location.pathname === '') {
+              // If on main site, return to whatever view (home/shop) they were looking at
+              setCurrentView(window.location.search.includes('view=shop') || window.location.search.includes('category=') ? 'shop' : 'home');
+            } else {
+              // If on a dedicated product page, just close the modal
+              setCurrentView('shop');
+            }
+          }}
           className="absolute top-4 right-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 cursor-pointer"
         >
           <X className="w-5 h-5" />

@@ -1,16 +1,6 @@
 import { Metadata } from 'next';
-import dynamic from 'next/dynamic';
+import ProductPageWrapper from '@/components/product/ProductPageWrapper';
 import { fetchPublicProduct } from '@/services/product-service';
-
-const ProductPageClient = dynamic(() => import('@/components/product/ProductPageClient'), {
-  ssr: false,
-  loading: () => (
-    <div className="min-h-screen bg-[#FFFDF8] flex items-center justify-center text-[#8C8C70] text-sm font-medium">
-      Loading product…
-    </div>
-  ),
-});
-
 /**
  * Generate dynamic Open Graph metadata for social sharing.
  */
@@ -61,5 +51,5 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
  * Example: /product/wooden-sorting-tower
  */
 export default function ProductPage() {
-  return <ProductPageClient />;
+  return <ProductPageWrapper />;
 }

@@ -21,7 +21,9 @@ export const CartDrawer: React.FC = () => {
     applyPromoCode,
     clearPromoCode,
     setCurrentView,
-    showToast
+    showToast,
+    isCustomerAuthenticated,
+    setAuthModalOpen
   } = useShopStore();
 
   const [promoInput, setPromoInput] = useState('');
@@ -47,19 +49,6 @@ export const CartDrawer: React.FC = () => {
     } finally {
       setPromoLoading(false);
     }
-  };
-
-  const handleWhatsAppCheckout = () => {
-    if (cart.length === 0) return;
-    const itemsList = cart.map((item, idx) => 
-      `${idx + 1}. *${item.product.name}* ${item.variant ? `(${item.variant.name})` : ''} x${item.quantity} - Rs. ${((item.variant ? item.variant.price : item.product.price) * item.quantity).toLocaleString()}`
-    ).join('\n');
-
-    const message = encodeURIComponent(
-      `Hi JollyJuniors! 👋 I want to place an order:\n\n${itemsList}\n\n*Subtotal:* Rs. ${subtotal.toLocaleString()}\n${discountAmount > 0 ? `*Discount (${appliedPromo?.code}):* -Rs. ${discountAmount.toLocaleString()}\n` : ''}*Delivery Fee:* ${progress.isFree ? 'FREE' : `Rs. ${deliveryFee}`}\n*Total Payable:* Rs. ${finalTotal.toLocaleString()}\n\nPlease confirm availability and delivery timeframe!`
-    );
-
-    window.open(`https://wa.me/923001234567?text=${message}`, '_blank');
   };
 
   const handleProceedCheckout = () => {
@@ -270,13 +259,18 @@ export const CartDrawer: React.FC = () => {
                   <ArrowRight className="w-4 h-4" />
                 </button>
 
-                <button
-                  onClick={handleWhatsAppCheckout}
-                  className="w-full py-2.5 rounded-full bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC] font-extrabold text-xs flex items-center justify-center gap-2 cursor-pointer hover:bg-[#BBF7D0]"
-                >
-                  <MessageSquare className="w-4 h-4 fill-[#22C55E]" />
-                  <span>Order via WhatsApp</span>
-                </button>
+
+                {!isCustomerAuthenticated && (
+                  <button
+                    onClick={() => {
+                      setCartOpen(false);
+                      setAuthModalOpen(true);
+                    }}
+                    className="w-full mt-2 text-xs text-[#0798AE] font-bold hover:underline cursor-pointer"
+                  >
+                    Login / Register to save your order history
+                  </button>
+                )}
               </div>
             </div>
           )}

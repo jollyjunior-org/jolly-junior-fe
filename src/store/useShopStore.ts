@@ -63,6 +63,7 @@ interface ShopStore {
   users: AppUser[];
   inventoryStats: InventoryStats;
   cart: CartItem[];
+  buyNowItem: CartItem | null;
   wishlist: string[];
   filter: FilterState;
   quickViewProduct: Product | null;
@@ -101,6 +102,7 @@ interface ShopStore {
   } | null;
 
   addToCart: (product: Product, variant?: ProductVariant, quantity?: number) => void;
+  setBuyNowItem: (item: CartItem | null) => void;
   removeFromCart: (productId: string, variantId?: string) => void;
   updateQuantity: (productId: string, variantId: string | undefined, delta: number) => void;
   clearCart: () => void;
@@ -216,6 +218,7 @@ export const useShopStore = create<ShopStore>((set, get) => ({
   users: [],
   // SSR-safe defaults — hydrate from localStorage after mount (avoids hydration mismatch)
   cart: [],
+  buyNowItem: null,
   wishlist: [],
   filter: initialFilter,
   inventoryStats: emptyInventoryStats,
@@ -297,6 +300,10 @@ export const useShopStore = create<ShopStore>((set, get) => ({
       get().showToast(`Added "${targetProduct.name.slice(0, 24)}..." to cart! 🛍️`);
     }
     void get().syncCartToServer();
+  },
+
+  setBuyNowItem: (item) => {
+    set({ buyNowItem: item });
   },
 
   removeFromCart: (productId, variantId) => {

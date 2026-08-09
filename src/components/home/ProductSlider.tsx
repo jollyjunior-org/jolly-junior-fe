@@ -74,9 +74,9 @@ export const ProductSlider: React.FC<ProductSliderProps> = ({
             {badge && (
               <button
                 onClick={handleViewAll}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0798AE]/15 text-[#0798AE] text-xs font-bold cursor-pointer hover:opacity-80 transition-opacity"
+                className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-[#0798AE]/15 text-[#0798AE] text-[10px] sm:text-xs font-bold cursor-pointer hover:opacity-80 transition-opacity"
               >
-                <Sparkles className="w-3.5 h-3.5 text-[#FFD52F]" />
+                <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-[#FFD52F]" />
                 <span>{badge}</span>
               </button>
             )}

@@ -133,7 +133,7 @@ export const FlashSale: React.FC = () => {
                   {campaign.title}
                 </h2>
                 {campaign.badgeText && (
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0798AE]/15 text-[#0798AE] text-xs font-bold">
+                  <div className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-[#0798AE]/15 text-[#0798AE] text-[10px] sm:text-xs font-bold">
                     <span>{campaign.badgeText}</span>
                   </div>
                 )}
@@ -146,7 +146,7 @@ export const FlashSale: React.FC = () => {
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 self-start md:self-auto">
           {campaign.endsAt && (
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 bg-white/90 backdrop-blur-xs px-4 py-2.5 rounded-2xl border border-[#D9F1F5] shadow-2xs">
+            <div className="flex flex-row items-center gap-1.5 sm:gap-2 bg-white/90 backdrop-blur-xs px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-2xl border border-[#D9F1F5] shadow-2xs">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" style={{ color: accent }} />
                 <span className="text-xs font-bold text-[#0798AE]">Ends in:</span>
@@ -155,17 +155,26 @@ export const FlashSale: React.FC = () => {
                 <span className="bg-[#0798AE] text-white px-2 py-1 rounded-md min-w-8 text-center">
                   {String(timeLeft.hours).padStart(2, '0')}
                 </span>
-                <span className="text-[10px] font-bold text-[#0798AE]">Hours</span>
+                <span className="text-[10px] font-bold text-[#0798AE]">
+                  <span className="hidden sm:inline">Hours</span>
+                  <span className="sm:hidden">Hr</span>
+                </span>
                 <span>:</span>
                 <span className="bg-[#0798AE] text-white px-2 py-1 rounded-md min-w-8 text-center">
                   {String(timeLeft.minutes).padStart(2, '0')}
                 </span>
-                <span className="text-[10px] font-bold text-[#0798AE]">Minutes</span>
+                <span className="text-[10px] font-bold text-[#0798AE]">
+                  <span className="hidden sm:inline">Minutes</span>
+                  <span className="sm:hidden">M</span>
+                </span>
                 <span>:</span>
                 <span className="bg-[#0798AE] text-white px-2 py-1 rounded-md min-w-8 text-center">
                   {String(timeLeft.seconds).padStart(2, '0')}
                 </span>
-                <span className="text-[10px] font-bold text-[#0798AE]">Seconds</span>
+                <span className="text-[10px] font-bold text-[#0798AE]">
+                  <span className="hidden sm:inline">Seconds</span>
+                  <span className="sm:hidden">S</span>
+                </span>
               </div>
             </div>
           )}

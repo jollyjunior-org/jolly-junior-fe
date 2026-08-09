@@ -61,10 +61,13 @@ export const ShopByAge: React.FC = () => {
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
-      <div className="flex items-center mb-4">
+      <div className="flex items-center gap-3 flex-wrap mb-4">
+        <h2 className="text-xl sm:text-2xl font-black text-[#0798AE] tracking-tight text-left">
+          Ages
+        </h2>
         <button
           onClick={() => goToShop(router, { categoryId: null, categoryIds: [], saleKey: null, searchQuery: '' })}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0798AE]/15 text-[#0798AE] text-xs font-bold cursor-pointer hover:opacity-80 transition-opacity"
+          className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-[#0798AE]/15 text-[#0798AE] text-[10px] sm:text-xs font-bold cursor-pointer hover:opacity-80 transition-opacity"
         >
           👶 Shop by Age
         </button>

@@ -56,22 +56,27 @@ export const FeaturedCategories: React.FC = () => {
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
-      {/* Section Header — badge + View All on same line */}
+      {/* Section Header */}
       <div className="flex items-center justify-between mb-4">
-        <button
-          onClick={() =>
-            goToShop(router, {
-              categoryId: null,
-              categoryIds: [],
-              saleKey: null,
-              searchQuery: '',
-            })
-          }
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0798AE]/15 text-[#0798AE] text-xs font-bold cursor-pointer hover:opacity-80 transition-opacity"
-        >
-          <Sparkles className="w-3.5 h-3.5 text-[#FFD52F]" />
-          <span>Discover by Category</span>
-        </button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <h2 className="text-xl sm:text-2xl font-black text-[#0798AE] tracking-tight text-left">
+            Categories
+          </h2>
+          <button
+            onClick={() =>
+              goToShop(router, {
+                categoryId: null,
+                categoryIds: [],
+                saleKey: null,
+                searchQuery: '',
+              })
+            }
+            className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-[#0798AE]/15 text-[#0798AE] text-[10px] sm:text-xs font-bold cursor-pointer hover:opacity-80 transition-opacity"
+          >
+            <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-[#FFD52F]" />
+            <span>Discover by Category</span>
+          </button>
+        </div>
         <div className="flex items-center gap-3">
           {/* Desktop Scroll Controls */}
           <div className="hidden sm:flex items-center gap-1.5">

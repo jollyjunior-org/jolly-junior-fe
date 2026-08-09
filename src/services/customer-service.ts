@@ -118,7 +118,7 @@ export async function fetchCategoryProducts(
 ): Promise<{ items: Product[]; total: number }> {
   const params = new URLSearchParams();
   params.set('page', String(opts?.page || 1));
-  params.set('page_size', String(opts?.pageSize || 48));
+  params.set('page_size', String(opts?.pageSize || 500));
   if (opts?.sort) params.set('sort', opts.sort);
   if (opts?.inStock != null) params.set('in_stock', String(opts.inStock));
   const data = await apiFetch<{ items: Record<string, unknown>[]; total: number }>(
@@ -143,7 +143,7 @@ export async function fetchStoreProducts(opts?: {
 }): Promise<{ items: Product[]; total: number }> {
   const params = new URLSearchParams();
   params.set('page', String(opts?.page || 1));
-  params.set('page_size', String(opts?.pageSize || 48));
+  params.set('page_size', String(opts?.pageSize || 500));
   if (opts?.categoryIds?.length) params.set('category_ids', opts.categoryIds.join(','));
   if (opts?.q) params.set('q', opts.q);
   if (opts?.sort) params.set('sort', opts.sort);

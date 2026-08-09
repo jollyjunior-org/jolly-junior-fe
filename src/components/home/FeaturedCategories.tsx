@@ -1,13 +1,27 @@
-import React from 'react';
+'use client';
+
+import React, { useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
 import { goToShop } from '@/utils/navigate-shop';
 
 export const FeaturedCategories: React.FC = () => {
   const router = useRouter();
   const { storefrontConfig, categories, products } = useShopStore();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth } = scrollRef.current;
+      const scrollAmount = clientWidth * 0.75;
+      scrollRef.current.scrollTo({
+        left: direction === 'left' ? scrollLeft - scrollAmount : scrollLeft + scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   const activeCategories = (
     (storefrontConfig.featuredCategories?.length
@@ -58,24 +72,50 @@ export const FeaturedCategories: React.FC = () => {
           <Sparkles className="w-3.5 h-3.5 text-[#FFD52F]" />
           <span>Discover by Category</span>
         </button>
-        <button
-          onClick={() =>
-            goToShop(router, {
-              categoryId: null,
-              categoryIds: [],
-              saleKey: null,
-              searchQuery: '',
-            })
-          }
-          className="inline-flex items-center gap-1 text-xs font-bold text-[#0798AE] hover:text-[#0798AE] group cursor-pointer"
-        >
-          <span>View All</span>
-          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-        </button>
+        <div className="flex items-center gap-3">
+          {/* Desktop Scroll Controls */}
+          <div className="hidden sm:flex items-center gap-1.5">
+            <button
+              onClick={() => scroll('left')}
+              className="p-2 rounded-full border border-[#D9F1F5] hover:bg-[#D9F1F5] text-[#0798AE] transition-all cursor-pointer"
+              title="Scroll Left"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => scroll('right')}
+              className="p-2 rounded-full border border-[#D9F1F5] hover:bg-[#D9F1F5] text-[#0798AE] transition-all cursor-pointer"
+              title="Scroll Right"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+
+        </div>
       </div>
 
-      {/* Large Colorful Category Image Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+      {/* Horizontal Scroll Categories */}
+      <div className="relative">
+        {/* Mobile-only floating scroll arrows */}
+        <button
+          onClick={() => scroll('left')}
+          className="sm:hidden absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/90 border border-[#D9F1F5] shadow-md text-[#0798AE] -ml-2 cursor-pointer"
+          aria-label="Scroll left"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        <button
+          onClick={() => scroll('right')}
+          className="sm:hidden absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/90 border border-[#D9F1F5] shadow-md text-[#0798AE] -mr-2 cursor-pointer"
+          aria-label="Scroll right"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+
+        <div 
+          ref={scrollRef}
+          className="flex gap-4 sm:gap-6 overflow-x-auto no-scrollbar pb-4 snap-x snap-mandatory"
+        >
         {activeCategories.map((cat, index) => (
           <motion.div
             key={cat.id}
@@ -84,7 +124,7 @@ export const FeaturedCategories: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.4, delay: index * 0.05 }}
             onClick={() => handleCategorySelect(cat.slug)}
-            className="group relative rounded-xl overflow-hidden cursor-pointer shadow-xs hover:shadow-xl transition-all duration-300 h-64 sm:h-72 border border-[#D9F1F5]"
+            className="group relative rounded-xl overflow-hidden cursor-pointer shadow-xs hover:shadow-xl transition-all duration-300 h-64 sm:h-72 border border-[#D9F1F5] flex-none w-[200px] sm:w-[240px] lg:w-[280px] snap-start"
             style={{ backgroundColor: cat.color }}
           >
             {/* Background Image with Hover Zoom */}
@@ -117,6 +157,24 @@ export const FeaturedCategories: React.FC = () => {
             </div>
           </motion.div>
         ))}
+        </div>
+      </div>
+
+      <div className="mt-4 text-center">
+        <button
+          onClick={() =>
+            goToShop(router, {
+              categoryId: null,
+              categoryIds: [],
+              saleKey: null,
+              searchQuery: '',
+            })
+          }
+          className="inline-flex items-center gap-2 px-6 py-2.5 bg-white text-[#0798AE] hover:bg-[#0798AE] hover:text-white border border-[#D9F1F5] font-bold text-xs rounded-full shadow-xs transition-all cursor-pointer"
+        >
+          <span>View All</span>
+          <ArrowRight className="w-4 h-4" />
+        </button>
       </div>
     </section>
   );

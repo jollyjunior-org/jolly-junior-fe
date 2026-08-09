@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
+'use client';
+
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Flame, Clock, ArrowRight } from 'lucide-react';
+import { Flame, Clock, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ProductCard } from '../product/ProductCard';
 import * as storefrontService from '@/services/storefront-service';
 import type { CampaignConfig, Product } from '@/types';
@@ -31,7 +33,19 @@ export const FlashSale: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLive, setIsLive] = useState(false);
   const [serverSkewMs, setServerSkewMs] = useState(0);
-  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
+  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0, expired: false });
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth } = scrollRef.current;
+      const scrollAmount = clientWidth * 0.75;
+      scrollRef.current.scrollTo({
+        left: direction === 'left' ? scrollLeft - scrollAmount : scrollLeft + scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -76,6 +90,7 @@ export const FlashSale: React.FC = () => {
         hours: parts.hours,
         minutes: parts.minutes,
         seconds: parts.seconds,
+        expired: parts.expired,
       });
       if (parts.expired) setIsLive(false);
     };
@@ -113,17 +128,14 @@ export const FlashSale: React.FC = () => {
               <Flame className="w-7 h-7 fill-current" />
             </div>
             <div>
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-3 flex-wrap">
                 <h2 className="text-xl sm:text-2xl font-black text-[#0798AE] tracking-tight">
                   {campaign.title}
                 </h2>
                 {campaign.badgeText && (
-                  <span
-                    className="px-2.5 py-0.5 rounded-full text-white text-xs font-black"
-                    style={{ backgroundColor: accent }}
-                  >
-                    {campaign.badgeText}
-                  </span>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0798AE]/15 text-[#0798AE] text-xs font-bold">
+                    <span>{campaign.badgeText}</span>
+                  </div>
                 )}
               </div>
               {campaign.subtitle && (
@@ -132,8 +144,9 @@ export const FlashSale: React.FC = () => {
             </div>
           </div>
 
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 self-start md:self-auto">
           {campaign.endsAt && (
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 bg-white/90 backdrop-blur-xs px-4 py-2.5 rounded-2xl border border-[#D9F1F5] shadow-2xs self-start md:self-auto">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 bg-white/90 backdrop-blur-xs px-4 py-2.5 rounded-2xl border border-[#D9F1F5] shadow-2xs">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" style={{ color: accent }} />
                 <span className="text-xs font-bold text-[#0798AE]">Ends in:</span>
@@ -156,6 +169,27 @@ export const FlashSale: React.FC = () => {
               </div>
             </div>
           )}
+
+          {/* Desktop Scroll Controls */}
+          {products.length > 0 && (
+            <div className="hidden sm:flex items-center gap-1.5 self-start md:self-auto md:ml-4">
+              <button
+                onClick={() => scroll('left')}
+                className="p-2 rounded-full border border-[#D9F1F5] hover:bg-[#D9F1F5] text-[#0798AE] transition-all cursor-pointer"
+                title="Scroll Left"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => scroll('right')}
+                className="p-2 rounded-full border border-[#D9F1F5] hover:bg-[#D9F1F5] text-[#0798AE] transition-all cursor-pointer"
+                title="Scroll Right"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
         </div>
 
         {products.length === 0 ? (
@@ -163,10 +197,36 @@ export const FlashSale: React.FC = () => {
             Tag products with this campaign&apos;s tags in Admin to show them here.
           </p>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="relative">
+            {/* Mobile-only floating scroll arrows */}
+            <button
+              onClick={() => scroll('left')}
+              className="sm:hidden absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/90 border border-[#D9F1F5] shadow-md text-[#0798AE] -ml-2 cursor-pointer"
+              aria-label="Scroll left"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => scroll('right')}
+              className="sm:hidden absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/90 border border-[#D9F1F5] shadow-md text-[#0798AE] -mr-2 cursor-pointer"
+              aria-label="Scroll right"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+
+            <div 
+              ref={scrollRef}
+              className="flex gap-2 sm:gap-4 overflow-x-auto no-scrollbar pb-2 pt-1 snap-x snap-mandatory"
+            >
             {products.map((product) => (
-              <ProductCard key={product.id} product={product} compact />
+              <div
+                key={product.id}
+                className="flex-none w-[calc(50%-4px)] sm:w-[calc(33.333%-11px)] lg:w-[calc(25%-12px)] snap-start"
+              >
+                <ProductCard product={product} compact={false} />
+              </div>
             ))}
+            </div>
           </div>
         )}
 

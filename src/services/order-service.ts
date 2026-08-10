@@ -91,3 +91,21 @@ export async function createOrderReturn(
   });
   return mapOrderReturn(created);
 }
+
+/** GET all returns across all orders (admin). */
+export async function fetchAllAdminReturns(): Promise<OrderReturn[]> {
+  const data = await apiFetch<Record<string, unknown>[]>(adminEndpoints.returns());
+  return (data || []).map(mapOrderReturn);
+}
+
+/** PATCH update return status (admin approve / reject / complete). */
+export async function updateAdminReturnStatus(
+  returnId: string,
+  status: string,
+): Promise<OrderReturn> {
+  const updated = await apiFetch<Record<string, unknown>>(adminEndpoints.returnStatus(returnId), {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+  return mapOrderReturn(updated);
+}

@@ -146,6 +146,19 @@ export const AccountPanel: React.FC = () => {
     }
   };
 
+  const handleCancelOrder = async (orderId: string) => {
+    if (!confirm('Are you sure you want to cancel this order?')) return;
+    try {
+      const { cancelCustomerOrder } = await import('@/services/customer-service');
+      await cancelCustomerOrder(orderId);
+      showToast('Order cancelled successfully');
+      const o = await apiFetch<{ items: OrderRow[] }>(publicEndpoints.meOrders(), { authMode: 'customer' });
+      setOrders(o.items || []);
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Failed to cancel order');
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[75]">
       <div className="absolute inset-0 bg-black/40" onClick={() => setAccountPanelOpen(false)} />
@@ -323,22 +336,35 @@ export const AccountPanel: React.FC = () => {
                       <p className="text-xs font-bold text-[#0798AE]">
                         Total: Rs. {Number(o.total_amount).toLocaleString()}
                       </p>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setReturnOrder(o);
-                          const initialQtys: Record<number, number> = {};
-                          (o.items || []).forEach((item) => {
-                            if (item.id) initialQtys[item.id] = item.quantity;
-                          });
-                          setSelectedReturnQtys(initialQtys);
-                          setReturnReason('Defective / Damaged');
-                          setReturnNotes('');
-                        }}
-                        className="text-[10px] font-bold text-[#0798AE] bg-[#D9F1F5] hover:bg-[#bce6ed] px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
-                      >
-                        Request Return
-                      </button>
+                      <div className="flex gap-2">
+                        {o.status === 'Pending' && (
+                          <button
+                            type="button"
+                            onClick={() => handleCancelOrder(o.id)}
+                            className="text-[10px] font-bold text-red-500 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                          >
+                            Cancel Order
+                          </button>
+                        )}
+                        {o.status === 'Delivered' && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setReturnOrder(o);
+                              const initialQtys: Record<number, number> = {};
+                              (o.items || []).forEach((item) => {
+                                if (item.id) initialQtys[item.id] = item.quantity;
+                              });
+                              setSelectedReturnQtys(initialQtys);
+                              setReturnReason('Defective / Damaged');
+                              setReturnNotes('');
+                            }}
+                            className="text-[10px] font-bold text-[#0798AE] bg-[#D9F1F5] hover:bg-[#bce6ed] px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                          >
+                            Request Return
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))

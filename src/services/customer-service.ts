@@ -229,3 +229,14 @@ export async function fetchCustomerReturns(): Promise<Record<string, unknown>[]>
   );
   return data.items || [];
 }
+
+/** Cancel a pending order for the authenticated customer. */
+export async function cancelCustomerOrder(orderId: string): Promise<{ message: string }> {
+  return apiFetch<{ message: string }>(
+    publicEndpoints.meCancelOrder(orderId),
+    {
+      method: 'POST',
+      authMode: 'customer',
+    },
+  );
+}

@@ -353,6 +353,12 @@ export const useShopStore = create<ShopStore>((set, get) => ({
   },
 
   toggleWishlist: (productId) => {
+    if (!get().isCustomerAuthenticated) {
+      get().showToast('Please log in to use your wishlist ❤️');
+      get().setAuthModalOpen(true);
+      return;
+    }
+
     const wasIn = get().wishlist.includes(productId);
     set((state) => {
       const updated = wasIn
@@ -364,12 +370,10 @@ export const useShopStore = create<ShopStore>((set, get) => ({
 
     get().showToast(!wasIn ? 'Added to your Wishlist ❤️' : 'Removed from Wishlist');
 
-    if (get().isCustomerAuthenticated) {
-      void (wasIn
-        ? customerService.removeWishlistRemote(productId)
-        : customerService.addWishlistRemote(productId)
-      ).catch(() => undefined);
-    }
+    void (wasIn
+      ? customerService.removeWishlistRemote(productId)
+      : customerService.addWishlistRemote(productId)
+    ).catch(() => undefined);
   },
 
   isInWishlist: (productId) => get().wishlist.includes(productId),

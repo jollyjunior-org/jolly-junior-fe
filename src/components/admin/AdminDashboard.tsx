@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, Package, Layers, ShoppingBag, 
-  Users, Store, ShieldCheck, ChevronRight, LogOut, Boxes, Settings, SlidersHorizontal, Tag
+  Users, Store, ShieldCheck, ChevronRight, LogOut, Boxes, Settings, SlidersHorizontal, Tag, RotateCcw
 } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
 import { AdminLogin } from './AdminLogin';
@@ -14,6 +14,7 @@ import { AdminStock } from './AdminStock';
 import { AdminInventory } from './AdminInventory';
 import { AdminSettings } from './AdminSettings';
 import { AdminControl } from './AdminControl';
+import { AdminReturns } from './AdminReturns';
 
 export const AdminDashboard: React.FC = () => {
   const { 
@@ -33,7 +34,7 @@ export const AdminDashboard: React.FC = () => {
     isLoadingAdminData
   } = useShopStore();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'stock' | 'inventory' | 'categories' | 'control' | 'orders' | 'users' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'stock' | 'inventory' | 'categories' | 'control' | 'orders' | 'returns' | 'users' | 'settings'>('overview');
   const [openAddProductModal, setOpenAddProductModal] = useState(false);
   const [openAddCategoryModal, setOpenAddCategoryModal] = useState(false);
 
@@ -223,6 +224,18 @@ export const AdminDashboard: React.FC = () => {
             </button>
 
             <button
+              onClick={() => setActiveTab('returns')}
+              className={`px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg text-xs font-bold cursor-pointer flex items-center gap-1.5 whitespace-nowrap transition-colors border ${
+                activeTab === 'returns'
+                  ? 'bg-sky-500 text-slate-950 border-sky-400'
+                  : 'bg-slate-900/60 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
+              }`}
+            >
+              <RotateCcw className="w-4 h-4" />
+              <span>Returns</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('users')}
               className={`px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg text-xs font-bold cursor-pointer flex items-center gap-1.5 whitespace-nowrap transition-colors border ${
                 activeTab === 'users'
@@ -286,6 +299,8 @@ export const AdminDashboard: React.FC = () => {
         {activeTab === 'control' && <AdminControl />}
 
         {activeTab === 'orders' && <AdminOrders />}
+
+        {activeTab === 'returns' && <AdminReturns />}
 
         {activeTab === 'users' && <AdminUsers />}
 

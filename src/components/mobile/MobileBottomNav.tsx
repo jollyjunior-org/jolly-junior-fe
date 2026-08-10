@@ -15,6 +15,7 @@ export const MobileBottomNav: React.FC = () => {
     wishlist,
     setCartOpen,
     setWishlistOpen,
+    isCustomerAuthenticated,
   } = useShopStore();
 
   return (
@@ -48,21 +49,23 @@ export const MobileBottomNav: React.FC = () => {
         <span>Shop</span>
       </button>
 
-      <button
-        type="button"
-        onClick={() => setWishlistOpen(true)}
-        className="relative flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-500 cursor-pointer"
-      >
-        <div className="relative">
-          <Heart className="w-5 h-5" />
-          {wishlist.length > 0 && (
-            <span className="absolute -top-1 -right-1.5 w-3.5 h-3.5 rounded-full bg-[#0798AE] text-white text-[9px] font-black flex items-center justify-center">
-              {wishlist.length}
-            </span>
-          )}
-        </div>
-        <span>Wishlist</span>
-      </button>
+      {isCustomerAuthenticated && (
+        <button
+          type="button"
+          onClick={() => setWishlistOpen(true)}
+          className="relative flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-500 cursor-pointer"
+        >
+          <div className="relative">
+            <Heart className="w-5 h-5" />
+            {wishlist.length > 0 && (
+              <span className="absolute -top-1 -right-1.5 w-3.5 h-3.5 rounded-full bg-[#0798AE] text-white text-[9px] font-black flex items-center justify-center">
+                {wishlist.length}
+              </span>
+            )}
+          </div>
+          <span>Wishlist</span>
+        </button>
+      )}
 
       <button
         type="button"

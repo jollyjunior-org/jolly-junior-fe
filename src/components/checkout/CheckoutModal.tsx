@@ -5,7 +5,7 @@ import {
 import { useShopStore } from '../../store/useShopStore';
 import { apiFetch } from '@/api/api-client';
 import { publicEndpoints } from '@/api/endpoints/public';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
 import { useRouter } from 'next/navigation';
@@ -25,7 +25,6 @@ export const CheckoutModal: React.FC = () => {
     setLastOrderNumber,
     lastOrderNumber,
     currentView,
-    addOrder,
     isCustomerAuthenticated,
     customerToken,
     buyNowItem,
@@ -46,6 +45,7 @@ export const CheckoutModal: React.FC = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = useRef(false);
 
   // Prefill from saved profile when logged in
   useEffect(() => {
@@ -111,6 +111,8 @@ export const CheckoutModal: React.FC = () => {
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submittingRef.current || isSubmitting) return;
+    submittingRef.current = true;
     setIsSubmitting(true);
 
     try {
@@ -139,30 +141,6 @@ export const CheckoutModal: React.FC = () => {
       const createdOrder = await createOrder(payload);
       const orderNum = createdOrder.orderNumber || createdOrder.id;
 
-      const newOrderStore = {
-        id: orderNum,
-        customerName: formData.fullName,
-        customerEmail: formData.email || 'customer@example.com',
-        customerPhone: formData.phone,
-        address: formData.address,
-        city: formData.city,
-        paymentMethod: 'COD' as const,
-        status: 'Pending' as const,
-        createdAt: new Date().toLocaleString(),
-        totalAmount: finalTotal,
-        notes: formData.notes,
-        userId: formData.userId || undefined,
-        items: checkoutItems.map((c) => ({
-          productId: c.product.id,
-          productName: c.product.name,
-          productImage: c.product.images[0],
-          variantName: c.variant?.name,
-          price: c.variant ? c.variant.price : c.product.price,
-          quantity: c.quantity,
-        })),
-      };
-
-      addOrder(newOrderStore);
       setLastOrderNumber(orderNum);
 
       if (isBuyNow) {
@@ -179,6 +157,7 @@ export const CheckoutModal: React.FC = () => {
       showToast(err instanceof Error ? err.message : 'Failed to place order');
     } finally {
       setIsSubmitting(false);
+      submittingRef.current = false;
     }
   };
 

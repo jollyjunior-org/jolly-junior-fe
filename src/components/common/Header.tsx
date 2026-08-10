@@ -348,18 +348,20 @@ export const Header: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <button
-            onClick={() => setWishlistOpen(true)}
-            className="relative p-2.5 rounded-full hover:bg-[#D9F1F5] text-[#0798AE] cursor-pointer"
-            title="Wishlist"
-          >
-            <Heart className="w-5 h-5" />
-            {wishlist.length > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#D9F1F5] text-white text-[10px] font-extrabold flex items-center justify-center">
-                {wishlist.length}
-              </span>
-            )}
-          </button>
+          {isCustomerAuthenticated && (
+            <button
+              onClick={() => setWishlistOpen(true)}
+              className="relative p-2.5 rounded-full hover:bg-[#D9F1F5] text-[#0798AE] cursor-pointer"
+              title="Wishlist"
+            >
+              <Heart className="w-5 h-5" />
+              {wishlist.length > 0 && (
+                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#D9F1F5] text-white text-[10px] font-extrabold flex items-center justify-center">
+                  {wishlist.length}
+                </span>
+              )}
+            </button>
+          )}
 
           {isCustomerAuthenticated ? (
             <button

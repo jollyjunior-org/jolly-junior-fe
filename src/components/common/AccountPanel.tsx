@@ -16,14 +16,31 @@ type Profile = {
   avatar_url?: string | null;
 };
 
-type OrderRow = {
+interface OrderReturnRow {
+  id: string;
+  return_number: string;
+  status: string;
+  reason: string;
+  refund_amount: number;
+  created_at?: string;
+}
+
+interface OrderRow {
   id: string;
   order_number: string;
   status: string;
   total_amount: number;
-  city: string;
+  city?: string;
   created_at?: string;
-  items: Array<{ product_name: string; quantity: number; price: number }>;
+  items: Array<{
+    id?: number;
+    product_id?: string;
+    product_name: string;
+    variant_name?: string;
+    quantity: number;
+    price: number;
+  }>;
+  returns?: OrderReturnRow[];
 };
 
 /**
@@ -50,6 +67,12 @@ export const AccountPanel: React.FC = () => {
     city: 'Lahore',
     postal_code: '',
   });
+
+  const [returnOrder, setReturnOrder] = useState<OrderRow | null>(null);
+  const [returnReason, setReturnReason] = useState('Defective / Damaged');
+  const [returnNotes, setReturnNotes] = useState('');
+  const [selectedReturnQtys, setSelectedReturnQtys] = useState<Record<number, number>>({});
+  const [submittingReturn, setSubmittingReturn] = useState(false);
 
   useEffect(() => {
     if (!accountPanelOpen || !isCustomerAuthenticated) return;
@@ -265,34 +288,203 @@ export const AccountPanel: React.FC = () => {
                 <p className="text-xs text-slate-500 text-center py-10">No orders yet for this email.</p>
               ) : (
                 orders.map((o) => (
-                  <div key={o.id} className="rounded-2xl border border-[#D9F1F5] p-3 space-y-1.5">
+                  <div key={o.id} className="rounded-2xl border border-[#D9F1F5] p-3 space-y-2 bg-white shadow-2xs">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-black text-[#0798AE] flex items-center gap-1">
                         <Package className="w-3.5 h-3.5" /> {o.order_number}
                       </span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                        {o.status}
-                      </span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                          {o.status}
+                        </span>
+                        {o.returns && o.returns.length > 0 && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                            Return {o.returns[0].status}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <p className="text-[10px] text-slate-500">
                       {o.created_at ? new Date(o.created_at).toLocaleString() : ''} · {o.city}
                     </p>
-                    <ul className="text-[11px] text-slate-600 space-y-0.5">
+                    <ul className="text-[11px] text-slate-600 space-y-0.5 divide-y divide-slate-50">
                       {o.items.map((i, idx) => (
-                        <li key={idx}>
-                          {i.quantity}× {i.product_name}
+                        <li key={idx} className="py-0.5 flex justify-between">
+                          <span>
+                            {i.quantity}× {i.product_name} {i.variant_name ? `(${i.variant_name})` : ''}
+                          </span>
+                          <span className="font-semibold text-slate-700">
+                            Rs. {(i.price * i.quantity).toLocaleString()}
+                          </span>
                         </li>
                       ))}
                     </ul>
-                    <p className="text-xs font-bold text-[#0798AE]">
-                      Rs. {Number(o.total_amount).toLocaleString()}
-                    </p>
+                    <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                      <p className="text-xs font-bold text-[#0798AE]">
+                        Total: Rs. {Number(o.total_amount).toLocaleString()}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReturnOrder(o);
+                          const initialQtys: Record<number, number> = {};
+                          (o.items || []).forEach((item) => {
+                            if (item.id) initialQtys[item.id] = item.quantity;
+                          });
+                          setSelectedReturnQtys(initialQtys);
+                          setReturnReason('Defective / Damaged');
+                          setReturnNotes('');
+                        }}
+                        className="text-[10px] font-bold text-[#0798AE] bg-[#D9F1F5] hover:bg-[#bce6ed] px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                      >
+                        Request Return
+                      </button>
+                    </div>
                   </div>
                 ))
               )}
             </div>
           )}
         </div>
+
+        {/* Customer Return Request Modal */}
+        {returnOrder && (
+          <div className="fixed inset-0 z-[1000] bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-sm rounded-2xl shadow-xl p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <h4 className="font-bold text-sm text-slate-800">
+                  Return Request: {returnOrder.order_number}
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => setReturnOrder(null)}
+                  className="text-slate-400 hover:text-slate-600 p-1"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-xs font-bold text-slate-700">Select Items to Return:</p>
+                <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                  {returnOrder.items.map((item) => (
+                    <div key={item.id || item.product_name} className="flex items-center justify-between text-xs bg-slate-50 p-2 rounded-xl">
+                      <div className="flex-1 pr-2 truncate">
+                        <p className="font-semibold text-slate-800 truncate">{item.product_name}</p>
+                        <p className="text-[10px] text-slate-500">Max Qty: {item.quantity}</p>
+                      </div>
+                      {item.id && (
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setSelectedReturnQtys((prev) => ({
+                                ...prev,
+                                [item.id!]: Math.max(0, (prev[item.id!] || 0) - 1),
+                              }))
+                            }
+                            className="w-6 h-6 rounded-md bg-white border border-slate-200 text-slate-700 font-bold flex items-center justify-center"
+                          >
+                            -
+                          </button>
+                          <span className="w-5 text-center font-bold">{selectedReturnQtys[item.id] || 0}</span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setSelectedReturnQtys((prev) => ({
+                                ...prev,
+                                [item.id!]: Math.min(item.quantity, (prev[item.id!] || 0) + 1),
+                              }))
+                            }
+                            className="w-6 h-6 rounded-md bg-white border border-slate-200 text-slate-700 font-bold flex items-center justify-center"
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Reason for Return</label>
+                <select
+                  value={returnReason}
+                  onChange={(e) => setReturnReason(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs bg-white"
+                >
+                  <option value="Defective / Damaged">Defective / Damaged</option>
+                  <option value="Wrong Item Received">Wrong Item Received</option>
+                  <option value="Item Not as Described">Item Not as Described</option>
+                  <option value="Changed Mind">Changed Mind</option>
+                  <option value="Size/Fit Issue">Size/Fit Issue</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Additional Notes (Optional)</label>
+                <textarea
+                  rows={2}
+                  value={returnNotes}
+                  onChange={(e) => setReturnNotes(e.target.value)}
+                  placeholder="Explain why you are returning..."
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setReturnOrder(null)}
+                  className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={submittingReturn}
+                  onClick={async () => {
+                    const itemsToReturn = Object.entries(selectedReturnQtys)
+                      .filter(([, qty]) => qty > 0)
+                      .map(([itemIdStr, qty]) => ({
+                        order_item_id: Number(itemIdStr),
+                        quantity: qty,
+                      }));
+
+                    if (!itemsToReturn.length) {
+                      showToast('Please select at least 1 item quantity to return.');
+                      return;
+                    }
+
+                    setSubmittingReturn(true);
+                    try {
+                      const { requestCustomerReturn } = await import('@/services/customer-service');
+                      const res = await requestCustomerReturn(returnOrder.id, {
+                        reason: returnReason,
+                        notes: returnNotes,
+                        items: itemsToReturn,
+                      });
+                      showToast(`Return submitted! Return #${res.return_number}`);
+                      setReturnOrder(null);
+                      // Refresh orders
+                      const o = await apiFetch<{ items: OrderRow[] }>(publicEndpoints.meOrders(), { authMode: 'customer' });
+                      setOrders(o.items || []);
+                    } catch (err: unknown) {
+                      showToast(err instanceof Error ? err.message : 'Could not submit return');
+                    } finally {
+                      setSubmittingReturn(false);
+                    }
+                  }}
+                  className="flex-1 py-2.5 bg-[#0798AE] hover:bg-[#06879b] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1 cursor-pointer"
+                >
+                  {submittingReturn && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  Submit Return
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </aside>
     </div>
   );

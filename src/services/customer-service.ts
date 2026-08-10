@@ -199,3 +199,33 @@ export async function fetchSaleProducts(
   );
   return { items: (data.items || []).map((p) => mapProduct(p)), total: data.total || 0 };
 }
+
+export interface CustomerReturnPayload {
+  reason: string;
+  notes?: string;
+  items: Array<{ order_item_id: number; quantity: number; reason?: string }>;
+}
+
+/** Submit an order return request for the authenticated customer. */
+export async function requestCustomerReturn(
+  orderId: string,
+  payload: CustomerReturnPayload,
+): Promise<{ ok: boolean; return_number: string; refund_amount: number }> {
+  return apiFetch<{ ok: boolean; return_number: string; refund_amount: number }>(
+    publicEndpoints.meCreateReturn(orderId),
+    {
+      method: 'POST',
+      authMode: 'customer',
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+/** Fetch returns created by the authenticated customer. */
+export async function fetchCustomerReturns(): Promise<Record<string, unknown>[]> {
+  const data = await apiFetch<{ items: Record<string, unknown>[] }>(
+    publicEndpoints.meReturns(),
+    { authMode: 'customer' },
+  );
+  return data.items || [];
+}

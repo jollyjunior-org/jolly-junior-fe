@@ -9,6 +9,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
 import { useRouter } from 'next/navigation';
+import { createOrder } from '@/services/order-service';
 
 export const CheckoutModal: React.FC = () => {
   const router = useRouter();
@@ -108,14 +109,37 @@ export const CheckoutModal: React.FC = () => {
     });
   };
 
-  const handleSubmitOrder = (e: React.FormEvent) => {
+  const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      const orderNum = 'JJ-' + Math.floor(10000 + Math.random() * 90000);
-      
-      const newOrder = {
+    try {
+      const payload = {
+        customer_name: formData.fullName,
+        customer_email: formData.email || 'customer@example.com',
+        customer_phone: formData.phone,
+        shipping_address: formData.address,
+        city: formData.city,
+        payment_method: formData.paymentMethod || 'COD',
+        subtotal: subtotal,
+        shipping_fee: deliveryFee,
+        discount_amount: discountAmount,
+        total_amount: finalTotal,
+        user_id: formData.userId || undefined,
+        items: checkoutItems.map((c) => ({
+          product_id: c.product.id,
+          variant_id: c.variant?.id || undefined,
+          product_name: c.product.name,
+          variant_name: c.variant?.name || undefined,
+          price: c.variant ? c.variant.price : c.product.price,
+          quantity: c.quantity,
+        })),
+      };
+
+      const createdOrder = await createOrder(payload);
+      const orderNum = createdOrder.orderNumber || createdOrder.id;
+
+      const newOrderStore = {
         id: orderNum,
         customerName: formData.fullName,
         customerEmail: formData.email || 'customer@example.com',
@@ -128,32 +152,34 @@ export const CheckoutModal: React.FC = () => {
         totalAmount: finalTotal,
         notes: formData.notes,
         userId: formData.userId || undefined,
-        items: checkoutItems.map(c => ({
+        items: checkoutItems.map((c) => ({
           productId: c.product.id,
           productName: c.product.name,
           productImage: c.product.images[0],
           variantName: c.variant?.name,
           price: c.variant ? c.variant.price : c.product.price,
-          quantity: c.quantity
-        }))
+          quantity: c.quantity,
+        })),
       };
 
-      addOrder(newOrder);
+      addOrder(newOrderStore);
       setLastOrderNumber(orderNum);
-      setIsSubmitting(false);
 
       if (isBuyNow) {
         setBuyNowItem(null);
       } else {
         clearCart();
       }
-      
+
       triggerConfetti();
-      showToast('Order placed successfully!');
+      showToast(`Order placed successfully! Order #${orderNum}`);
       setCurrentView('home');
       router.push('/');
-      triggerConfetti();
-    }, 1000);
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Failed to place order');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

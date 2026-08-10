@@ -41,6 +41,9 @@ export const publicEndpoints = {
   meProfile: () => `${PUBLIC_API_BASE_URL}/store/me/profile`,
   meAddresses: () => `${PUBLIC_API_BASE_URL}/store/me/addresses`,
   meOrders: () => `${PUBLIC_API_BASE_URL}/store/me/orders`,
+  meCreateReturn: (orderId: string) =>
+    `${PUBLIC_API_BASE_URL}/store/me/orders/${encodeURIComponent(orderId)}/return`,
+  meReturns: () => `${PUBLIC_API_BASE_URL}/store/me/returns`,
   testimonials: () => `${PUBLIC_API_BASE_URL}/store/testimonials`,
   testimonialInvite: (token: string) =>
     `${PUBLIC_API_BASE_URL}/store/testimonials/invite/${encodeURIComponent(token)}`,

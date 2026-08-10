@@ -536,12 +536,15 @@ export const useShopStore = create<ShopStore>((set, get) => ({
       if (filter.saleKey) {
         const sale = await customerService.fetchSaleProducts(filter.saleKey, {
           categoryId: cats[0],
+          ageGroup: filter.ageGroup || undefined,
         });
         items = sale.items;
       } else if (cats.length === 1 && !filter.searchQuery.trim()) {
         const page = await customerService.fetchCategoryProducts(cats[0], {
           sort,
           inStock: filter.inStockOnly || undefined,
+          ageGroup: filter.ageGroup || undefined,
+          onSaleOnly: filter.onSaleOnly || undefined,
         });
         items = page.items;
       } else {
@@ -550,16 +553,10 @@ export const useShopStore = create<ShopStore>((set, get) => ({
           q: filter.searchQuery.trim() || undefined,
           sort,
           inStock: filter.inStockOnly || undefined,
+          ageGroup: filter.ageGroup || undefined,
+          onSaleOnly: filter.onSaleOnly || undefined,
         });
         items = page.items;
-      }
-
-      // Client-side extras the store API may not apply the same way
-      if (filter.ageGroup) {
-        items = items.filter((p) => p.ageGroup === filter.ageGroup);
-      }
-      if (filter.onSaleOnly) {
-        items = items.filter((p) => p.discountBadge || p.badge === 'Flash Sale');
       }
 
       set({ shopProducts: items, shopLoading: false });

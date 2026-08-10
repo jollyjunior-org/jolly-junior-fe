@@ -114,13 +114,15 @@ export async function searchStoreProducts(q: string): Promise<Product[]> {
  */
 export async function fetchCategoryProducts(
   categoryRef: string,
-  opts?: { page?: number; pageSize?: number; sort?: string; inStock?: boolean },
+  opts?: { page?: number; pageSize?: number; sort?: string; inStock?: boolean; ageGroup?: string; onSaleOnly?: boolean },
 ): Promise<{ items: Product[]; total: number }> {
   const params = new URLSearchParams();
   params.set('page', String(opts?.page || 1));
   params.set('page_size', String(opts?.pageSize || 500));
   if (opts?.sort) params.set('sort', opts.sort);
   if (opts?.inStock != null) params.set('in_stock', String(opts.inStock));
+  if (opts?.ageGroup) params.set('age_group', opts.ageGroup);
+  if (opts?.onSaleOnly != null) params.set('on_sale', String(opts.onSaleOnly));
   const data = await apiFetch<{ items: Record<string, unknown>[]; total: number }>(
     publicEndpoints.categoryProducts(categoryRef, params.toString()),
     { skipAuth: true },
@@ -138,6 +140,8 @@ export async function fetchStoreProducts(opts?: {
   q?: string;
   sort?: string;
   inStock?: boolean;
+  ageGroup?: string;
+  onSaleOnly?: boolean;
   page?: number;
   pageSize?: number;
 }): Promise<{ items: Product[]; total: number }> {
@@ -148,6 +152,8 @@ export async function fetchStoreProducts(opts?: {
   if (opts?.q) params.set('q', opts.q);
   if (opts?.sort) params.set('sort', opts.sort);
   if (opts?.inStock != null) params.set('in_stock', String(opts.inStock));
+  if (opts?.ageGroup) params.set('age_group', opts.ageGroup);
+  if (opts?.onSaleOnly != null) params.set('on_sale', String(opts.onSaleOnly));
   const data = await apiFetch<{ items: Record<string, unknown>[]; total: number }>(
     publicEndpoints.storeProducts(params.toString()),
     { skipAuth: true },
@@ -180,12 +186,13 @@ export async function fetchLiveSales(): Promise<
 /** Sale products page. */
 export async function fetchSaleProducts(
   saleRef: string,
-  opts?: { categoryId?: string; page?: number },
+  opts?: { categoryId?: string; page?: number; ageGroup?: string },
 ): Promise<{ items: Product[]; total: number }> {
   const params = new URLSearchParams();
   params.set('page', String(opts?.page || 1));
-  params.set('page_size', '48');
+  params.set('page_size', '500');
   if (opts?.categoryId) params.set('category_id', opts.categoryId);
+  if (opts?.ageGroup) params.set('age_group', opts.ageGroup);
   const data = await apiFetch<{ items: Record<string, unknown>[]; total: number }>(
     publicEndpoints.saleProducts(saleRef, params.toString()),
     { skipAuth: true },

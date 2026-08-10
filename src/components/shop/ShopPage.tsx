@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Filter, X, RotateCcw, Search, Sparkles, ChevronDown } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
 import { ProductCard } from '../product/ProductCard';
@@ -347,51 +348,54 @@ export const ShopPage: React.FC = () => {
       </div>
 
       {/* Mobile Filter Modal (Bottom Sheet Style) */}
-      <div 
-        className={`fixed inset-0 z-50 flex flex-col justify-end lg:hidden transition-all duration-300 ${
-          isMobileFilterOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'
-        }`}
-      >
+      {typeof document !== 'undefined' && createPortal(
         <div 
-          className="absolute inset-0 bg-black/40 backdrop-blur-xs"
-          onClick={() => setIsMobileFilterOpen(false)}
-        />
-        <div 
-          className={`relative w-full bg-white rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] transition-transform duration-300 ease-in-out ${
-            isMobileFilterOpen ? 'translate-y-0' : 'translate-y-full'
+          className={`fixed inset-0 z-[9999] flex flex-col justify-end lg:hidden transition-all duration-300 ${
+            isMobileFilterOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'
           }`}
         >
-          <div className="flex items-center justify-between p-5 border-b border-[#F1F5F9]">
-            <h3 className="font-black text-lg text-[#263238] flex items-center gap-2">
-              <Filter className="w-5 h-5 text-[#0798AE]" />
-              Filters
-            </h3>
-            <div className="flex items-center gap-4">
+          <div 
+            className="absolute inset-0 bg-black/40 backdrop-blur-xs"
+            onClick={() => setIsMobileFilterOpen(false)}
+          />
+          <div 
+            className={`relative w-full bg-white rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[70vh] transition-transform duration-300 ease-in-out ${
+              isMobileFilterOpen ? 'translate-y-0' : 'translate-y-full'
+            }`}
+          >
+            <div className="flex items-center justify-between p-4 border-b border-[#F1F5F9]">
+              <h3 className="font-black text-lg text-[#263238] flex items-center gap-2">
+                <Filter className="w-5 h-5 text-[#0798AE]" />
+                Filters
+              </h3>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={resetFilter}
+                  className="text-xs text-[#0798AE] hover:underline flex items-center gap-1 font-bold cursor-pointer"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Reset</span>
+                </button>
+                <button onClick={() => setIsMobileFilterOpen(false)} className="p-1 rounded-full bg-slate-100 text-[#263238] cursor-pointer">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <div className="p-4 overflow-y-auto flex-1">
+              <FilterContent />
+            </div>
+            <div className="p-4 border-t border-[#F1F5F9] bg-white">
               <button
-                onClick={resetFilter}
-                className="text-xs text-[#0798AE] hover:underline flex items-center gap-1 font-bold cursor-pointer"
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="w-full py-3.5 bg-[#0798AE] hover:bg-[#06879b] text-white font-bold rounded-xl shadow-md transition-colors text-sm cursor-pointer"
               >
-                <RotateCcw className="w-3 h-3" />
-                <span>Reset</span>
-              </button>
-              <button onClick={() => setIsMobileFilterOpen(false)} className="p-1 rounded-full bg-slate-100 text-[#263238] cursor-pointer">
-                <X className="w-5 h-5" />
+                Show {filteredProducts.length} Results
               </button>
             </div>
           </div>
-          <div className="p-5 overflow-y-auto flex-1">
-            <FilterContent />
-          </div>
-          <div className="p-5 border-t border-[#F1F5F9] bg-white">
-            <button
-              onClick={() => setIsMobileFilterOpen(false)}
-              className="w-full py-3.5 bg-[#0798AE] hover:bg-[#06879b] text-white font-bold rounded-xl shadow-md transition-colors text-sm cursor-pointer"
-            >
-              Show {filteredProducts.length} Results
-            </button>
-          </div>
-        </div>
-      </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };

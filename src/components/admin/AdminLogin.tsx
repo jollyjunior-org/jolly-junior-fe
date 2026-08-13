@@ -34,11 +34,7 @@ export const AdminLogin: React.FC = () => {
     window.history.pushState(null, '', '/jj/admin/dashboard');
   };
 
-  const handleFillDemo = () => {
-    setEmail('admin@jollyjuniors.com');
-    setPassword('admin123');
-    setErrorMsg(null);
-  };
+
 
   return (
     <div className="min-h-screen bg-[#0F172A] flex flex-col justify-between p-4 sm:p-6 font-sans text-slate-100 relative overflow-hidden">
@@ -76,27 +72,6 @@ export const AdminLogin: React.FC = () => {
             </p>
           </div>
 
-          {/* Quick Demo Credentials Pill */}
-          <div className="p-3.5 rounded-2xl bg-slate-800/70 border border-slate-700/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
-            <div className="text-xs space-y-0.5">
-              <span className="text-[10px] uppercase font-bold text-sky-400 tracking-wider flex items-center gap-1">
-                <Sparkles className="w-3 h-3" /> Quick Testing Credentials:
-              </span>
-              <div className="font-mono text-[11px] text-slate-300">
-                Email: <strong className="text-white">admin@jollyjuniors.com</strong>
-              </div>
-              <div className="font-mono text-[11px] text-slate-300">
-                Pass: <strong className="text-white">admin123</strong>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={handleFillDemo}
-              className="w-full sm:w-auto px-3 py-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 text-xs font-bold transition-all cursor-pointer whitespace-nowrap"
-            >
-              Auto-Fill Demo
-            </button>
-          </div>
 
           {/* Error Banner */}
           {errorMsg && (

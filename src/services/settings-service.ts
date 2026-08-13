@@ -13,6 +13,8 @@ export type SystemSettingsPayload = {
   smtp_from_name?: string;
   smtp_use_tls?: boolean;
   smtp_use_ssl?: boolean;
+  whatsapp_access_token?: string;
+  whatsapp_phone_number_id?: string;
   delivery_fee?: number;
   free_delivery_threshold?: number;
   footer_instagram_url?: string | null;

@@ -9,20 +9,20 @@ import { requestLoginOtp } from '@/services/customer-service';
 export const AuthModal: React.FC = () => {
   const { authModalOpen, setAuthModalOpen, loginCustomerWithOtp, showToast } = useShopStore();
   const [step, setStep] = useState<'email' | 'code'>('email');
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [devCode, setDevCode] = useState<string | null>(null);
 
   if (!authModalOpen) return null;
 
-  /** Send OTP to the entered email. */
+  /** Send OTP to the entered email or phone. */
   const handleRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setDevCode(null);
     try {
-      const res = await requestLoginOtp(email.trim());
+      const res = await requestLoginOtp(identifier.trim());
       if (res.dev_code) setDevCode(res.dev_code);
       showToast(res.message || 'Code sent');
       setStep('code');
@@ -37,7 +37,7 @@ export const AuthModal: React.FC = () => {
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const result = await loginCustomerWithOtp(email.trim(), code.trim());
+    const result = await loginCustomerWithOtp(identifier.trim(), code.trim());
     setLoading(false);
     if (!result.success) {
       showToast(result.message || 'Invalid code');
@@ -60,21 +60,21 @@ export const AuthModal: React.FC = () => {
         </button>
         <h2 className="text-lg font-black text-[#0798AE] mb-1">Sign in</h2>
         <p className="text-xs text-slate-500 mb-4">
-          No password — we email you a 6-digit code.
+          No password — we send a 6-digit code to your email or WhatsApp.
         </p>
 
         {step === 'email' ? (
           <form onSubmit={handleRequest} className="space-y-3">
             <label className="block text-xs font-bold text-slate-600">
-              Email
+              Email or Phone Number
               <div className="relative mt-1">
                 <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   required
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@email.com"
+                  type="text"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  placeholder="you@email.com or +923001234567"
                   className="w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl text-sm"
                 />
               </div>
@@ -91,11 +91,11 @@ export const AuthModal: React.FC = () => {
         ) : (
           <form onSubmit={handleVerify} className="space-y-3">
             <p className="text-[11px] text-slate-500">
-              Code sent to <strong>{email}</strong>
+              Code sent to <strong>{identifier}</strong>
             </p>
             {devCode && (
               <p className="text-[11px] bg-amber-50 text-amber-800 px-2 py-1.5 rounded-lg">
-                Dev mode (SMTP not set): use code <strong>{devCode}</strong>
+                Dev mode (Settings not configured): use code <strong>{devCode}</strong>
               </p>
             )}
             <label className="block text-xs font-bold text-slate-600">

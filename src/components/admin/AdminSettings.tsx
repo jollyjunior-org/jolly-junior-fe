@@ -14,6 +14,14 @@ export const AdminSettings: React.FC = () => {
     cloudinary_cloud_name: '',
     cloudinary_api_key: '',
     cloudinary_api_secret: '',
+    whatsapp_access_token: '',
+    whatsapp_phone_number_id: '',
+    smtp_host: '',
+    smtp_port: 587,
+    smtp_username: '',
+    smtp_password: '',
+    smtp_from_email: '',
+    smtp_from_name: '',
   });
 
   /** Load Cloudinary + delivery settings from admin API. */
@@ -26,6 +34,14 @@ export const AdminSettings: React.FC = () => {
         cloudinary_cloud_name: data.cloudinary_cloud_name || '',
         cloudinary_api_key: data.cloudinary_api_key || '',
         cloudinary_api_secret: data.cloudinary_api_secret || '',
+        whatsapp_access_token: data.whatsapp_access_token || '',
+        whatsapp_phone_number_id: data.whatsapp_phone_number_id || '',
+        smtp_host: data.smtp_host || '',
+        smtp_port: data.smtp_port || 587,
+        smtp_username: data.smtp_username || '',
+        smtp_password: data.smtp_password || '',
+        smtp_from_email: data.smtp_from_email || '',
+        smtp_from_name: data.smtp_from_name || '',
       });
     } catch (err) {
       console.error('Failed to load settings', err);
@@ -146,6 +162,139 @@ export const AdminSettings: React.FC = () => {
           </div>
         </div>
 
+        {/* WhatsApp Integration */}
+        <div>
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
+            <Cloud className="w-5 h-5 text-green-500" />
+            <h3 className="text-sm font-bold text-slate-800">WhatsApp Integration</h3>
+          </div>
+          <p className="text-xs text-slate-500 mb-4">
+            Required for sending OTPs and order notifications via WhatsApp. Get these credentials from your
+            Meta App Dashboard.
+          </p>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Access Token</label>
+              <input
+                type="password"
+                placeholder="e.g. EAAB..."
+                value={formData.whatsapp_access_token}
+                onChange={(e) =>
+                  setFormData({ ...formData, whatsapp_access_token: e.target.value })
+                }
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-green-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number ID</label>
+              <input
+                type="text"
+                placeholder="e.g. 105938..."
+                value={formData.whatsapp_phone_number_id}
+                onChange={(e) =>
+                  setFormData({ ...formData, whatsapp_phone_number_id: e.target.value })
+                }
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-green-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* SMTP Email Integration */}
+        <div>
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
+            <Cloud className="w-5 h-5 text-indigo-500" />
+            <h3 className="text-sm font-bold text-slate-800">SMTP Email Integration</h3>
+          </div>
+          <p className="text-xs text-slate-500 mb-4">
+            Required for sending emails. Configure your SMTP provider (e.g. SendGrid, Amazon SES, or Gmail).
+          </p>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">SMTP Host</label>
+                <input
+                  type="text"
+                  placeholder="e.g. smtp.gmail.com"
+                  value={formData.smtp_host}
+                  onChange={(e) =>
+                    setFormData({ ...formData, smtp_host: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">SMTP Port</label>
+                <input
+                  type="number"
+                  placeholder="e.g. 587"
+                  value={formData.smtp_port}
+                  onChange={(e) =>
+                    setFormData({ ...formData, smtp_port: parseInt(e.target.value) || 587 })
+                  }
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-indigo-500"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">SMTP Username</label>
+                <input
+                  type="text"
+                  placeholder="Username / Email"
+                  value={formData.smtp_username}
+                  onChange={(e) =>
+                    setFormData({ ...formData, smtp_username: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">SMTP Password</label>
+                <input
+                  type="password"
+                  placeholder="••••••••••••••••••••••••"
+                  value={formData.smtp_password}
+                  onChange={(e) =>
+                    setFormData({ ...formData, smtp_password: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-indigo-500"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">From Email Address</label>
+                <input
+                  type="email"
+                  placeholder="e.g. no-reply@jollyjuniors.local"
+                  value={formData.smtp_from_email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, smtp_from_email: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">From Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Jolly Juniors"
+                  value={formData.smtp_from_name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, smtp_from_name: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-indigo-500"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div className="pt-4 flex justify-end">
           <button

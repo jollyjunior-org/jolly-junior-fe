@@ -92,7 +92,7 @@ export const AdminLogin: React.FC = () => {
                 <input
                   type="text"
                   required
-                  placeholder="admin@jollyjuniors.com"
+                  placeholder="name@company.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-medium text-white placeholder-slate-600 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"

@@ -79,6 +79,14 @@ function mapStorefrontConfig(raw: Record<string, unknown>): StorefrontConfig {
     sortOrder: Number(c.sort_order ?? 0),
   }));
 
+  const rawSocial = raw.socialLinks ?? raw.social_links;
+  const socialLinks = Array.isArray(rawSocial)
+    ? (rawSocial as Array<Record<string, unknown>>).map((item) => ({
+        platform: String(item.platform || 'Custom'),
+        url: String(item.url || ''),
+      }))
+    : [];
+
   return {
     tags,
     navCategories,
@@ -91,8 +99,12 @@ function mapStorefrontConfig(raw: Record<string, unknown>): StorefrontConfig {
       String(raw.footerInstagramUrl ?? raw.footer_instagram_url ?? '') || undefined,
     footerFacebookUrl:
       String(raw.footerFacebookUrl ?? raw.footer_facebook_url ?? '') || undefined,
+    whatsappNumber:
+      String(raw.whatsappNumber ?? raw.whatsapp_number ?? '923001234567') || '923001234567',
+    socialLinks,
   };
 }
+
 
 /**
  * GET public storefront merchandising config.

@@ -40,3 +40,8 @@ export async function loginAdmin(
 export function logoutAdmin(): void {
   clearAuthStorage();
 }
+
+/** Check if current user (customer or admin) has a valid session/cookie. */
+export async function fetchMe(): Promise<{ id: string; role: string; name: string; email: string }> {
+  return apiFetch(authEndpoints.me(), { method: 'GET' });
+}

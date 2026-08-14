@@ -24,8 +24,9 @@ export const Footer: React.FC = () => {
   };
 
   const topCategories = storefrontConfig.footerCategories || [];
-  const instagramUrl = storefrontConfig.footerInstagramUrl || 'https://www.instagram.com/JollyJuniorsStore/';
-  const facebookUrl = storefrontConfig.footerFacebookUrl || 'https://www.facebook.com/';
+  const whatsappNum = storefrontConfig.whatsappNumber || '923001234567';
+  const cleanWhatsappNum = whatsappNum.replace(/[^\d]/g, '') || '923001234567';
+  const socialLinks = storefrontConfig.socialLinks || [];
 
   return (
     <footer className="relative bg-white border-t border-[#D9F1F5] pt-12 pb-24 md:pb-12 mt-16 text-[#0798AE]">
@@ -50,12 +51,12 @@ export const Footer: React.FC = () => {
             <p className="text-[11px] text-[#607D80]">Child-safe eco materials</p>
           </div>
           <div className="p-2 space-y-1">
-            <MessageSquare className="w-6 h-6 text-[#0798AE] mx-auto" />
-            <h4 className="text-xs font-black text-[#263238]">WhatsApp Support</h4>
-            <p className="text-[11px] text-[#607D80]">Instant parent assistance</p>
+            <Sparkles className="w-6 h-6 text-[#0798AE] mx-auto" />
+            <h4 className="text-xs font-black text-[#263238]">Montessori Approved</h4>
+            <p className="text-[11px] text-[#607D80]">Play-based early learning</p>
           </div>
           <div className="p-2 space-y-1">
-            <Sparkles className="w-6 h-6 text-[#FFD52F] mx-auto" />
+            <MessageSquare className="w-6 h-6 text-[#0798AE] mx-auto" />
             <h4 className="text-xs font-black text-[#263238]">Easy Returns</h4>
             <p className="text-[11px] text-[#607D80]">7-Day replacement guarantee</p>
           </div>
@@ -71,56 +72,75 @@ export const Footer: React.FC = () => {
             </p>
             <div className="flex items-center gap-3 pt-1">
               <a
-                href="https://wa.me/923001234567"
+                href={`https://wa.me/${cleanWhatsappNum}`}
                 target="_blank"
                 rel="noreferrer"
-                className="px-3 py-1.5 rounded-full bg-[#D9F1F5] text-[#0798AE] text-xs font-bold flex items-center gap-1.5 hover:bg-[#48B8CA] hover:text-white transition-colors"
+                className="px-3.5 py-1.5 rounded-full bg-[#D9F1F5] text-[#0798AE] text-xs font-bold flex items-center gap-1.5 hover:bg-[#48B8CA] hover:text-white transition-colors"
               >
-                <MessageSquare className="w-3.5 h-3.5 fill-current" />
-                <span>+92 300 1234567</span>
+                <MessageSquare className="w-3.5 h-3.5 fill-current text-[#25D366]" />
+                <span>+{cleanWhatsappNum}</span>
               </a>
             </div>
-            {/* Social icons + Instagram handle */}
+            {/* Social icons */}
             <div className="flex flex-wrap items-center gap-3 pt-1">
-              <a
-                href={instagramUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="p-2 rounded-full bg-[#D9F1F5] text-[#0798AE] hover:bg-[#0798AE] hover:text-white transition-colors"
-                title="Instagram"
-                aria-label="Instagram"
-              >
-                <Instagram className="w-4 h-4" />
-              </a>
-              <a
-                href={facebookUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="p-2 rounded-full bg-[#D9F1F5] text-[#0798AE] hover:bg-[#0798AE] hover:text-white transition-colors"
-                title="Facebook"
-                aria-label="Facebook"
-              >
-                <FacebookIcon className="w-4 h-4" />
-              </a>
-              <a
-                href="https://wa.me/923001234567"
-                target="_blank"
-                rel="noreferrer"
-                className="p-2 rounded-full bg-[#D9F1F5] text-[#0798AE] hover:bg-[#48B8CA] hover:text-white transition-colors"
-                title="WhatsApp"
-                aria-label="WhatsApp"
-              >
-                <MessageSquare className="w-4 h-4" />
-              </a>
-              <a
-                href={instagramUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs font-bold text-[#0798AE] hover:text-[#48B8CA] transition-colors"
-              >
-                @JollyJuniorsStore
-              </a>
+              {socialLinks.length > 0 ? (
+                socialLinks.map((s, idx) => (
+                  <a
+                    key={idx}
+                    href={s.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-2 rounded-full bg-[#D9F1F5] text-[#0798AE] hover:bg-[#0798AE] hover:text-white transition-colors"
+                    title={s.platform}
+                    aria-label={s.platform}
+                  >
+                    {s.platform.toLowerCase().includes('instagram') ? (
+                      <Instagram className="w-4 h-4" />
+                    ) : s.platform.toLowerCase().includes('facebook') ? (
+                      <FacebookIcon className="w-4 h-4" />
+                    ) : s.platform.toLowerCase().includes('whatsapp') ? (
+                      <MessageSquare className="w-4 h-4 text-[#25D366]" />
+                    ) : (
+                      <span className="text-[10px] font-bold px-1">{s.platform.slice(0, 3)}</span>
+                    )}
+                  </a>
+                ))
+              ) : (
+                <>
+                  <a
+                    href="https://www.instagram.com/jollyjuniors"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-2 rounded-full bg-[#D9F1F5] text-[#0798AE] hover:bg-[#0798AE] hover:text-white transition-colors"
+                    title="Instagram"
+                    aria-label="Instagram"
+                  >
+                    <Instagram className="w-4 h-4" />
+                  </a>
+                  <a
+                    href="https://www.facebook.com/jollyjuniors"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-2 rounded-full bg-[#D9F1F5] text-[#0798AE] hover:bg-[#0798AE] hover:text-white transition-colors"
+                    title="Facebook"
+                    aria-label="Facebook"
+                  >
+                    <FacebookIcon className="w-4 h-4" />
+                  </a>
+                  <a
+                    href={`https://wa.me/${cleanWhatsappNum}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-2 rounded-full bg-[#D9F1F5] text-[#0798AE] hover:bg-[#48B8CA] hover:text-white transition-colors"
+                    title="WhatsApp"
+                    aria-label="WhatsApp"
+                  >
+                    <MessageSquare className="w-4 h-4 text-[#25D366]" />
+                  </a>
+                </>
+              )}
             </div>
+
           </div>
 
           {/* Categories */}
@@ -141,8 +161,9 @@ export const Footer: React.FC = () => {
                   </li>
                 ))
               ) : (
-                <li className="text-[11px] italic">Mark categories as “Show in footer” in Admin</li>
+                <li className="text-[11px] text-[#607D80]">Featured Collections</li>
               )}
+
             </ul>
           </div>
 

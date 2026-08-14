@@ -29,6 +29,14 @@ export async function verifyLoginOtp(
   });
 }
 
+/** Logout customer (clears HttpOnly cookie). */
+export async function logoutCustomer(): Promise<{ ok: boolean; message: string }> {
+  return apiFetch(authEndpoints.logout(), {
+    method: 'POST',
+    skipAuth: true,
+  });
+}
+
 /** Merge guest cart into logged-in user's DB cart. */
 export async function mergeCustomerCart(cart: CartItem[]): Promise<unknown> {
   return apiFetch(publicEndpoints.meCartMerge(), {

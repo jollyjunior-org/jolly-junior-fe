@@ -47,7 +47,11 @@ export default function StoreApp() {
     fetchShopCatalog,
   } = useShopStore();
 
+  const whatsappNum = storefrontConfig?.whatsappNumber || '923001234567';
+  const cleanWhatsappNum = whatsappNum.replace(/[^\d]/g, '') || '923001234567';
+
   useEffect(() => {
+
     // Restore cart / wishlist / auth from localStorage after mount (SSR-safe)
     hydrateGuestState();
     fetchPublicData();
@@ -180,7 +184,7 @@ export default function StoreApp() {
       <CheckoutModal />
 
       <a
-        href="https://wa.me/923001234567?text=Hi%20JollyJuniors!%20I%20need%20help%20choosing%20the%20right%20toy%20or%20baby%20care%20item."
+        href={`https://wa.me/${cleanWhatsappNum}?text=Hi%20JollyJuniors!%20I%20need%20help%20choosing%20the%20right%20toy%20or%20baby%20care%20item.`}
         target="_blank"
         rel="noreferrer"
         className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-30 p-2.5 rounded-full bg-[#25D366] text-white shadow-xl hover:scale-110 transition-transform cursor-pointer flex items-center justify-center border-2 border-white"

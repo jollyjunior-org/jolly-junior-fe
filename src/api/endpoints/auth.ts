@@ -9,4 +9,5 @@ export const authEndpoints = {
   me: () => `${base}/me`,
   otpRequest: () => `${base}/otp/request`,
   otpVerify: () => `${base}/otp/verify`,
+  logout: () => `${base}/logout`,
 } as const;

@@ -3,10 +3,6 @@ import { Product, ProductVariant, CartItem, FilterState, Category, Order, AppUse
 import {
   getAccessToken,
   isAuthenticated,
-  getCustomerToken,
-  setCustomerToken,
-  clearCustomerToken,
-  isCustomerAuthenticated,
 } from '@/api/auth-tokens';
 import * as authService from '@/services/auth-service';
 import * as productService from '@/services/product-service';
@@ -80,7 +76,6 @@ interface ShopStore {
   lastOrderNumber: string | null;
   isAdminAuthenticated: boolean;
   isCustomerAuthenticated: boolean;
-  customerToken: string | null;
   authToken: string | null;
   isLoadingAdminData: boolean;
   storefrontConfig: StorefrontConfig;
@@ -236,7 +231,6 @@ export const useShopStore = create<ShopStore>((set, get) => ({
   lastOrderNumber: null,
   isAdminAuthenticated: false,
   isCustomerAuthenticated: false,
-  customerToken: null,
   authToken: null,
   isLoadingAdminData: false,
   storefrontConfig: emptyStorefront,
@@ -432,10 +426,19 @@ export const useShopStore = create<ShopStore>((set, get) => ({
       cart,
       wishlist,
       isAdminAuthenticated: isAuthenticated(),
-      isCustomerAuthenticated: isCustomerAuthenticated(),
-      customerToken: getCustomerToken(),
       authToken: getAccessToken(),
     });
+    
+    // Check if customer session cookie is valid
+    authService.fetchMe()
+      .then((user) => {
+        if (user && user.role === 'customer') {
+          set({ isCustomerAuthenticated: true });
+        }
+      })
+      .catch(() => {
+        set({ isCustomerAuthenticated: false });
+      });
   },
 
   syncCartToServer: async () => {
@@ -449,10 +452,8 @@ export const useShopStore = create<ShopStore>((set, get) => ({
 
   loginCustomerWithOtp: async (email, code) => {
     try {
-      const res = await customerService.verifyLoginOtp(email, code);
-      setCustomerToken(res.access_token);
+      await customerService.verifyLoginOtp(email, code);
       set({
-        customerToken: res.access_token,
         isCustomerAuthenticated: true,
         authModalOpen: false,
       });
@@ -480,9 +481,13 @@ export const useShopStore = create<ShopStore>((set, get) => ({
     }
   },
 
-  logoutCustomer: () => {
-    clearCustomerToken();
-    set({ customerToken: null, isCustomerAuthenticated: false });
+  logoutCustomer: async () => {
+    try {
+      await customerService.logoutCustomer();
+    } catch {
+      // ignore
+    }
+    set({ isCustomerAuthenticated: false });
     get().showToast('Signed out');
   },
 

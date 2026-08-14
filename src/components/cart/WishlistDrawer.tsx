@@ -35,7 +35,7 @@ export const WishlistDrawer: React.FC = () => {
               </div>
               <div>
                 <h3 className="font-extrabold text-[#263238] text-base">Your Wishlist Saved Items</h3>
-                <span className="text-xs text-[#607D80] font-medium">{wishlist.length} saved</span>
+                <span className="text-xs text-[#607D80] font-medium">{wishlistedProducts.length} saved</span>
               </div>
             </div>
 

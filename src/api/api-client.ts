@@ -1,4 +1,4 @@
-import { getAccessToken, getCustomerToken, clearAuthStorage, clearCustomerToken } from '@/api/auth-tokens';
+import { getAccessToken, clearAuthStorage } from '@/api/auth-tokens';
 
 type AuthMode = 'admin' | 'customer' | 'none';
 
@@ -59,8 +59,8 @@ export async function apiClient<T = unknown>(
   // Skip ngrok free account browser warning page (which returns HTML & breaks CORS)
   headers.set('ngrok-skip-browser-warning', 'true');
 
-  if (effectiveAuthMode !== 'none') {
-    const token = effectiveAuthMode === 'customer' ? getCustomerToken() : getAccessToken();
+  if (effectiveAuthMode === 'admin') {
+    const token = getAccessToken();
     if (token) {
       headers.set('Authorization', `Bearer ${token.trim()}`);
     }
@@ -72,13 +72,20 @@ export async function apiClient<T = unknown>(
     headers.set('Content-Type', 'application/json');
   }
 
-  const res = await fetch(url, { ...rest, headers });
+  let res: Response;
+  try {
+    res = await fetch(url, { ...rest, headers, credentials: 'include' });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Network error';
+    throw new Error(`Unable to connect to service (${msg}). Please check server status.`);
+  }
+
   const body = await parseBody(res);
 
   if (res.status === 401 && effectiveAuthMode !== 'none' && !skipAuth) {
-    if (effectiveAuthMode === 'customer') clearCustomerToken();
-    else clearAuthStorage();
+    if (effectiveAuthMode === 'admin') clearAuthStorage();
   }
+
 
   if (!res.ok) {
     const detail =

@@ -3,7 +3,7 @@ import { Plus, Trash2, Save, Loader2, Image as ImageIcon, Tag as TagIcon, Layout
 import { useShopStore } from '@/store/useShopStore';
 import { AdminCampaigns } from '@/components/admin/AdminCampaigns';
 import { AdminPromos } from '@/components/admin/AdminPromos';
-import { fetchSettings, saveSettings } from '@/services/settings-service';
+import { fetchStoreSettings, saveStoreSettings } from '@/services/settings-service';
 import * as storefrontService from '@/services/storefront-service';
 import type { StoreTag, HeroSlideConfig, HomeSectionConfig } from '@/types';
 
@@ -83,7 +83,7 @@ export const AdminControl: React.FC = () => {
   const loadSettings = async () => {
     setSettingsLoading(true);
     try {
-      const data = await fetchSettings();
+      const data = await fetchStoreSettings();
       setSettingsForm({
         delivery_fee: Number(data.delivery_fee ?? 250),
         free_delivery_threshold: Number(data.free_delivery_threshold ?? 3000),
@@ -291,16 +291,17 @@ export const AdminControl: React.FC = () => {
       tag_id: sec.tagId || '',
     });
   };
-  const handleSaveStoreSettings = async () => {
+
+  const handleSaveSettings = async () => {
     setSettingsSaving(true);
     try {
-      await saveSettings({
+      await saveStoreSettings({
         delivery_fee: Number(settingsForm.delivery_fee),
         free_delivery_threshold: Number(settingsForm.free_delivery_threshold),
         footer_instagram_url: settingsForm.instagram_url || null,
         footer_facebook_url: settingsForm.facebook_url || null,
       });
-      showToast('Store settings saved');
+      showToast('Store settings saved successfully!');
       await loadSettings();
       await refreshPublic();
     } catch (err: unknown) {
@@ -1011,7 +1012,7 @@ export const AdminControl: React.FC = () => {
           <div className="flex justify-end">
             <button
               type="button"
-              onClick={handleSaveStoreSettings}
+              onClick={handleSaveSettings}
               disabled={settingsLoading || settingsSaving}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-2xl text-xs font-bold transition-colors disabled:opacity-60"
             >

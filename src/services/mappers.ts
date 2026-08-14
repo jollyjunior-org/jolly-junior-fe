@@ -16,7 +16,14 @@ export function mapProduct(p: Record<string, unknown>, categorySlugById?: Map<st
     categoryId,
     categorySlug: slugFromMap || String(p.category_slug ?? p.categorySlug ?? ''),
     categoryName: String(p.category_name ?? p.categoryName ?? 'Uncategorized'),
-    images: ((p.images as string[]) || []).filter(Boolean),
+    // Accept both plain URL strings and enriched {secure_url} objects from admin API
+    images: ((p.images ?? p.image_urls) as Array<string | Record<string, unknown>> || [])
+      .map((img) => {
+        if (typeof img === 'string') return img;
+        return String((img as Record<string, unknown>).secure_url ?? (img as Record<string, unknown>).url ?? '');
+      })
+      .filter(Boolean),
+
     badge: p.badge as Product['badge'],
     discountBadge: parseDiscountPercentValue(
       (p.discount_badge ?? p.discountBadge) as string | number | null | undefined,

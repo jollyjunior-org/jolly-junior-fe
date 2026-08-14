@@ -1,17 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { 
   Plus, Search, Edit2, Trash2, CheckCircle2, XCircle, 
   X, Layers, Tag, DollarSign, Image as ImageIcon, Filter, Check
 } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
 import { Product, ProductVariant, StoreTag } from '../../types';
-import { ImageUploadWidget } from './ImageUploadWidget';
+import { ImageUploadWidget, type UploadedImage } from './ImageUploadWidget';
 import { TagMultiSelect } from './TagMultiSelect';
 import { formatDiscountLabel } from '../../utils/discount';
+import { commitSession, cleanupSession } from '@/services/upload-service';
 import * as storefrontService from '@/services/storefront-service';
 
 const MAX_IMAGES = 4;
-const EMPTY_IMAGES = ['', '', '', ''];
+
+/** Null = empty slot; UploadedImage = has both secure_url and public_id. */
+type ImageSlot = UploadedImage | null;
 
 /** Local draft row for a color/size option before save. */
 type VariantDraft = {
@@ -46,7 +49,13 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
   const [samePriceForVariants, setSamePriceForVariants] = useState(true);
   const [variants, setVariants] = useState<VariantDraft[]>([]);
 
-  // Form Fields State
+  // Stable session UUID per modal open — used for Cloudinary upload tracking
+  const sessionIdRef = useRef<string>(crypto.randomUUID());
+
+  // Enriched image slots (public_id + secure_url); null = empty
+  const [imageSlots, setImageSlots] = useState<ImageSlot[]>([null, null, null, null]);
+
+  // Form Fields State (images removed — now managed separately as imageSlots)
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -59,7 +68,6 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
     tagIds: [] as string[],
     badge: '' as '' | 'Best Seller' | 'New' | 'Flash Sale' | 'Must Have' | 'Trending',
     ageGroup: '1-3Y' as '0-6M' | '6-12M' | '1-3Y' | '3-5Y' | '5Y+',
-    images: [...EMPTY_IMAGES] as string[],
     description: '',
     featuresText: 'Non-toxic paint, Solid beechwood, Eco-friendly',
     inStock: true,
@@ -67,11 +75,20 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
     isPublished: true
   });
 
-  /** Pad / trim image list to exactly 4 slots. */
-  const toImageSlots = (urls: string[] | undefined): string[] => {
-    const slots = [...EMPTY_IMAGES];
-    (urls || []).slice(0, MAX_IMAGES).forEach((u, i) => {
-      slots[i] = u || '';
+  /**
+   * Convert a product's images array (enriched objects or plain URL strings from API)
+   * into 4 ImageSlot entries.
+   */
+  const toImageSlots = (
+    images: Array<{ public_id?: string | null; secure_url?: string; url?: string } | string> | undefined,
+  ): ImageSlot[] => {
+    const slots: ImageSlot[] = [null, null, null, null];
+    (images || []).slice(0, MAX_IMAGES).forEach((img, i) => {
+      if (typeof img === 'string') {
+        slots[i] = img ? { public_id: '', secure_url: img } : null;
+      } else if (img && (img.secure_url || img.url)) {
+        slots[i] = { public_id: img.public_id || '', secure_url: (img.secure_url || img.url)! };
+      }
     });
     return slots;
   };
@@ -80,6 +97,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
     setEditingProduct(null);
     setSamePriceForVariants(true);
     setVariants([]);
+    setImageSlots([null, null, null, null]);
     setFormData({
       name: '',
       slug: '',
@@ -92,7 +110,6 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
       tagIds: [],
       badge: '',
       ageGroup: '1-3Y',
-      images: [...EMPTY_IMAGES],
       description: '',
       featuresText: 'Non-toxic paint, Solid beechwood, Eco-friendly',
       inStock: true,
@@ -102,11 +119,15 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
   };
 
   const handleOpenAddModal = () => {
+    // Fresh session UUID for each new-product modal
+    sessionIdRef.current = crypto.randomUUID();
     resetForm();
     setIsModalOpen(true);
   };
 
   const handleOpenEditModal = (product: Product) => {
+    // Use the real product ID as the session/entity_id for uploads during edit
+    sessionIdRef.current = product.id;
     setEditingProduct(product);
     const productVariants = product.variants || [];
     const prices = productVariants.map((v) => v.price);
@@ -123,6 +144,8 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
         inStock: v.inStock !== false,
       })),
     );
+    // Populate enriched image slots from API response
+    setImageSlots(toImageSlots(product.images as unknown[]));
     setFormData({
       name: product.name,
       slug: product.slug,
@@ -137,7 +160,6 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
       tagIds: product.tagIds || [],
       badge: product.badge || '',
       ageGroup: product.ageGroup,
-      images: toImageSlots(product.images),
       description: product.description,
       featuresText: (product.features || []).join(', '),
       inStock: product.inStock,
@@ -147,7 +169,13 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
     setIsModalOpen(true);
   };
 
-  const handleCloseModal = () => {
+  const handleCloseModal = async () => {
+    // If the user cancels, delete any uncommitted uploads for this session
+    const sid = sessionIdRef.current;
+    if (sid && !editingProduct) {
+      // Only clean up for new-product sessions (editing uses real product ID as session)
+      cleanupSession(sid).catch(() => {/* best-effort */});
+    }
     setIsModalOpen(false);
     resetForm();
     if (onCloseAddModal) onCloseAddModal();
@@ -210,11 +238,18 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
       .filter(Boolean);
 
     const generatedSlug = formData.slug || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    const imageUrls = formData.images.map((u) => u.trim()).filter(Boolean).slice(0, MAX_IMAGES);
-    if (!imageUrls.length) {
+
+    // Build enriched images payload from ImageSlot state
+    const filledSlots = imageSlots.filter((s): s is UploadedImage => s !== null && Boolean(s.secure_url));
+    if (!filledSlots.length) {
       window.alert('Please add at least one product image.');
       return;
     }
+    const imagesPayload = filledSlots.map((slot, i) => ({
+      public_id: slot.public_id,
+      secure_url: slot.secure_url,
+      display_order: i,
+    }));
 
     const hasDiscount = formData.discountPercent > 0 && formData.originalPrice > 0;
     const computedPrice = hasDiscount
@@ -225,7 +260,6 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
     const computedOriginalPrice = hasDiscount ? Number(formData.originalPrice) : computedPrice;
     const discountPercentValue = hasDiscount ? formData.discountPercent : null;
 
-    // Build variants payload (name required); same-price copies product selling price
     const variantPayload: ProductVariant[] = variants
       .filter((v) => v.name.trim())
       .map((v, idx) => {
@@ -235,9 +269,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
           id: v.id || `tmp-${idx}`,
           name: v.name.trim(),
           price,
-          originalPrice: samePriceForVariants
-            ? computedOriginalPrice
-            : Number(v.originalPrice) || price,
+          originalPrice: samePriceForVariants ? computedOriginalPrice : Number(v.originalPrice) || price,
           inStock: stock > 0,
           stockQuantity: stock,
         };
@@ -260,7 +292,8 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
       tagIds: formData.tagIds,
       badge: (formData.badge || undefined) as Product['badge'],
       ageGroup: formData.ageGroup,
-      images: imageUrls,
+      images: imagesPayload as unknown as string[],  // enriched {public_id, secure_url, display_order} — normalised in store
+
       description: formData.description,
       features: featuresList.length > 0 ? featuresList : ['High quality baby safe material'],
       inStock: formData.inStock && parsedStock > 0,
@@ -269,11 +302,12 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
       variants: variantPayload,
     };
 
+    const sid = sessionIdRef.current;
+
     if (editingProduct) {
-      updateProduct(editingProduct.id, {
-        ...productPayload,
-        discountBadge: discountPercentValue,
-      });
+      updateProduct(editingProduct.id, { ...productPayload, discountBadge: discountPercentValue });
+      // Commit any new uploads added during edit (product ID = session ID)
+      if (sid) commitSession(sid).catch(() => {});
     } else {
       addProduct({
         ...productPayload,
@@ -285,9 +319,14 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
           'Premium sustainable baby product designed for safe exploration and motor development.',
         features: featuresList.length > 0 ? featuresList : ['Child safe non-toxic materials', 'Durable design'],
       });
+      // Commit pending uploads for this session
+      if (sid) commitSession(sid).catch(() => {});
     }
 
-    handleCloseModal();
+    // Close WITHOUT triggering the cancel-cleanup (we committed already)
+    setIsModalOpen(false);
+    resetForm();
+    if (onCloseAddModal) onCloseAddModal();
   };
 
   /** Add an empty color/size row. */
@@ -314,18 +353,18 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
     setVariants((prev) => prev.filter((_, i) => i !== index));
   };
 
-  /** Set image URL at slot index (0–3). */
-  const setImageAt = (index: number, url: string) => {
-    setFormData((prev) => {
-      const images = [...prev.images];
-      images[index] = url;
-      return { ...prev, images };
+  /** Set the ImageSlot at a given index (0–3). Pass null to clear. */
+  const setImageAt = (index: number, slot: ImageSlot) => {
+    setImageSlots((prev) => {
+      const next = [...prev];
+      next[index] = slot;
+      return next;
     });
   };
 
-  /** Clear image at slot index. */
+  /** Clear image slot at index. */
   const clearImageAt = (index: number) => {
-    setImageAt(index, '');
+    setImageAt(index, null);
   };
 
   const handleDelete = (id: string, name: string) => {
@@ -788,13 +827,13 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                   Image 1 is the main cover photo shown on cards and search.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {formData.images.map((url, index) => (
+                  {imageSlots.map((slot, index) => (
                     <div key={index} className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wide">
                           Image {index + 1}{index === 0 ? ' · Main' : ''}
                         </span>
-                        {url ? (
+                        {slot ? (
                           <button
                             type="button"
                             onClick={() => clearImageAt(index)}
@@ -805,10 +844,11 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                         ) : null}
                       </div>
                       <ImageUploadWidget
-                        key={`img-${index}-${url || 'empty'}`}
+                        key={`img-${index}-${slot?.secure_url || 'empty'}`}
                         folder="products"
-                        initialImage={url || undefined}
-                        onUploadSuccess={(nextUrl) => setImageAt(index, nextUrl)}
+                        entityId={sessionIdRef.current}
+                        initialImage={slot || undefined}
+                        onUploadSuccess={(result) => setImageAt(index, result)}
                       />
                     </div>
                   ))}

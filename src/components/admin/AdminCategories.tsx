@@ -310,8 +310,9 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
                 {editingCategory ? (
                   <ImageUploadWidget
                     folder="categories"
+                    entityId={editingCategory?.id}
                     initialImage={formData.image}
-                    onUploadSuccess={(url) => setFormData({ ...formData, image: url })}
+                    onUploadSuccess={(result) => setFormData({ ...formData, image: result?.secure_url ?? '' })}
                   />
                 ) : (
                   <div className="text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-lg px-3 py-4">

@@ -268,9 +268,11 @@ export const AdminCampaigns: React.FC = () => {
             </label>
             <ImageUploadWidget
               folder="campaigns"
+              entityId={editingId ?? undefined}
               initialImage={form.background_image_url || undefined}
-              onUploadSuccess={(url) => setForm({ ...form, background_image_url: url })}
+              onUploadSuccess={(result) => setForm({ ...form, background_image_url: result?.secure_url ?? '' })}
             />
+
             {form.background_image_url && (
               <button
                 type="button"

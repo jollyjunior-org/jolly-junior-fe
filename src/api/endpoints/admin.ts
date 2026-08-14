@@ -22,9 +22,12 @@ export const adminEndpoints = {
   inventorySetQuantity: (id: string) => `${base}/inventory/${id}/set-quantity`,
   inventoryBatchAdjust: () => `${base}/inventory/batch-adjust`,
   settings: () => `${base}/settings`,
+  storeSettings: () => `${base}/store-settings`,
   promoCodes: () => `${base}/promo-codes/`,
   promoCode: (id: string) => `${base}/promo-codes/${id}`,
-  upload: () => `${base}/upload/`,
+  upload: () => `${base}/upload`,
+  uploadCommit: () => `${base}/upload/commit`,
+  uploadCleanupSession: (sessionId: string) => `${base}/upload/cleanup-session/${sessionId}`,
   tags: () => `${base}/tags/`,
   tag: (id: string) => `${base}/tags/${id}`,
   heroSlides: () => `${base}/hero-slides/`,
@@ -36,3 +39,4 @@ export const adminEndpoints = {
   emailTemplates: () => `${base}/email-templates`,
   emailTemplate: (id: string) => `${base}/email-templates/${id}`,
 } as const;
+

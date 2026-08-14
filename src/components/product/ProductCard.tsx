@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
-import { Heart, ShoppingBag, Eye, Star, MessageSquare } from 'lucide-react';
+import { Heart, ShoppingBag, Eye, Star, Check } from 'lucide-react';
 import { Product } from '../../types';
 import { formatDiscountLabel } from '../../utils/discount';
 import { isComingSoonProduct } from '../../utils/product';
@@ -21,6 +21,7 @@ interface ProductCardProps {
 export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = false }) => {
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
+  const [justAdded, setJustAdded] = useState(false);
   const {
     addToCart,
     toggleWishlist,
@@ -42,11 +43,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
     router.push(productPath(product));
   };
 
-
   /** Add to cart without navigating away. */
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (isAvailable) addToCart(product);
+    if (isAvailable) {
+      addToCart(product);
+      setJustAdded(true);
+      setTimeout(() => setJustAdded(false), 1500);
+    }
   };
 
   // ——— Compact card (2-up mobile / dense catalogs) ———
@@ -84,7 +88,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
             </span>
           )}
 
-          {/* Wishlist + quick view stacked like reference */}
+          {/* Action icon buttons stacked top-right (Wishlist, Add to Cart, Quick View) */}
           <div className="absolute top-2 right-2 z-10 flex flex-col gap-1.5">
             <button
               type="button"
@@ -92,12 +96,31 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
                 e.stopPropagation();
                 toggleWishlist(product.id);
               }}
-              className={`w-7 h-7 rounded-full bg-white shadow-sm flex items-center justify-center cursor-pointer ${
-                isWishlisted ? 'text-[#0798AE]' : 'text-[#607D80]'
+              className={`w-7 h-7 rounded-full bg-white shadow-sm flex items-center justify-center cursor-pointer transition-transform active:scale-90 ${
+                isWishlisted ? 'text-[#F47C4C]' : 'text-[#607D80] hover:text-[#F47C4C]'
               }`}
-              title="Wishlist"
+              title={isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
             >
               <Heart className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-current' : ''}`} />
+            </button>
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              disabled={!isAvailable}
+              className={`w-7 h-7 rounded-full shadow-sm flex items-center justify-center transition-all active:scale-90 ${
+                justAdded
+                  ? 'bg-emerald-500 text-white'
+                  : !isAvailable
+                    ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
+                    : 'bg-white text-[#607D80] hover:bg-[#0798AE] hover:text-white cursor-pointer'
+              }`}
+              title={comingSoon ? 'Coming Soon' : isAvailable ? 'Add to Cart' : 'Out of Stock'}
+            >
+              {justAdded ? (
+                <Check className="w-3.5 h-3.5" />
+              ) : (
+                <ShoppingBag className="w-3.5 h-3.5" />
+              )}
             </button>
             <button
               type="button"
@@ -105,8 +128,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
                 e.stopPropagation();
                 setQuickViewProduct(product);
               }}
-              className="w-7 h-7 rounded-full bg-white shadow-sm flex items-center justify-center text-[#607D80] cursor-pointer"
-              title="Quick view"
+              className="w-7 h-7 rounded-full bg-white shadow-sm flex items-center justify-center text-[#607D80] hover:text-[#0798AE] cursor-pointer transition-transform active:scale-90"
+              title="Quick View"
             >
               <Eye className="w-3.5 h-3.5" />
             </button>
@@ -119,30 +142,23 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
             {product.name}
           </h3>
 
-          <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0 mt-0.5">
-            {hasSale && (
-              <span className="text-[10px] text-[#94A3B8] line-through">
-                Rs.{product.originalPrice!.toLocaleString()}
+          <div className="flex flex-wrap items-center justify-between gap-x-1.5 gap-y-0 mt-auto pt-1">
+            <div className="flex items-baseline gap-1.5">
+              {hasSale && (
+                <span className="text-[10px] text-[#94A3B8] line-through">
+                  Rs.{product.originalPrice!.toLocaleString()}
+                </span>
+              )}
+              <span className="text-[13px] font-bold text-[#0798AE]">
+                Rs.{product.price.toLocaleString()}
+              </span>
+            </div>
+            {!isAvailable && (
+              <span className="text-[9px] font-bold text-slate-400">
+                {comingSoon ? 'Soon' : 'Sold out'}
               </span>
             )}
-            <span className="text-[13px] font-bold text-[#0798AE]">
-              Rs.{product.price.toLocaleString()}
-            </span>
           </div>
-
-          <button
-            type="button"
-            onClick={handleAddToCart}
-            disabled={!isAvailable}
-            className={`mt-auto w-full py-1.5 rounded-md text-[11px] font-semibold flex items-center justify-center gap-1.5 border transition-colors ${
-              isAvailable
-                ? 'border-[#0798AE] text-[#0798AE] hover:bg-[#FFFDF7] cursor-pointer'
-                : 'border-slate-200 text-slate-400 cursor-not-allowed'
-            }`}
-          >
-            <span>{comingSoon ? 'Coming Soon' : isAvailable ? 'Add To Cart' : 'Sold Out'}</span>
-            {isAvailable && <ShoppingBag className="w-3.5 h-3.5" />}
-          </button>
         </div>
       </motion.div>
     );
@@ -211,33 +227,52 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleWishlist(product.id);
-          }}
-          className={`absolute top-3 right-3 z-10 p-2 rounded-full backdrop-blur-md shadow-xs transition-all cursor-pointer ${
-            isWishlisted
-              ? 'bg-[#F47C4C] text-white'
-              : 'bg-white/90 hover:bg-white text-[#607D80] hover:text-[#F47C4C]'
-          }`}
-          title={isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
-        >
-          <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
-        </button>
-
-        <div className="absolute inset-x-3 bottom-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hidden sm:block">
+        {/* Action icon buttons stacked top-right (Wishlist, Add to Cart, Quick View) */}
+        <div className="absolute top-3 right-3 z-10 flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleWishlist(product.id);
+            }}
+            className={`w-8 h-8 rounded-full shadow-sm backdrop-blur-md flex items-center justify-center transition-all cursor-pointer active:scale-90 ${
+              isWishlisted
+                ? 'bg-[#F47C4C] text-white'
+                : 'bg-white/90 hover:bg-white text-[#607D80] hover:text-[#F47C4C]'
+            }`}
+            title={isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
+          >
+            <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
+          </button>
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={!isAvailable}
+            className={`w-8 h-8 rounded-full shadow-sm backdrop-blur-md flex items-center justify-center transition-all active:scale-90 ${
+              justAdded
+                ? 'bg-emerald-500 text-white'
+                : !isAvailable
+                  ? 'bg-slate-100/90 text-slate-300 cursor-not-allowed border border-slate-200/60'
+                  : 'bg-white/90 hover:bg-[#0798AE] text-[#607D80] hover:text-white cursor-pointer'
+            }`}
+            title={comingSoon ? 'Coming Soon' : isAvailable ? 'Add to Cart' : 'Out of Stock'}
+          >
+            {justAdded ? (
+              <Check className="w-4 h-4" />
+            ) : (
+              <ShoppingBag className="w-4 h-4" />
+            )}
+          </button>
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
               setQuickViewProduct(product);
             }}
-            className="w-full py-2 bg-white/95 hover:bg-white text-[#263238] hover:text-[#0798AE] text-xs font-bold rounded-full shadow-md backdrop-blur-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+            className="w-8 h-8 rounded-full bg-white/90 hover:bg-white text-[#607D80] hover:text-[#0798AE] shadow-sm backdrop-blur-md flex items-center justify-center transition-all cursor-pointer active:scale-90"
+            title="Quick View"
           >
-            <Eye className="w-3.5 h-3.5 text-[#0798AE]" />
-            <span>Quick View</span>
+            <Eye className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -276,25 +311,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
             )}
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              disabled={!isAvailable}
-              className={`px-3 py-2 rounded-full text-xs font-bold shadow-xs transition-all flex items-center gap-1 ${
-                isAvailable
-                  ? 'bg-[#0798AE] hover:bg-[#48B8CA] text-white cursor-pointer'
-                  : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
-              }`}
-            >
-              <ShoppingBag className="w-3.5 h-3.5" />
-              <span className="text-[11px] font-bold">
-                {comingSoon ? 'Soon' : isAvailable ? 'Add' : 'Sold Out'}
-              </span>
-            </button>
-          </div>
+          {!isAvailable && (
+            <span className="text-[11px] font-extrabold px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+              {comingSoon ? 'Coming Soon' : 'Sold Out'}
+            </span>
+          )}
         </div>
       </div>
     </motion.div>
   );
 };
+

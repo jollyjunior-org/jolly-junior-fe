@@ -34,6 +34,7 @@ export interface Product {
   rating: number;
   reviewCount: number;
   images: string[];
+
   hoverImage?: string;
   videoPreviewUrl?: string; // optional MP4 or webm loop preview
   description: string;
@@ -149,6 +150,11 @@ export interface NavSectionChip {
   sortOrder?: number;
 }
 
+export interface SocialLink {
+  platform: string;
+  url: string;
+}
+
 export interface StorefrontConfig {
   tags: StoreTag[];
   navCategories: Category[];
@@ -159,7 +165,10 @@ export interface StorefrontConfig {
   navSectionChips: NavSectionChip[];
   footerInstagramUrl?: string;
   footerFacebookUrl?: string;
+  whatsappNumber?: string;
+  socialLinks?: SocialLink[];
 }
+
 
 export interface CartItem {
   product: Product;

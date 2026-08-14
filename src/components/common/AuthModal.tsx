@@ -12,6 +12,7 @@ export const AuthModal: React.FC = () => {
   const [identifier, setIdentifier] = useState('');
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [devCode, setDevCode] = useState<string | null>(null);
 
   if (!authModalOpen) return null;
@@ -21,26 +22,28 @@ export const AuthModal: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setDevCode(null);
+    setError(null);
     try {
       const res = await requestLoginOtp(identifier.trim());
       if (res.dev_code) setDevCode(res.dev_code);
       showToast(res.message || 'Code sent');
       setStep('code');
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Could not send code');
+      const errMsg = err instanceof Error ? err.message : 'Could not send code';
+      setError(errMsg);
     } finally {
       setLoading(false);
     }
   };
 
-  /** Verify OTP and sign in. */
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     const result = await loginCustomerWithOtp(identifier.trim(), code.trim());
     setLoading(false);
     if (!result.success) {
-      showToast(result.message || 'Invalid code');
+      setError(result.message || 'Invalid 6-digit code. Please try again.');
     } else {
       setStep('email');
       setCode('');
@@ -79,6 +82,11 @@ export const AuthModal: React.FC = () => {
                 />
               </div>
             </label>
+            {error && (
+              <p className="text-xs text-rose-500 font-medium bg-rose-50 p-2 rounded-lg text-center">
+                {error}
+              </p>
+            )}
             <button
               type="submit"
               disabled={loading}
@@ -114,6 +122,11 @@ export const AuthModal: React.FC = () => {
                 />
               </div>
             </label>
+            {error && (
+              <p className="text-xs text-rose-500 font-medium bg-rose-50 p-2 rounded-lg text-center">
+                {error}
+              </p>
+            )}
             <button
               type="submit"
               disabled={loading}
@@ -124,7 +137,10 @@ export const AuthModal: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => setStep('email')}
+              onClick={() => {
+                setStep('email');
+                setError(null);
+              }}
               className="w-full text-xs text-slate-500 hover:underline cursor-pointer"
             >
               Change email

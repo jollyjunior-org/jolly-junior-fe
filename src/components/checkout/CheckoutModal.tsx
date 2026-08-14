@@ -26,7 +26,7 @@ export const CheckoutModal: React.FC = () => {
     lastOrderNumber,
     currentView,
     isCustomerAuthenticated,
-    customerToken,
+
     buyNowItem,
     setBuyNowItem,
     shippingConfig,
@@ -74,7 +74,7 @@ export const CheckoutModal: React.FC = () => {
         /* ignore */
       }
     })();
-  }, [currentView, isCustomerAuthenticated, customerToken]);
+  }, [currentView, isCustomerAuthenticated]);
 
   if (currentView !== 'checkout' && currentView !== 'order-success') return null;
 
@@ -260,8 +260,9 @@ export const CheckoutModal: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-[#263238] mb-1">Email (Optional)</label>
+                    <label className="block text-xs font-bold text-[#263238] mb-1">Email</label>
                     <input
+                      required
                       type="email"
                       placeholder="parent@example.com"
                       value={formData.email}

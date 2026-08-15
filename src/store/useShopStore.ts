@@ -64,7 +64,7 @@ interface ShopStore {
   filter: FilterState;
   quickViewProduct: Product | null;
   selectedProductDetail: Product | null;
-  currentView: 'home' | 'shop' | 'checkout' | 'order-success' | 'admin';
+  currentView: 'home' | 'shop' | 'checkout' | 'order-success' | 'admin' | 'order-tracking';
   cartOpen: boolean;
   wishlistOpen: boolean;
   searchOpen: boolean;
@@ -107,7 +107,7 @@ interface ShopStore {
   resetFilter: () => void;
   setQuickViewProduct: (product: Product | null) => void;
   setSelectedProductDetail: (product: Product | null) => void;
-  setCurrentView: (view: 'home' | 'shop' | 'checkout' | 'order-success' | 'admin') => void;
+  setCurrentView: (view: 'home' | 'shop' | 'checkout' | 'order-success' | 'admin' | 'order-tracking') => void;
   setCartOpen: (open: boolean) => void;
   setWishlistOpen: (open: boolean) => void;
   setSearchOpen: (open: boolean) => void;
@@ -434,6 +434,11 @@ export const useShopStore = create<ShopStore>((set, get) => ({
       .then((user) => {
         if (user && user.role === 'customer') {
           set({ isCustomerAuthenticated: true });
+          customerService.fetchCustomerWishlist().then((remoteWishlist) => {
+            const clean = (remoteWishlist || []).filter((id) => id && id.trim() !== '' && id !== 'null' && id !== 'undefined');
+            set({ wishlist: clean });
+            saveGuestWishlist(clean);
+          }).catch(() => undefined);
         }
       })
       .catch(() => {

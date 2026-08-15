@@ -51,4 +51,6 @@ export const publicEndpoints = {
     `${PUBLIC_API_BASE_URL}/store/testimonials/invite/${encodeURIComponent(token)}`,
   storeUpload: () => `${PUBLIC_API_BASE_URL}/store/upload`,
   createOrder: () => `${PUBLIC_API_BASE_URL}/store/orders`,
+  trackOrder: (orderNumber: string) => 
+    `${PUBLIC_API_BASE_URL}/store/orders/${encodeURIComponent(orderNumber)}/tracking`,
 } as const;

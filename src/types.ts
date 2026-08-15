@@ -12,6 +12,8 @@ export interface ProductReview {
   id: string;
   userName: string;
   userAvatar?: string;
+  city?: string;
+  photoUrl?: string;
   rating: number;
   date: string;
   comment: string;

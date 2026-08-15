@@ -38,6 +38,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
   const hasSale =
     product.originalPrice != null && product.originalPrice > product.price;
 
+  const reviewsList = product.reviews || [];
+  const totalReviews = reviewsList.length > 0 ? reviewsList.length : (product.reviewCount || 0);
+  const avgRating = reviewsList.length > 0
+    ? (reviewsList.reduce((acc, r) => acc + r.rating, 0) / reviewsList.length).toFixed(1)
+    : (product.rating ? Number(product.rating).toFixed(1) : '5.0');
+  const hasReviews = totalReviews > 0;
+
   /** Open full product page (shareable link). */
   const openProductPage = () => {
     router.push(productPath(product));
@@ -141,6 +148,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
           <h3 className="text-[12px] font-semibold text-[#263238] line-clamp-1 leading-snug">
             {product.name}
           </h3>
+
+          {hasReviews && (
+            <div className="flex items-center gap-1 text-[10px] font-bold text-[#263238] mt-0.5">
+              <Star className="w-3 h-3 fill-[#FFD52F] text-[#FFD52F]" />
+              <span>{avgRating}</span>
+              <span className="text-[#94A3B8] font-normal">({totalReviews})</span>
+            </div>
+          )}
 
           <div className="flex flex-wrap items-center justify-between gap-x-1.5 gap-y-0 mt-auto pt-1">
             <div className="flex items-baseline gap-1.5">
@@ -290,13 +305,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
             {product.name}
           </h3>
 
-          <div className="flex items-center gap-1 mt-1.5">
-            <div className="flex items-center text-[#FFD52F]">
-              <Star className="w-3.5 h-3.5 fill-current" />
+          {hasReviews && (
+            <div className="flex items-center gap-1 mt-1.5">
+              <div className="flex items-center text-[#FFD52F]">
+                <Star className="w-3.5 h-3.5 fill-current" />
+              </div>
+              <span className="text-xs font-extrabold text-[#263238]">{avgRating}</span>
+              <span className="text-[11px] text-[#607D80]">({totalReviews} {totalReviews === 1 ? 'review' : 'reviews'})</span>
             </div>
-            <span className="text-xs font-extrabold text-[#263238]">{product.rating}</span>
-            <span className="text-[11px] text-[#607D80]">({product.reviewCount})</span>
-          </div>
+          )}
         </div>
 
         <div className="mt-3 pt-2.5 border-t border-[#D9F1F5] flex items-center justify-between gap-2">

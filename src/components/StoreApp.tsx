@@ -24,6 +24,7 @@ import { AuthModal } from '@/components/common/AuthModal';
 import { AccountPanel } from '@/components/common/AccountPanel';
 import { FeedbackModal } from '@/components/common/FeedbackModal';
 import { Toast } from '@/components/common/Toast';
+import { OrderTracking } from '@/components/orders/OrderTracking';
 import { ScrollToTop } from '@/components/common/ScrollToTop';
 import { MessageSquare } from 'lucide-react';
 import { productsForHomeSection } from '@/services/home-section-resolver';
@@ -138,7 +139,6 @@ export default function StoreApp() {
       <MobileSidebar />
       <AuthModal />
       <AccountPanel />
-      <FeedbackModal />
 
       <main className="flex-1 relative z-10">
         {currentView === 'home' ? (

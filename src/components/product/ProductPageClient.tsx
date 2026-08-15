@@ -65,15 +65,15 @@ export default function ProductPageClient() {
     const load = async () => {
       setLoading(true);
       setNotFound(false);
-      // Prefer already-loaded catalog
+      // Use cached immediately if available (for instant load)
       const fromStore = products.find((p) => p.slug === slug || p.id === slug);
       if (fromStore) {
         if (!cancelled) {
           setProduct(fromStore);
           setLoading(false);
         }
-        return;
       }
+
       try {
         const p = await productService.fetchPublicProduct(slug);
         if (!cancelled) {
@@ -81,7 +81,7 @@ export default function ProductPageClient() {
           setLoading(false);
         }
       } catch {
-        if (!cancelled) {
+        if (!cancelled && !fromStore) {
           setProduct(null);
           setNotFound(true);
           setLoading(false);

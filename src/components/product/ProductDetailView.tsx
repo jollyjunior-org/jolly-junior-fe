@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Star, Heart, ShoppingBag, MessageSquare, Check,
-  Truck, ShieldCheck, RefreshCw, Play, Plus, ArrowLeft, Share2, Link2,
+  Truck, ShieldCheck, RefreshCw, Play, Plus, ArrowLeft, Share2, Link2, Quote, CheckCircle
 } from 'lucide-react';
 import type { Product, ProductVariant } from '@/types';
 import { formatDiscountLabel } from '@/utils/discount';
@@ -40,6 +40,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'description' | 'features' | 'reviews'>('description');
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [selectedReviewImage, setSelectedReviewImage] = useState<string | null>(null);
 
   React.useEffect(() => {
     setSelectedImage(product.images[0]);
@@ -440,17 +441,71 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
               </ul>
             )}
             {activeTab === 'reviews' && (
-              <div className="space-y-4">
+              <div className="flex overflow-x-auto gap-3 pb-3 snap-x snap-mandatory scroll-smooth no-scrollbar">
                 {product.reviews && product.reviews.length > 0 ? (
-                  product.reviews.map((rev) => (
-                    <div key={rev.id} className="p-3 rounded-xl bg-[#FFFDF7] border border-[#F1F5F9]">
-                      <div className="flex justify-between">
-                        <span className="font-bold text-sm">{rev.userName}</span>
-                        <span className="text-[10px] text-slate-400">{rev.date}</span>
+                  product.reviews.map((rev) => {
+                    const avatar =
+                      rev.userAvatar ||
+                      rev.photoUrl ||
+                      `https://ui-avatars.com/api/?name=${encodeURIComponent(rev.userName)}&background=FFB347&color=fff`;
+
+                    return (
+                      <div
+                        key={rev.id}
+                        className="w-[260px] sm:w-[290px] flex-shrink-0 snap-start bg-white rounded-xl p-3.5 sm:p-4 border border-[#F1F5F9] shadow-2xs relative flex flex-col justify-between"
+                      >
+                        <Quote className="absolute top-3 right-3 w-4 h-4 text-[#F1F5F9]" />
+                        <div>
+                          <div className="flex items-center gap-0.5 text-[#FFD52F] mb-2">
+                            {[...Array(rev.rating)].map((_, i) => (
+                              <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                            ))}
+                          </div>
+                          <p className="text-xs text-[#263238] leading-snug font-medium italic mb-2.5">
+                            &quot;{rev.comment}&quot;
+                          </p>
+                          {rev.photoUrl && (
+                            <div
+                              className="relative group cursor-pointer mb-2.5 inline-block overflow-hidden rounded-lg border border-[#F1F5F9] shadow-xs"
+                              onClick={() => setSelectedReviewImage(rev.photoUrl!)}
+                            >
+                              <img
+                                src={rev.photoUrl}
+                                alt="Customer photo"
+                                referrerPolicy="no-referrer"
+                                className="w-14 h-14 sm:w-16 sm:h-16 object-cover group-hover:scale-105 transition-transform duration-200"
+                              />
+                              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                <span className="text-white text-[9px] font-bold px-1 py-0.5 bg-black/60 rounded">
+                                  View
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div className="pt-2.5 border-t border-[#F1F5F9] flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <img
+                              src={avatar}
+                              alt={rev.userName}
+                              referrerPolicy="no-referrer"
+                              className="w-7 h-7 rounded-full object-cover border border-[#F1F5F9]"
+                            />
+                            <div>
+                              <div className="flex items-center gap-1">
+                                <h4 className="text-xs font-black text-[#263238]">{rev.userName}</h4>
+                                {rev.verified && <CheckCircle className="w-3.5 h-3.5 text-[#10B981] fill-[#D1FAE5]" />}
+                              </div>
+                              <p className="text-[10px] text-[#607D80] font-medium">
+                                {rev.city || 'Pakistan'}
+                              </p>
+                            </div>
+                          </div>
+                          <span className="text-[10px] text-slate-400">{new Date(rev.date).toLocaleDateString()}</span>
+                        </div>
                       </div>
-                      <p className="text-xs text-[#607D80] mt-1">{rev.comment}</p>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <p className="text-slate-400 italic text-xs">No reviews yet for this product.</p>
                 )}
@@ -458,6 +513,24 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
             )}
           </div>
         </div>
+
+        {selectedReviewImage && (
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            onClick={() => setSelectedReviewImage(null)}
+          >
+            <button className="absolute top-4 right-4 text-white p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors z-10">
+              ✕
+            </button>
+            <img
+              src={selectedReviewImage}
+              className="max-w-full max-h-[90vh] rounded-2xl object-contain shadow-2xl relative"
+              alt="Expanded view"
+              referrerPolicy="no-referrer"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        )}
       </div>
 
       {/* Related products from dedicated API */}

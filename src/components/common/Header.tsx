@@ -34,6 +34,10 @@ export const Header: React.FC = () => {
   const whatsappNum = storefrontConfig?.whatsappNumber || '923001234567';
   const cleanWhatsappNum = whatsappNum.replace(/[^\d]/g, '') || '923001234567';
 
+  const validWishlistCount = (wishlist || []).filter(
+    (id) => id && id.trim() !== '' && id !== 'null' && id !== 'undefined'
+  ).length;
+
 
 
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
@@ -361,9 +365,9 @@ export const Header: React.FC = () => {
               title="Wishlist"
             >
               <Heart className="w-5 h-5" />
-              {wishlist.length > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#D9F1F5] text-white text-[10px] font-extrabold flex items-center justify-center">
-                  {wishlist.length}
+              {validWishlistCount > 0 && (
+                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#F47C4C] text-white text-[10px] font-extrabold flex items-center justify-center">
+                  {validWishlistCount}
                 </span>
               )}
             </button>

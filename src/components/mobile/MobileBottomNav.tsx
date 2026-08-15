@@ -57,9 +57,9 @@ export const MobileBottomNav: React.FC = () => {
         >
           <div className="relative">
             <Heart className="w-5 h-5" />
-            {wishlist.length > 0 && (
-              <span className="absolute -top-1 -right-1.5 w-3.5 h-3.5 rounded-full bg-[#0798AE] text-white text-[9px] font-black flex items-center justify-center">
-                {wishlist.length}
+            {wishlist.filter((id) => id && id.trim() !== '' && id !== 'null' && id !== 'undefined').length > 0 && (
+              <span className="absolute -top-1 -right-1.5 w-3.5 h-3.5 rounded-full bg-[#F47C4C] text-white text-[9px] font-black flex items-center justify-center">
+                {wishlist.filter((id) => id && id.trim() !== '' && id !== 'null' && id !== 'undefined').length}
               </span>
             )}
           </div>

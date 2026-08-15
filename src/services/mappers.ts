@@ -60,6 +60,19 @@ export function mapProduct(p: Record<string, unknown>, categorySlugById?: Map<st
           image: v.image ? String(v.image) : undefined,
         }))
       : [],
+    reviews: Array.isArray(p.reviews)
+      ? (p.reviews as Record<string, unknown>[]).map((r) => ({
+          id: String(r.id),
+          userName: String(r.userName ?? ''),
+          userAvatar: r.avatarUrl ? String(r.avatarUrl) : undefined,
+          city: r.city ? String(r.city) : undefined,
+          photoUrl: r.photoUrl ? String(r.photoUrl) : undefined,
+          rating: Number(r.rating ?? 5),
+          comment: String(r.comment ?? ''),
+          date: String(r.date ?? ''),
+          verified: true,
+        }))
+      : [],
   };
 }
 

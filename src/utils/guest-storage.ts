@@ -44,7 +44,9 @@ export function loadGuestWishlist(): string[] {
     const raw = localStorage.getItem(WISHLIST_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.map(String) : [];
+    return Array.isArray(parsed)
+      ? parsed.map(String).filter((id) => id && id.trim() !== '' && id !== 'null' && id !== 'undefined')
+      : [];
   } catch {
     return [];
   }

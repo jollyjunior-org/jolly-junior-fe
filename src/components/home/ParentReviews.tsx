@@ -83,7 +83,6 @@ export const ParentReviews: React.FC = () => {
         {reviews.map((r) => {
           const avatar =
             r.avatar_url ||
-            r.photo_url ||
             `https://ui-avatars.com/api/?name=${encodeURIComponent(r.parent_name)}&background=FFB347&color=fff`;
           return (
             <div

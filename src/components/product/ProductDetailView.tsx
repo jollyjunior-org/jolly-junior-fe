@@ -446,7 +446,6 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
                   product.reviews.map((rev) => {
                     const avatar =
                       rev.userAvatar ||
-                      rev.photoUrl ||
                       `https://ui-avatars.com/api/?name=${encodeURIComponent(rev.userName)}&background=FFB347&color=fff`;
 
                     return (

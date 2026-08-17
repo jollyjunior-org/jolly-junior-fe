@@ -59,8 +59,8 @@ export const ShopPage: React.FC = () => {
     });
   };
 
-  // Prefer API-loaded shop catalog; fall back to in-memory products while loading first time
-  let filteredProducts = (shopProducts.length || shopLoading ? shopProducts : products).slice();
+  // Use API-loaded shop catalog for active filters
+  let filteredProducts = shopProducts.slice();
 
   if (filter.sortBy === 'price-low-high') {
     filteredProducts.sort((a, b) => a.price - b.price);

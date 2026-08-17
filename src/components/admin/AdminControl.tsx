@@ -27,6 +27,7 @@ export const AdminControl: React.FC = () => {
   const [tagForm, setTagForm] = useState({ name: '', label: '', color: '#F97316' });
   const [desktopUploading, setDesktopUploading] = useState(false);
   const [mobileUploading, setMobileUploading] = useState(false);
+  const [slideSessionId, setSlideSessionId] = useState<string>(() => crypto.randomUUID());
   const [slideForm, setSlideForm] = useState({
     link_value: '',
     button_text: 'Shop Now',
@@ -174,6 +175,7 @@ export const AdminControl: React.FC = () => {
   // —— Hero (category pick only — no duplicate image/copy) ——
   const resetSlideForm = () => {
     setEditingSlideId(null);
+    setSlideSessionId(crypto.randomUUID());
     setSlideForm({
       link_value: '',
       button_text: 'Shop Now',
@@ -198,6 +200,9 @@ export const AdminControl: React.FC = () => {
         sort_order: slideForm.sort_order,
         is_active: slideForm.is_active,
       };
+      if (!editingSlideId) {
+        payload.id = slideSessionId;
+      }
       // Send hero-specific image overrides if provided
       if (slideForm.image_url) payload.image_url = slideForm.image_url;
       if (slideForm.mobile_image_url) payload.mobile_image_url = slideForm.mobile_image_url;
@@ -218,6 +223,7 @@ export const AdminControl: React.FC = () => {
 
   const handleEditSlide = (slide: HeroSlideConfig) => {
     setEditingSlideId(slide.id);
+    setSlideSessionId(slide.id);
     setSlideForm({
       link_value: slide.linkValue || '',
       button_text: slide.buttonText || 'Shop Now',
@@ -674,7 +680,7 @@ export const AdminControl: React.FC = () => {
                 disabled={!slideForm.link_value}
                 disabledHint="Select a category first to enable desktop image upload"
                 onUploadingStateChange={setDesktopUploading}
-                entityId={editingSlideId || undefined}
+                entityId={editingSlideId || slideSessionId}
                 initialImage={slideForm.image_url || null}
                 onUploadSuccess={(result) =>
                   setSlideForm((prev) => ({
@@ -694,7 +700,7 @@ export const AdminControl: React.FC = () => {
                 disabled={!slideForm.link_value}
                 disabledHint="Select a category first to enable mobile image upload"
                 onUploadingStateChange={setMobileUploading}
-                entityId={editingSlideId || undefined}
+                entityId={editingSlideId || slideSessionId}
                 initialImage={slideForm.mobile_image_url || null}
                 onUploadSuccess={(result) =>
                   setSlideForm((prev) => ({

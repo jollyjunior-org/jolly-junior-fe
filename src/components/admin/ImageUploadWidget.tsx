@@ -28,34 +28,6 @@ interface ImageUploadWidgetProps {
   onUploadingStateChange?: (isUploading: boolean) => void;
 }
 
-/** Downscale an image file to a maximum bounding box, preserving aspect ratio. */
-const resizeImage = (file: File, maxWidth: number, maxHeight: number): Promise<Blob | null> =>
-  new Promise((resolve) => {
-    const img = new Image();
-    const objectUrl = URL.createObjectURL(file);
-
-    img.onload = () => {
-      let { width, height } = img;
-      const ratio = width / height;
-
-      if (width > maxWidth) { width = maxWidth; height = Math.round(width / ratio); }
-      if (height > maxHeight) { height = maxHeight; width = Math.round(height * ratio); }
-
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) { URL.revokeObjectURL(objectUrl); resolve(null); return; }
-
-      ctx.drawImage(img, 0, 0, width, height);
-      const mime = ['image/png', 'image/webp'].includes(file.type) ? file.type : 'image/jpeg';
-      canvas.toBlob((blob) => { URL.revokeObjectURL(objectUrl); resolve(blob); }, mime, 0.82);
-    };
-
-    img.onerror = () => { URL.revokeObjectURL(objectUrl); resolve(null); };
-    img.src = objectUrl;
-  });
-
 /** Extract the display URL from an initialImage prop (handles both string and UploadedImage). */
 function resolveInitialUrl(initial: UploadedImage | string | null | undefined): string | null {
   if (!initial) return null;
@@ -97,20 +69,14 @@ export const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({
     }
 
     try {
-      const blob = await resizeImage(file, 1200, 1200);
-      if (!blob) { setError('Failed to resize image'); return; }
-
-      // Show local preview immediately while uploading
-      const localUrl = URL.createObjectURL(blob);
+      // Show local preview immediately in full quality while uploading
+      const localUrl = URL.createObjectURL(file);
       setPreviewUrl(localUrl);
       updateUploading(true);
       setError(null);
 
-      const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
-      const filename = `${file.name.replace(/\.[^.]+$/, '')}.${ext}`;
-
       const formData = new FormData();
-      formData.append('file', blob, filename);
+      formData.append('file', file, file.name);
       if (entityId) {
         formData.append('entity_id', entityId);
         formData.append('session_id', entityId);
@@ -209,7 +175,7 @@ export const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({
           <span className="text-xs text-slate-400 mt-1">
             {disabled
               ? disabledHint || 'Select a category first to enable image upload'
-              : 'JPEG, PNG, WebP · max 1200 × 1200 px'}
+              : 'JPEG, PNG, WebP · Full Original Resolution'}
           </span>
         </div>
       )}

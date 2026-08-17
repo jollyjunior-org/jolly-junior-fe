@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Flame, ChevronRight, Home, User, LogOut, Instagram, Facebook, Youtube, Twitter, Linkedin, Globe, MessageCircle } from 'lucide-react';
+import { X, Flame, ChevronRight, Home, User, LogOut, Instagram, Facebook, Youtube, Twitter, Linkedin, Globe, MessageCircle, Search, Loader2 } from 'lucide-react';
 import { useShopStore } from '@/store/useShopStore';
 import { goToHome, goToShop } from '@/utils/navigate-shop';
+import { productPath } from '@/utils/product-path';
+import type { Product } from '@/types';
 
 /**
- * Mobile hamburger drawer: home, categories, subcategories, live sales, login button, social icons.
+ * Mobile hamburger drawer: search bar, home, categories, subcategories, live sales, login button, social icons.
  */
 export const MobileSidebar: React.FC = () => {
   const router = useRouter();
@@ -15,19 +17,64 @@ export const MobileSidebar: React.FC = () => {
     categories,
     liveSales,
     storefrontConfig,
+    products,
     isCustomerAuthenticated,
-    isAdminAuthenticated,
     setAuthModalOpen,
     setAccountPanelOpen,
     logoutCustomer,
-    logoutAdmin,
   } = useShopStore();
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+
+  const disabledCategorySlugs = new Set(
+    categories.filter((c) => c.isEnabled === false).map((c) => c.slug),
+  );
+
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (q.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    setSearchLoading(true);
+    const t = setTimeout(() => {
+      const filtered = products
+        .filter(
+          (p) =>
+            p.isPublished !== false &&
+            !disabledCategorySlugs.has(p.categorySlug || p.categoryId) &&
+            (p.name.toLowerCase().includes(q.toLowerCase()) ||
+              p.categoryName?.toLowerCase().includes(q.toLowerCase()) ||
+              (p.tags || []).some((t) => t.name.toLowerCase().includes(q.toLowerCase()))),
+        )
+        .slice(0, 5);
+      setSearchResults(filtered);
+      setSearchLoading(false);
+    }, 250);
+    return () => clearTimeout(t);
+  }, [searchQuery, products]);
 
   if (!mobileMenuOpen) return null;
 
   const enabled = categories.filter((c) => c.isEnabled !== false);
   const socialLinks = storefrontConfig?.socialLinks || [];
   const whatsappNum = storefrontConfig?.whatsappNumber || '923001234567';
+
+  /** Run shop search and close sidebar */
+  const handleRunSearch = (queryOverride?: string) => {
+    const q = (queryOverride !== undefined ? queryOverride : searchQuery).trim();
+    if (!q) return;
+    goToShop(router, { searchQuery: q, categoryId: null, categoryIds: [], saleKey: null });
+    setMobileMenuOpen(false);
+  };
+
+  /** Open selected product detail and close sidebar */
+  const handleSelectProduct = (product: Product) => {
+    router.push(productPath(product));
+    setMobileMenuOpen(false);
+  };
 
   /** Go to the main homepage. */
   const goHome = () => {
@@ -65,13 +112,79 @@ export const MobileSidebar: React.FC = () => {
         aria-label="Close menu"
         onClick={() => setMobileMenuOpen(false)}
       />
-      <aside className="absolute left-0 top-0 bottom-0 w-[82%] max-w-sm bg-white shadow-xl flex flex-col justify-between">
+      <aside className="absolute left-0 top-0 bottom-0 w-[85%] max-w-sm bg-white shadow-xl flex flex-col justify-between">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-[#D9F1F5] shrink-0">
           <span className="font-black text-[#0798AE] text-base">Menu</span>
           <button type="button" onClick={() => setMobileMenuOpen(false)} className="p-2 text-slate-500 hover:text-slate-700">
             <X className="w-5 h-5" />
           </button>
+        </div>
+
+        {/* Mobile Search Bar Section */}
+        <div className="p-3 border-b border-[#D9F1F5] bg-[#F4FBFD] shrink-0">
+          <div className="relative flex items-center">
+            <Search className="absolute left-3 w-4 h-4 text-[#0798AE] pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search products, toys, categories..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleRunSearch()}
+              className="w-full pl-9 pr-20 py-2 bg-white border border-[#BDE7EE] rounded-xl text-xs font-medium text-[#0798AE] placeholder-[#0798AE]/60 outline-none focus:ring-2 focus:ring-[#0798AE] shadow-2xs"
+            />
+            <button
+              type="button"
+              onClick={() => handleRunSearch()}
+              className="absolute right-1 px-3 py-1 bg-[#0798AE] hover:bg-[#068497] text-white text-[11px] font-bold rounded-lg cursor-pointer"
+            >
+              Search
+            </button>
+          </div>
+
+          {/* Live Mobile Search Results */}
+          {searchQuery.trim().length >= 2 && (
+            <div className="mt-2 bg-white border border-[#D9F1F5] rounded-xl p-2 shadow-sm space-y-1 max-h-56 overflow-y-auto">
+              <div className="text-[10px] font-bold text-[#0798AE] uppercase px-1 pb-1 flex items-center justify-between">
+                <span>{searchLoading ? 'Searching…' : `Results (${searchResults.length})`}</span>
+                {searchLoading && <Loader2 className="w-3 h-3 animate-spin text-[#0798AE]" />}
+              </div>
+              {searchResults.length > 0 ? (
+                searchResults.map((prod) => (
+                  <div
+                    key={prod.id}
+                    onClick={() => handleSelectProduct(prod)}
+                    className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-[#F4FBFD] cursor-pointer"
+                  >
+                    <img
+                      src={prod.images[0]}
+                      alt={prod.name}
+                      className="w-9 h-9 rounded-md object-cover bg-slate-100 shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-bold text-[#0798AE] truncate">{prod.name}</div>
+                      <div className="text-[10px] text-slate-500">
+                        Rs. {prod.price.toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                !searchLoading && (
+                  <div className="text-[11px] text-slate-400 p-2 text-center">
+                    No products matching &quot;{searchQuery}&quot;
+                  </div>
+                )
+              )}
+              <button
+                type="button"
+                onClick={() => handleRunSearch()}
+                className="w-full text-center py-1.5 text-xs font-bold text-[#0798AE] hover:underline border-t border-slate-100 mt-1"
+              >
+                View all results &rarr;
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Scrollable Categories List */}

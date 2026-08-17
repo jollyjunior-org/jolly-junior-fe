@@ -3,6 +3,7 @@ import { Plus, Trash2, Save, Loader2, Image as ImageIcon, Tag as TagIcon, Layout
 import { useShopStore } from '@/store/useShopStore';
 import { AdminCampaigns } from '@/components/admin/AdminCampaigns';
 import { AdminPromos } from '@/components/admin/AdminPromos';
+import { ImageUploadWidget } from '@/components/admin/ImageUploadWidget';
 import { fetchStoreSettings, saveStoreSettings } from '@/services/settings-service';
 import * as storefrontService from '@/services/storefront-service';
 import type { StoreTag, HeroSlideConfig, HomeSectionConfig } from '@/types';
@@ -24,11 +25,15 @@ export const AdminControl: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   const [tagForm, setTagForm] = useState({ name: '', label: '', color: '#F97316' });
+  const [desktopUploading, setDesktopUploading] = useState(false);
+  const [mobileUploading, setMobileUploading] = useState(false);
   const [slideForm, setSlideForm] = useState({
     link_value: '',
     button_text: 'Shop Now',
     sort_order: 0,
     is_active: true,
+    image_url: '',
+    mobile_image_url: '',
   });
   const [editingSlideId, setEditingSlideId] = useState<string | null>(null);
 
@@ -174,6 +179,8 @@ export const AdminControl: React.FC = () => {
       button_text: 'Shop Now',
       sort_order: slides.length + 1,
       is_active: true,
+      image_url: '',
+      mobile_image_url: '',
     });
   };
 
@@ -183,19 +190,17 @@ export const AdminControl: React.FC = () => {
       showToast('Select a category for this slide');
       return;
     }
-    const cat = categories.find((c) => c.slug === slideForm.link_value);
-    if (cat && !cat.image) {
-      showToast('That category needs an image first — set it under Categories');
-      return;
-    }
     try {
-      const payload = {
+      const payload: Record<string, unknown> = {
         link_type: 'category',
         link_value: slideForm.link_value,
         button_text: slideForm.button_text || 'Shop Now',
         sort_order: slideForm.sort_order,
         is_active: slideForm.is_active,
       };
+      // Send hero-specific image overrides if provided
+      if (slideForm.image_url) payload.image_url = slideForm.image_url;
+      if (slideForm.mobile_image_url) payload.mobile_image_url = slideForm.mobile_image_url;
       if (editingSlideId) {
         await storefrontService.updateHeroSlide(editingSlideId, payload);
         showToast('Slide updated');
@@ -218,6 +223,8 @@ export const AdminControl: React.FC = () => {
       button_text: slide.buttonText || 'Shop Now',
       sort_order: slide.sortOrder || 0,
       is_active: slide.isActive !== false,
+      image_url: slide.imageUrl || '',
+      mobile_image_url: slide.mobileImageUrl || '',
     });
   };
 
@@ -631,7 +638,7 @@ export const AdminControl: React.FC = () => {
         </div>
       )}
 
-      {/* HERO — pick categories only; image + copy come from Categories */}
+      {/* HERO — pick categories; optionally upload hero-specific images */}
       {tab === 'hero' && (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           <form onSubmit={handleSaveSlide} className="bg-white rounded-2xl border border-slate-200 p-4 space-y-3">
@@ -639,7 +646,7 @@ export const AdminControl: React.FC = () => {
               {editingSlideId ? 'Edit Hero Slide' : 'Add Hero Slide'}
             </h3>
             <p className="text-[11px] text-slate-500">
-              Pick a category. The slider uses that category&apos;s image, name, and description — edit those under Categories.
+              Pick a category for the link. Upload a separate hero image (desktop + mobile) — or leave blank to use the category image.
             </p>
             <label className="block text-[11px] font-bold text-slate-600">Category *</label>
             <select
@@ -654,33 +661,50 @@ export const AdminControl: React.FC = () => {
                 .map((c) => (
                   <option key={c.id} value={c.slug}>
                     {c.name}
-                    {!c.image ? ' (no image)' : ''}
                   </option>
                 ))}
             </select>
-            {slideForm.link_value && (
-              <div className="flex gap-3 p-2 rounded-xl bg-slate-50 border border-slate-100">
-                {categories.find((c) => c.slug === slideForm.link_value)?.image ? (
-                  <img
-                    src={categories.find((c) => c.slug === slideForm.link_value)!.image}
-                    alt=""
-                    className="w-20 h-14 object-cover rounded-lg"
-                  />
-                ) : (
-                  <div className="w-20 h-14 rounded-lg bg-slate-200 text-[9px] flex items-center justify-center text-slate-500">
-                    No image
-                  </div>
-                )}
-                <div className="min-w-0 text-[11px]">
-                  <div className="font-bold text-slate-800 truncate">
-                    {categories.find((c) => c.slug === slideForm.link_value)?.name}
-                  </div>
-                  <div className="text-slate-500 line-clamp-2">
-                    {categories.find((c) => c.slug === slideForm.link_value)?.description || '—'}
-                  </div>
-                </div>
-              </div>
-            )}
+
+            {/* Desktop hero image upload */}
+            <div>
+              <label className="block text-[11px] font-bold text-slate-600 mb-1">Desktop Hero Image</label>
+              <p className="text-[10px] text-slate-400 mb-1.5">Recommended: 2560×1000px landscape. Overrides category image.</p>
+              <ImageUploadWidget
+                folder="hero"
+                disabled={!slideForm.link_value}
+                disabledHint="Select a category first to enable desktop image upload"
+                onUploadingStateChange={setDesktopUploading}
+                entityId={editingSlideId || undefined}
+                initialImage={slideForm.image_url || null}
+                onUploadSuccess={(result) =>
+                  setSlideForm((prev) => ({
+                    ...prev,
+                    image_url: result?.secure_url || '',
+                  }))
+                }
+              />
+            </div>
+
+            {/* Mobile hero image upload */}
+            <div>
+              <label className="block text-[11px] font-bold text-slate-600 mb-1">Mobile Hero Image <span className="font-normal text-slate-400">(optional)</span></label>
+              <p className="text-[10px] text-slate-400 mb-1.5">Recommended: 800×800px or 3:4 ratio. Shown on small screens.</p>
+              <ImageUploadWidget
+                folder="hero"
+                disabled={!slideForm.link_value}
+                disabledHint="Select a category first to enable mobile image upload"
+                onUploadingStateChange={setMobileUploading}
+                entityId={editingSlideId || undefined}
+                initialImage={slideForm.mobile_image_url || null}
+                onUploadSuccess={(result) =>
+                  setSlideForm((prev) => ({
+                    ...prev,
+                    mobile_image_url: result?.secure_url || '',
+                  }))
+                }
+              />
+            </div>
+
             <input
               placeholder="Button text"
               value={slideForm.button_text}
@@ -707,8 +731,20 @@ export const AdminControl: React.FC = () => {
               </label>
             </div>
             <div className="flex gap-2">
-              <button type="submit" className="px-4 py-2 bg-sky-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5">
-                <Save className="w-3.5 h-3.5" /> {editingSlideId ? 'Update' : 'Create'}
+              <button
+                type="submit"
+                disabled={!slideForm.link_value || desktopUploading || mobileUploading}
+                className="px-4 py-2 bg-sky-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {desktopUploading || mobileUploading ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-3.5 h-3.5" /> {editingSlideId ? 'Update' : 'Create'}
+                  </>
+                )}
               </button>
               {editingSlideId && (
                 <button type="button" onClick={resetSlideForm} className="px-4 py-2 border rounded-xl text-xs font-bold">
@@ -721,18 +757,24 @@ export const AdminControl: React.FC = () => {
           <div className="space-y-2">
             {slides.map((slide) => (
               <div key={slide.id} className="bg-white rounded-2xl border border-slate-200 p-3 flex gap-3">
-                {slide.imageUrl ? (
-                  <img src={slide.imageUrl} alt="" className="w-24 h-16 object-cover rounded-xl" />
-                ) : (
-                  <div className="w-24 h-16 rounded-xl bg-slate-200 flex items-center justify-center text-[10px] text-slate-500">
-                    No image
-                  </div>
-                )}
+                <div className="flex gap-2 shrink-0">
+                  {slide.imageUrl ? (
+                    <img src={slide.imageUrl} alt="Desktop" className="w-24 h-16 object-cover rounded-xl" />
+                  ) : (
+                    <div className="w-24 h-16 rounded-xl bg-slate-200 flex items-center justify-center text-[10px] text-slate-500">
+                      No image
+                    </div>
+                  )}
+                  {slide.mobileImageUrl && (
+                    <img src={slide.mobileImageUrl} alt="Mobile" className="w-12 h-16 object-cover rounded-xl border-2 border-sky-200" title="Mobile image" />
+                  )}
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-black text-slate-900 truncate">{slide.title}</div>
                   <div className="text-[10px] text-slate-500">
                     Category: {slide.linkValue || '—'}
                     {slide.isActive === false ? ' · Hidden' : ''}
+                    {slide.mobileImageUrl ? ' · Mobile ✓' : ''}
                   </div>
                   <div className="flex gap-2 mt-2">
                     <button type="button" onClick={() => handleEditSlide(slide)} className="text-[10px] font-bold text-sky-600">

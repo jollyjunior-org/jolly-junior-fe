@@ -115,6 +115,7 @@ export interface HeroSlideConfig {
   title: string;
   subtitle?: string;
   imageUrl?: string;
+  mobileImageUrl?: string;
   buttonText: string;
   accentColor: string;
   linkType: string;

@@ -548,11 +548,24 @@ export const useShopStore = create<ShopStore>((set, get) => ({
 
       let items: Product[] = [];
       if (filter.saleKey) {
-        const sale = await customerService.fetchSaleProducts(filter.saleKey, {
-          categoryId: cats[0],
-          ageGroup: filter.ageGroup || undefined,
-        });
-        items = sale.items;
+        try {
+          const sale = await customerService.fetchSaleProducts(filter.saleKey, {
+            categoryId: cats[0],
+            ageGroup: filter.ageGroup || undefined,
+          });
+          items = sale.items;
+        } catch (err) {
+          console.warn(`Sale/campaign "${filter.saleKey}" not found, falling back to catalog query:`, err);
+          const page = await customerService.fetchStoreProducts({
+            categoryIds: cats.length ? cats : undefined,
+            q: filter.searchQuery.trim() || undefined,
+            sort,
+            inStock: filter.inStockOnly || undefined,
+            ageGroup: filter.ageGroup || undefined,
+            onSaleOnly: filter.onSaleOnly || undefined,
+          });
+          items = page.items;
+        }
       } else if (cats.length === 1 && !filter.searchQuery.trim()) {
         const page = await customerService.fetchCategoryProducts(cats[0], {
           sort,

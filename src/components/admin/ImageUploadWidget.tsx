@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
 import { uploadImage, type AdminUploadFolder } from '@/services/upload-service';
 
@@ -20,6 +20,12 @@ interface ImageUploadWidgetProps {
    * For existing entities pass the real ID; for new items pass a temp session UUID.
    */
   entityId?: string;
+  /** Disable uploading until prerequisites (e.g. selecting category) are fulfilled */
+  disabled?: boolean;
+  /** Text to show when disabled */
+  disabledHint?: string;
+  /** Callback emitted when upload starts or finishes */
+  onUploadingStateChange?: (isUploading: boolean) => void;
 }
 
 /** Downscale an image file to a maximum bounding box, preserving aspect ratio. */
@@ -62,13 +68,26 @@ export const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({
   onUploadSuccess,
   folder = 'products',
   entityId,
+  disabled = false,
+  disabledHint,
+  onUploadingStateChange,
 }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(resolveInitialUrl(initialImage));
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    setPreviewUrl(resolveInitialUrl(initialImage));
+  }, [initialImage]);
+
+  const updateUploading = (uploading: boolean) => {
+    setIsUploading(uploading);
+    onUploadingStateChange?.(uploading);
+  };
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (disabled) return;
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -84,7 +103,7 @@ export const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({
       // Show local preview immediately while uploading
       const localUrl = URL.createObjectURL(blob);
       setPreviewUrl(localUrl);
-      setIsUploading(true);
+      updateUploading(true);
       setError(null);
 
       const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
@@ -112,13 +131,14 @@ export const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({
       // Revert to original image on failure
       setPreviewUrl(resolveInitialUrl(initialImage));
     } finally {
-      setIsUploading(false);
+      updateUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
   const clearImage = (e: React.MouseEvent) => {
     e.preventDefault();
+    if (disabled) return;
     setPreviewUrl(null);
     setError(null);
     onUploadSuccess(null);
@@ -132,6 +152,7 @@ export const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({
         ref={fileInputRef}
         onChange={handleFileSelect}
         accept="image/*"
+        disabled={disabled || isUploading}
         className="hidden"
       />
 
@@ -143,19 +164,21 @@ export const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({
             className={`w-full h-full object-cover transition-opacity ${isUploading ? 'opacity-50' : ''}`}
           />
 
-          <button
-            onClick={clearImage}
-            className="absolute top-2 right-2 z-20 p-2 bg-rose-500/90 text-white rounded-full shadow-lg hover:bg-rose-600 transition-colors"
-            aria-label="Remove uploaded image"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          {!disabled && (
+            <button
+              onClick={clearImage}
+              className="absolute top-2 right-2 z-20 p-2 bg-rose-500/90 text-white rounded-full shadow-lg hover:bg-rose-600 transition-colors"
+              aria-label="Remove uploaded image"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
 
           {isUploading ? (
             <div className="absolute inset-0 flex items-center justify-center bg-white/30 backdrop-blur-sm">
               <Loader2 className="w-8 h-8 text-sky-600 animate-spin" />
             </div>
-          ) : (
+          ) : !disabled ? (
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
               <button
                 onClick={(e) => { e.preventDefault(); fileInputRef.current?.click(); }}
@@ -164,18 +187,30 @@ export const ImageUploadWidget: React.FC<ImageUploadWidgetProps> = ({
                 Change
               </button>
             </div>
-          )}
+          ) : null}
         </div>
       ) : (
         <div
-          onClick={() => fileInputRef.current?.click()}
-          className="w-full h-48 border-2 border-dashed border-[#E2E8F0] rounded-lg flex flex-col items-center justify-center text-slate-500 hover:text-sky-600 hover:border-sky-300 hover:bg-sky-50 transition-all cursor-pointer bg-slate-50/50"
+          onClick={() => {
+            if (!disabled) fileInputRef.current?.click();
+          }}
+          className={`w-full h-48 border-2 border-dashed rounded-lg flex flex-col items-center justify-center transition-all ${
+            disabled
+              ? 'border-slate-200 bg-slate-100/60 text-slate-400 cursor-not-allowed opacity-60'
+              : 'border-[#E2E8F0] text-slate-500 hover:text-sky-600 hover:border-sky-300 hover:bg-sky-50 cursor-pointer bg-slate-50/50'
+          }`}
         >
           <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mb-3">
-            <Upload className="w-5 h-5 text-sky-500" />
+            <Upload className={`w-5 h-5 ${disabled ? 'text-slate-300' : 'text-sky-500'}`} />
           </div>
-          <span className="text-sm font-medium">Click to upload image</span>
-          <span className="text-xs text-slate-400 mt-1">JPEG, PNG, WebP · max 1200 × 1200 px</span>
+          <span className="text-sm font-medium">
+            {disabled ? 'Image upload disabled' : 'Click to upload image'}
+          </span>
+          <span className="text-xs text-slate-400 mt-1">
+            {disabled
+              ? disabledHint || 'Select a category first to enable image upload'
+              : 'JPEG, PNG, WebP · max 1200 × 1200 px'}
+          </span>
         </div>
       )}
 

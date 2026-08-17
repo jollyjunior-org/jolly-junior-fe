@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useShopStore } from '@/store/useShopStore';
 import { goToShop } from '@/utils/navigate-shop';
 import type { HeroSlideConfig } from '@/types';
 
 /**
- * Homepage hero slider — each slide is a category (image/name/description from Categories).
+ * Homepage hero slider — clean full-image slides with a Shop Now button at bottom-left.
+ * Shows mobileImageUrl on small screens, falls back to imageUrl on desktop.
  */
 export const HeroSlider: React.FC = () => {
   const router = useRouter();
@@ -74,62 +75,37 @@ export const HeroSlider: React.FC = () => {
             transition={{ duration: 0.7, ease: 'easeInOut' }}
             className="absolute inset-0 w-full h-full"
           >
+            {/* Desktop image — hidden on small screens when mobile image exists */}
             <img
               src={slide.imageUrl}
               alt={slide.title}
               referrerPolicy="no-referrer"
-              className="w-full h-full object-cover object-center"
+              className={`w-full h-full object-cover object-center ${
+                slide.mobileImageUrl ? 'hidden sm:block' : ''
+              }`}
             />
+            {/* Mobile image — shown only on small screens */}
+            {slide.mobileImageUrl && (
+              <img
+                src={slide.mobileImageUrl}
+                alt={slide.title}
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover object-center block sm:hidden"
+              />
+            )}
 
-            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent flex items-center p-6 sm:p-12 md:p-16">
-              <div className="max-w-xl text-white space-y-3 sm:space-y-4">
-                {slide.badge && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold text-white border border-white/30"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-[#FFD52F]" />
-                    <span>{slide.badge}</span>
-                  </motion.div>
-                )}
-
-                <motion.h1
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="text-2xl sm:text-4xl md:text-5xl font-black leading-tight tracking-tight drop-shadow-sm"
-                >
-                  {slide.title}
-                </motion.h1>
-
-                {slide.subtitle && (
-                  <motion.p
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="text-xs sm:text-base text-slate-100 font-medium leading-relaxed max-w-lg line-clamp-2 sm:line-clamp-none"
-                  >
-                    {slide.subtitle}
-                  </motion.p>
-                )}
-
-                <motion.div
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="pt-2"
-                >
-                  <button
-                    onClick={handleSlideClick}
-                    className="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-[#FFD52F] text-[#263238] font-extrabold text-xs sm:text-sm shadow-md hover:bg-[#0798AE] hover:text-white transition-all cursor-pointer transform hover:scale-105 group"
-                  >
-                    <span>{slide.buttonText}</span>
-                    <ArrowRight className="w-4 h-4 text-[#263238] group-hover:text-white transition-colors" />
-                  </button>
-                </motion.div>
-              </div>
+            {/* Shop Now button — bottom-left */}
+            <div className="absolute bottom-5 left-5 sm:bottom-8 sm:left-8 z-10">
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                onClick={handleSlideClick}
+                className="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-[#FFD52F] text-[#263238] font-extrabold text-xs sm:text-sm shadow-lg hover:bg-[#0798AE] hover:text-white transition-all cursor-pointer transform hover:scale-105 group"
+              >
+                <span>{slide.buttonText}</span>
+                <ArrowRight className="w-4 h-4 text-[#263238] group-hover:text-white transition-colors" />
+              </motion.button>
             </div>
           </motion.div>
         </AnimatePresence>
@@ -151,3 +127,4 @@ export const HeroSlider: React.FC = () => {
     </section>
   );
 };
+

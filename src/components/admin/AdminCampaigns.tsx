@@ -44,10 +44,11 @@ const emptyForm = {
  * Manage flash / seasonal sales: copy, timer, background, product tags.
  */
 export const AdminCampaigns: React.FC = () => {
-  const { showToast } = useShopStore();
+  const { showToast, fetchStorefrontConfig } = useShopStore();
   const [campaigns, setCampaigns] = useState<CampaignConfig[]>([]);
   const [tags, setTags] = useState<StoreTag[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
 
@@ -269,6 +270,7 @@ export const AdminCampaigns: React.FC = () => {
             <ImageUploadWidget
               folder="campaigns"
               entityId={editingId ?? undefined}
+              onUploadingStateChange={setIsUploading}
               initialImage={form.background_image_url || undefined}
               onUploadSuccess={(result) => setForm({ ...form, background_image_url: result?.secure_url ?? '' })}
             />
@@ -323,10 +325,20 @@ export const AdminCampaigns: React.FC = () => {
           <div className="flex gap-2 pt-1">
             <button
               type="submit"
-              className="flex-1 px-3 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-lg cursor-pointer flex items-center justify-center gap-1.5"
+              disabled={isUploading}
+              className="flex-1 px-3 py-2 bg-sky-600 hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold rounded-lg cursor-pointer flex items-center justify-center gap-1.5"
             >
-              <Save className="w-3.5 h-3.5" />
-              {editingId ? 'Update' : 'Create'}
+              {isUploading ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Save className="w-3.5 h-3.5" />
+                  {editingId ? 'Update' : 'Create'}
+                </>
+              )}
             </button>
             {editingId && (
               <button

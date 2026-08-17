@@ -119,13 +119,13 @@ export const FeaturedCategories: React.FC = () => {
 
         <div 
           ref={scrollRef}
-          className="flex gap-4 sm:gap-6 overflow-x-auto no-scrollbar pb-4 snap-x snap-mandatory"
+          className="flex gap-4 sm:gap-6 overflow-x-auto overflow-y-hidden touch-pan-x overscroll-x-contain scroll-smooth no-scrollbar pb-4 snap-x snap-mandatory"
         >
         {activeCategories.map((cat, index) => (
           <motion.div
             key={cat.id}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.4, delay: index * 0.05 }}
             onClick={() => handleCategorySelect(cat.slug)}

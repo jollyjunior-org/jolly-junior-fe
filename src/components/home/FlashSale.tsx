@@ -225,7 +225,7 @@ export const FlashSale: React.FC = () => {
 
             <div 
               ref={scrollRef}
-              className="flex gap-2 sm:gap-4 overflow-x-auto no-scrollbar pb-2 pt-1 snap-x snap-mandatory"
+              className="flex gap-2 sm:gap-4 overflow-x-auto overflow-y-hidden touch-pan-x overscroll-x-contain scroll-smooth no-scrollbar pb-2 pt-1 snap-x snap-mandatory"
             >
             {products.map((product) => (
               <div

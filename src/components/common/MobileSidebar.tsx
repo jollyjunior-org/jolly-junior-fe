@@ -56,6 +56,21 @@ export const MobileSidebar: React.FC = () => {
     return () => clearTimeout(t);
   }, [searchQuery, products]);
 
+  // Lock background body scroll when mobile drawer is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    };
+  }, [mobileMenuOpen]);
+
   if (!mobileMenuOpen) return null;
 
   const enabled = categories.filter((c) => c.isEnabled !== false);
@@ -105,14 +120,14 @@ export const MobileSidebar: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 md:hidden">
+    <div className="fixed inset-0 z-50 md:hidden touch-none overscroll-contain">
       <button
         type="button"
-        className="absolute inset-0 bg-black/40"
+        className="absolute inset-0 bg-black/40 touch-none"
         aria-label="Close menu"
         onClick={() => setMobileMenuOpen(false)}
       />
-      <aside className="absolute left-0 top-0 bottom-0 w-[85%] max-w-sm bg-white shadow-xl flex flex-col justify-between">
+      <aside className="absolute left-0 top-0 bottom-0 w-[85%] max-w-sm bg-white shadow-xl flex flex-col justify-between overscroll-contain">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-[#D9F1F5] shrink-0">
           <span className="font-black text-[#0798AE] text-base">Menu</span>

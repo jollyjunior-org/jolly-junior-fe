@@ -84,6 +84,21 @@ export const ShopPage: React.FC = () => {
 
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
+  // Lock background body scroll when mobile filter slider is open
+  useEffect(() => {
+    if (isMobileFilterOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    };
+  }, [isMobileFilterOpen]);
+
   // Reusable active chips component
   const renderActiveChips = (isMobile = false) => {
     const chipClass = `inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold ${isMobile ? 'flex-shrink-0' : ''}`;
@@ -350,20 +365,20 @@ export const ShopPage: React.FC = () => {
       {/* Mobile Filter Modal (Bottom Sheet Style) */}
       {typeof document !== 'undefined' && createPortal(
         <div 
-          className={`fixed inset-0 z-[9999] flex flex-col justify-end lg:hidden transition-all duration-300 ${
+          className={`fixed inset-0 z-[9999] flex flex-col justify-end lg:hidden transition-all duration-300 touch-none overscroll-contain ${
             isMobileFilterOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'
           }`}
         >
           <div 
-            className="absolute inset-0 bg-black/40 backdrop-blur-xs"
+            className="absolute inset-0 bg-black/40 backdrop-blur-xs touch-none"
             onClick={() => setIsMobileFilterOpen(false)}
           />
           <div 
-            className={`relative w-full bg-white rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[70vh] transition-transform duration-300 ease-in-out ${
+            className={`relative w-full bg-white rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[75vh] transition-transform duration-300 ease-in-out overscroll-contain ${
               isMobileFilterOpen ? 'translate-y-0' : 'translate-y-full'
             }`}
           >
-            <div className="flex items-center justify-between p-4 border-b border-[#F1F5F9]">
+            <div className="flex items-center justify-between p-4 border-b border-[#F1F5F9] shrink-0">
               <h3 className="font-black text-lg text-[#263238] flex items-center gap-2">
                 <Filter className="w-5 h-5 text-[#0798AE]" />
                 Filters
@@ -381,10 +396,10 @@ export const ShopPage: React.FC = () => {
                 </button>
               </div>
             </div>
-            <div className="p-4 overflow-y-auto flex-1">
+            <div className="p-4 overflow-y-auto overscroll-contain flex-1">
               <FilterContent />
             </div>
-            <div className="p-4 border-t border-[#F1F5F9] bg-white">
+            <div className="p-4 border-t border-[#F1F5F9] bg-white shrink-0">
               <button
                 onClick={() => setIsMobileFilterOpen(false)}
                 className="w-full py-3.5 bg-[#0798AE] hover:bg-[#06879b] text-white font-bold rounded-xl shadow-md transition-colors text-sm cursor-pointer"

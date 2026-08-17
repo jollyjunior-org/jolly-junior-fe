@@ -3,6 +3,8 @@ import { X, Mail, KeyRound, Loader2 } from 'lucide-react';
 import { useShopStore } from '@/store/useShopStore';
 import { requestLoginOtp } from '@/services/customer-service';
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 /**
  * Passwordless login: email → OTP code → JWT.
  */
@@ -17,16 +19,26 @@ export const AuthModal: React.FC = () => {
 
   if (!authModalOpen) return null;
 
-  /** Send OTP to the entered email or phone. */
+  /** Send OTP to the entered email address. */
   const handleRequest = async (e: React.FormEvent) => {
     e.preventDefault();
+    const email = identifier.trim();
+    if (!email) {
+      setError('Please enter your email address.');
+      return;
+    }
+    if (!EMAIL_REGEX.test(email)) {
+      setError('Please enter a valid email address (e.g. name@example.com).');
+      return;
+    }
+
     setLoading(true);
     setDevCode(null);
     setError(null);
     try {
-      const res = await requestLoginOtp(identifier.trim());
+      const res = await requestLoginOtp(email);
       if (res.dev_code) setDevCode(res.dev_code);
-      showToast(res.message || 'Code sent');
+      showToast(res.message || 'Verification code sent');
       setStep('code');
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : 'Could not send code';
@@ -63,21 +75,24 @@ export const AuthModal: React.FC = () => {
         </button>
         <h2 className="text-lg font-black text-[#0798AE] mb-1">Sign in</h2>
         <p className="text-xs text-slate-500 mb-4">
-          No password — we send a 6-digit code to your email or WhatsApp.
+          No password — we send a 6-digit verification code to your email address.
         </p>
 
         {step === 'email' ? (
           <form onSubmit={handleRequest} className="space-y-3">
             <label className="block text-xs font-bold text-slate-600">
-              Email or Phone Number
+              Email Address
               <div className="relative mt-1">
                 <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   required
-                  type="text"
+                  type="email"
                   value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="you@email.com or +923001234567"
+                  onChange={(e) => {
+                    setIdentifier(e.target.value);
+                    if (error) setError(null);
+                  }}
+                  placeholder="you@email.com"
                   className="w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl text-sm"
                 />
               </div>

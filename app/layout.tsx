@@ -1,33 +1,76 @@
 import type { Metadata } from 'next';
 import './globals.css';
 
+const SITE_URL = 'https://www.jollyjuniors.com';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: 'JollyJuniors | Premium Kids Toys & Baby Care in Pakistan',
-  description: 'Shop the best Montessori toys, educational games, baby care essentials, and gift hampers for children in Pakistan. Fast delivery and premium quality at JollyJuniors.',
+  description:
+    'Shop certified organic baby care, wooden Montessori toys, educational games, and luxury gift hampers in Pakistan at JollyJuniors. Fast delivery & premium quality guaranteed.',
   keywords: [
-    'JollyJuniors', 'Jolly Juniors', 'kids toys Pakistan', 'buy toys online Pakistan', 
-    'baby care essentials', 'Montessori toys', 'educational toys for kids', 
-    'children clothing Pakistan', 'baby gift hampers', 'soft toys', 'arts and crafts for kids'
+    'JollyJuniors',
+    'Jolly Juniors',
+    'kids toys Pakistan',
+    'buy toys online Pakistan',
+    'baby care essentials',
+    'Montessori toys',
+    'educational toys for kids',
+    'baby gift hampers',
+    'soft toys',
+    'arts and crafts for kids',
   ],
-  authors: [{ name: 'JollyJuniors' }],
+  authors: [{ name: 'JollyJuniors', url: SITE_URL }],
   creator: 'JollyJuniors',
   publisher: 'JollyJuniors',
   openGraph: {
     type: 'website',
     locale: 'en_PK',
-    url: 'https://jollyjuniors.pk',
-    title: 'JollyJuniors | Premium Kids Toys & Baby Care',
-    description: 'Shop the best Montessori toys, educational games, and baby care essentials in Pakistan. Fast delivery and premium quality.',
+    url: SITE_URL,
+    title: 'JollyJuniors | Premium Kids Toys & Baby Care in Pakistan',
+    description:
+      'Shop certified organic baby care, wooden Montessori toys, educational games, and luxury gift hampers in Pakistan. Fast delivery and premium quality guaranteed.',
     siteName: 'JollyJuniors',
+    images: [
+      {
+        url: `${SITE_URL}/og-banner.png`,
+        secureUrl: `${SITE_URL}/og-banner.png`,
+        width: 1200,
+        height: 630,
+        alt: 'JollyJuniors Premium Kids Toys & Baby Care Shop',
+        type: 'image/png',
+      },
+      {
+        url: `${SITE_URL}/og-banner.jpg`,
+        secureUrl: `${SITE_URL}/og-banner.jpg`,
+        width: 1200,
+        height: 630,
+        alt: 'JollyJuniors Premium Kids Toys & Baby Care Shop',
+        type: 'image/jpeg',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'JollyJuniors | Premium Kids Toys & Baby Care',
-    description: 'Shop the best Montessori toys, educational games, and baby care essentials in Pakistan.',
+    title: 'JollyJuniors | Premium Kids Toys & Baby Care in Pakistan',
+    description:
+      'Shop certified organic baby care, wooden Montessori toys, educational games, and luxury gift hampers in Pakistan.',
+    images: [`${SITE_URL}/og-banner.png`],
+    creator: '@jollyjuniors',
+  },
+  alternates: {
+    canonical: SITE_URL,
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
   icons: {
     icon: '/favicon.svg',

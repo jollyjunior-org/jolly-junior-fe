@@ -58,6 +58,9 @@ export const metadata: Metadata = {
     images: [`${SITE_URL}/og-banner.png`],
     creator: '@jollyjuniors',
   },
+  facebook: {
+    appId: '966846896263595',
+  },
   alternates: {
     canonical: SITE_URL,
   },

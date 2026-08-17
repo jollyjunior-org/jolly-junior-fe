@@ -85,6 +85,16 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta property="og:image" content={`${SITE_URL}/og-banner.jpg`} />
+        <meta property="og:image:url" content={`${SITE_URL}/og-banner.jpg`} />
+        <meta property="og:image:secure_url" content={`${SITE_URL}/og-banner.jpg`} />
+        <meta property="og:image:type" content="image/jpeg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="JollyJuniors Premium Kids Toys & Baby Care Shop" />
+        <meta property="fb:app_id" content="966846896263595" />
+      </head>
       <body
         className="min-h-screen bg-[#FFFDF8] text-[#334155] antialiased"
         suppressHydrationWarning

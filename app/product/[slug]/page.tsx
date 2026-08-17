@@ -75,6 +75,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       alternates: {
         canonical: productUrl,
       },
+      other: {
+        'fb:app_id': '966846896263595',
+        'og:image': ogImageUrl,
+        'og:image:url': ogImageUrl,
+      },
       category: product.categoryName || 'Toys & Games',
       robots: { index: true, follow: true },
     };

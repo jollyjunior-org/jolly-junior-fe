@@ -60,7 +60,7 @@ export const HeroSlider: React.FC = () => {
   return (
     <section className="relative w-full px-3 sm:px-6 pt-2 max-w-7xl mx-auto">
       <div
-        className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-md h-[240px] sm:h-[360px] md:h-[420px] lg:h-[480px] bg-slate-100"
+        className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-md h-[340px] sm:h-[400px] md:h-[450px] lg:h-[500px] bg-slate-100"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >

@@ -13,6 +13,7 @@ import { productPath } from '@/utils/product-path';
 import { useShopStore } from '@/store/useShopStore';
 import { goToShop } from '@/utils/navigate-shop';
 import { RelatedProducts } from '@/components/product/RelatedProducts';
+import { LazyImage } from '@/components/common/LazyImage';
 
 interface ProductDetailViewProps {
   product: Product;
@@ -136,7 +137,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <img
+                <LazyImage
                   src={selectedImage}
                   alt={product.name}
                   referrerPolicy="no-referrer"
@@ -181,7 +182,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ product })
                       : 'border-transparent opacity-70 hover:opacity-100'
                   }`}
                 >
-                  <img src={img} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+                  <LazyImage src={img} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>

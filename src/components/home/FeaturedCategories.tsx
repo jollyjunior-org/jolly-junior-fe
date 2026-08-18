@@ -118,7 +118,7 @@ export const FeaturedCategories: React.FC = () => {
 
         <div 
           ref={scrollRef}
-          className="flex gap-4 sm:gap-6 overflow-x-auto overflow-y-hidden touch-pan-x overscroll-x-contain scroll-smooth no-scrollbar pb-4 snap-x snap-mandatory"
+          className="flex gap-4 sm:gap-6 overflow-x-auto no-scrollbar pb-4 snap-x snap-mandatory py-1"
         >
           {activeCategories.map((cat, index) => (
             <motion.div

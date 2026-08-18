@@ -37,15 +37,22 @@ export const HeroSlider: React.FC = () => {
   const slide = slides[currentIndex] || slides[0];
 
   const handleSlideClick = () => {
-    if (slide.linkCategorySlug) {
-      goToShop(router, {
-        categoryId: slide.linkCategorySlug,
-        categoryIds: [slide.linkCategorySlug],
-        saleKey: null,
-        searchQuery: '',
-      });
+    const type = slide.linkType || 'category';
+    const value = slide.linkValue || '';
+    if (type === 'none') return;
+    if (type === 'url' && value) {
+      window.open(value, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (type === 'shop') {
+      goToShop(router, { categoryId: null, categoryIds: [], searchQuery: '', saleKey: null });
     } else {
-      goToShop(router);
+      goToShop(router, {
+        categoryId: value || null,
+        categoryIds: value ? [value] : [],
+        searchQuery: '',
+        saleKey: null,
+      });
     }
   };
 

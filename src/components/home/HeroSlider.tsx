@@ -7,6 +7,7 @@ import { goToShop } from '@/utils/navigate-shop';
 import type { HeroSlideConfig } from '@/types';
 
 import { LazyImage } from '@/components/common/LazyImage';
+import { HeroSliderSkeleton } from '@/components/common/Skeleton';
 
 /**
  * Homepage hero slider — clean full-image slides with a Shop Now button at bottom-left.
@@ -32,7 +33,7 @@ export const HeroSlider: React.FC = () => {
     return () => clearInterval(timer);
   }, [slides.length, isPaused]);
 
-  if (!slides.length) return null;
+  if (!slides.length) return <HeroSliderSkeleton />;
 
   const slide = slides[currentIndex] || slides[0];
 

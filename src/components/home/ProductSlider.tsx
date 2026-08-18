@@ -1,17 +1,18 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, ArrowRight, Sparkles } from 'lucide-react';
 import { Product } from '../../types';
 import { ProductCard } from '../product/ProductCard';
 import { useShopStore } from '../../store/useShopStore';
 import { goToShop } from '@/utils/navigate-shop';
+import { ProductCardSkeleton } from '../common/Skeleton';
 
 interface ProductSliderProps {
   title: string;
   subtitle?: string;
-  products: Product[];
+  products?: Product[];
   categoryFilterSlug?: string;
   badge?: string;
   badgeColor?: string;
@@ -20,22 +21,27 @@ interface ProductSliderProps {
 export const ProductSlider: React.FC<ProductSliderProps> = ({
   title,
   subtitle,
-  products,
+  products: propProducts,
   categoryFilterSlug,
   badge = 'Handpicked',
   badgeColor = 'bg-[#0798AE]/20 text-[#0798AE]'
 }) => {
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { categories } = useShopStore();
+  const { products: storeProducts, categories } = useShopStore();
 
-  const disabledCategorySlugs = new Set(
-    categories.filter(c => c.isEnabled === false).map(c => c.slug)
+  const disabledCategorySlugs = useMemo(
+    () => new Set(categories.filter((c) => c.isEnabled === false).map((c) => c.slug)),
+    [categories]
   );
 
-  const visibleProducts = products.filter(
-    p => p.isPublished !== false && !disabledCategorySlugs.has(p.categoryId)
-  );
+  const rawList = propProducts || storeProducts;
+
+  const visibleProducts = useMemo(() => {
+    return rawList.filter(
+      (p) => p.isPublished !== false && !disabledCategorySlugs.has(p.categoryId)
+    );
+  }, [rawList, disabledCategorySlugs]);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -60,59 +66,48 @@ export const ProductSlider: React.FC<ProductSliderProps> = ({
   };
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-3 gap-3">
-        <div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <button
-              onClick={handleViewAll}
-              className="text-xl sm:text-2xl font-black text-[#0798AE] tracking-tight cursor-pointer hover:opacity-80 transition-opacity text-left"
-            >
-              {title}
-            </button>
-            {badge && (
-              <button
-                onClick={handleViewAll}
-                className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-[#0798AE]/15 text-[#0798AE] text-[10px] sm:text-xs font-bold cursor-pointer hover:opacity-80 transition-opacity"
-              >
-                <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-[#FFD52F]" />
-                <span>{badge}</span>
-              </button>
-            )}
-          </div>
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+      {/* Section Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <h2 className="text-xl sm:text-2xl font-black text-[#0798AE] tracking-tight">
+            {title}
+          </h2>
+          {badge && (
+            <span className={`px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-extrabold flex items-center gap-1 ${badgeColor}`}>
+              <Sparkles className="w-3 h-3 text-[#FFD52F]" />
+              {badge}
+            </span>
+          )}
           {subtitle && (
-            <p className="text-xs sm:text-sm text-[#0798AE] font-medium mt-0.5">
-              {subtitle}
-            </p>
+            <span className="text-xs text-slate-500 font-bold hidden md:inline-block">
+              · {subtitle}
+            </span>
           )}
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* Scroll Controls */}
-          <div className="hidden sm:flex items-center gap-1.5">
-            <button
-              onClick={() => scroll('left')}
-              className="p-2 rounded-full border border-[#D9F1F5] hover:bg-[#D9F1F5] text-[#0798AE] transition-all cursor-pointer"
-              title="Scroll Left"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => scroll('right')}
-              className="p-2 rounded-full border border-[#D9F1F5] hover:bg-[#D9F1F5] text-[#0798AE] transition-all cursor-pointer"
-              title="Scroll Right"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-
+        {/* Scroll Arrows Controls */}
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => scroll('left')}
+            className="p-2 rounded-full border border-[#D9F1F5] hover:bg-[#D9F1F5] text-[#0798AE] transition-all cursor-pointer"
+            title="Scroll Left"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => scroll('right')}
+            className="p-2 rounded-full border border-[#D9F1F5] hover:bg-[#D9F1F5] text-[#0798AE] transition-all cursor-pointer"
+            title="Scroll Right"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
-      {/* Horizontal swipe — 2 cards visible on mobile */}
+      {/* Products Horizontal Rail */}
       <div className="relative">
-        {/* Mobile-only floating scroll arrows */}
+        {/* Mobile Floating Controls */}
         <button
           onClick={() => scroll('left')}
           className="sm:hidden absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-white/90 border border-[#D9F1F5] shadow-md text-[#0798AE] -ml-1 cursor-pointer"
@@ -132,14 +127,25 @@ export const ProductSlider: React.FC<ProductSliderProps> = ({
           ref={scrollRef}
           className="flex gap-2 sm:gap-4 overflow-x-auto no-scrollbar pb-2 pt-1 snap-x snap-mandatory"
         >
-          {visibleProducts.map((product) => (
-            <div
-              key={product.id}
-              className="w-[calc(50%-4px)] sm:w-[240px] md:w-[260px] shrink-0 snap-start"
-            >
-              <ProductCard product={product} compact />
-            </div>
-          ))}
+          {visibleProducts.length === 0 ? (
+            Array.from({ length: 4 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="w-[calc(50%-4px)] sm:w-[240px] md:w-[260px] shrink-0 snap-start"
+              >
+                <ProductCardSkeleton compact />
+              </div>
+            ))
+          ) : (
+            visibleProducts.map((product) => (
+              <div
+                key={product.id}
+                className="w-[calc(50%-4px)] sm:w-[240px] md:w-[260px] shrink-0 snap-start"
+              >
+                <ProductCard product={product} compact />
+              </div>
+            ))
+          )}
         </div>
       </div>
 

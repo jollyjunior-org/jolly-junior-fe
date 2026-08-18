@@ -4,6 +4,7 @@ import { Filter, X, RotateCcw, Search, Sparkles, ChevronDown } from 'lucide-reac
 import { useShopStore } from '../../store/useShopStore';
 import { ProductCard } from '../product/ProductCard';
 import { Loader } from '../common/Loader';
+import { ProductCardSkeleton } from '../common/Skeleton';
 
 /**
  * Shop catalog — loads products from store APIs by category / search / sale.
@@ -332,9 +333,11 @@ export const ShopPage: React.FC = () => {
             </div>
           )}
 
-          {shopLoading && filteredProducts.length === 0 ? (
-            <div className="py-8 bg-white rounded-xl border border-[#F1F5F9]">
-              <Loader text="Loading catalog..." size="md" />
+          {shopLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5">
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <ProductCardSkeleton key={idx} compact />
+              ))}
             </div>
           ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5">

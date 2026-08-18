@@ -8,9 +8,11 @@ import { useShopStore } from '../../store/useShopStore';
 import { goToShop } from '@/utils/navigate-shop';
 import { LazyImage } from '../common/LazyImage';
 
+import { CategoryCardSkeleton } from '../common/Skeleton';
+
 export const FeaturedCategories: React.FC = () => {
   const router = useRouter();
-  const { storefrontConfig, categories, products } = useShopStore();
+  const { storefrontConfig, categories, products, shopLoading } = useShopStore();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: 'left' | 'right') => {
@@ -120,7 +122,12 @@ export const FeaturedCategories: React.FC = () => {
           ref={scrollRef}
           className="flex gap-4 sm:gap-6 overflow-x-auto no-scrollbar pb-4 snap-x snap-mandatory py-1"
         >
-          {activeCategories.map((cat, index) => (
+          {activeCategories.length === 0 ? (
+            Array.from({ length: 4 }).map((_, idx) => (
+              <CategoryCardSkeleton key={idx} />
+            ))
+          ) : (
+            activeCategories.map((cat, index) => (
             <motion.div
               key={cat.id}
               initial={{ opacity: 0 }}
@@ -162,7 +169,7 @@ export const FeaturedCategories: React.FC = () => {
                 </div>
               </div>
             </motion.div>
-          ))}
+          )))}
         </div>
       </div>
 

@@ -148,7 +148,6 @@ export default function StoreApp() {
             <FlashSale />
             {homeRails.map((section, index) => {
               const sectionProducts = productsForHomeSection(products, section);
-              if (!sectionProducts.length) return null;
               const categorySlug =
                 section.sourceType === 'category'
                   ? products.find((p) => p.categoryId === section.sourceValue)?.categorySlug ||

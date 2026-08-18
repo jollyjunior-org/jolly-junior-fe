@@ -6,6 +6,8 @@ import { useShopStore } from '@/store/useShopStore';
 import { goToShop } from '@/utils/navigate-shop';
 import type { HeroSlideConfig } from '@/types';
 
+import { LazyImage } from '@/components/common/LazyImage';
+
 /**
  * Homepage hero slider — clean full-image slides with a Shop Now button at bottom-left.
  * Shows mobileImageUrl on small screens, falls back to imageUrl on desktop.
@@ -21,51 +23,39 @@ export const HeroSlider: React.FC = () => {
   );
 
   useEffect(() => {
-    if (isPaused || slides.length <= 1) return;
-    const interval = setInterval(() => {
+    if (slides.length <= 1 || isPaused) return;
+
+    const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % slides.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [isPaused, slides.length]);
+    }, 4500);
 
-  useEffect(() => {
-    if (currentIndex >= slides.length) setCurrentIndex(0);
-  }, [slides.length, currentIndex]);
+    return () => clearInterval(timer);
+  }, [slides.length, isPaused]);
 
-  if (!slides.length) {
-    return null;
-  }
+  if (!slides.length) return null;
 
   const slide = slides[currentIndex] || slides[0];
 
-  /** Navigate based on slide link settings from admin. */
   const handleSlideClick = () => {
-    const type = slide.linkType || 'category';
-    const value = slide.linkValue || '';
-    if (type === 'none') return;
-    if (type === 'url' && value) {
-      window.open(value, '_blank', 'noopener,noreferrer');
-      return;
-    }
-    if (type === 'shop') {
-      goToShop(router, { categoryId: null, categoryIds: [], searchQuery: '', saleKey: null });
-    } else {
+    if (slide.linkCategorySlug) {
       goToShop(router, {
-        categoryId: value || null,
-        categoryIds: value ? [value] : [],
-        searchQuery: '',
+        categoryId: slide.linkCategorySlug,
+        categoryIds: [slide.linkCategorySlug],
         saleKey: null,
+        searchQuery: '',
       });
+    } else {
+      goToShop(router);
     }
   };
 
   return (
-    <section
-      className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-    >
-      <div className="relative rounded-xl overflow-hidden shadow-sm border border-[#D9F1F5] bg-[#FFFDF7] h-[380px] sm:h-[460px] md:h-[500px]">
+    <section className="relative w-full px-3 sm:px-6 pt-2 max-w-7xl mx-auto">
+      <div
+        className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-md h-[240px] sm:h-[360px] md:h-[420px] lg:h-[480px] bg-slate-100"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
         <AnimatePresence mode="wait">
           <motion.div
             key={slide.id}
@@ -76,21 +66,23 @@ export const HeroSlider: React.FC = () => {
             className="absolute inset-0 w-full h-full"
           >
             {/* Desktop image — hidden on small screens when mobile image exists */}
-            <img
+            <LazyImage
               src={slide.imageUrl}
               alt={slide.title}
               referrerPolicy="no-referrer"
-              className={`w-full h-full object-cover object-center ${
-                slide.mobileImageUrl ? 'hidden sm:block' : ''
-              }`}
+              loaderSize="lg"
+              containerClassName={`w-full h-full ${slide.mobileImageUrl ? 'hidden sm:block' : ''}`}
+              className="w-full h-full object-cover object-center"
             />
             {/* Mobile image — shown only on small screens */}
             {slide.mobileImageUrl && (
-              <img
+              <LazyImage
                 src={slide.mobileImageUrl}
                 alt={slide.title}
                 referrerPolicy="no-referrer"
-                className="w-full h-full object-cover object-center block sm:hidden"
+                loaderSize="lg"
+                containerClassName="w-full h-full block sm:hidden"
+                className="w-full h-full object-cover object-center"
               />
             )}
 

@@ -8,6 +8,8 @@ import { isComingSoonProduct } from '../../utils/product';
 import { productPath } from '../../utils/product-path';
 import { useShopStore } from '../../store/useShopStore';
 
+import { LazyImage } from '../common/LazyImage';
+
 interface ProductCardProps {
   product: Product;
   /** Dense 2-col mobile card (shop, home rails, related). */
@@ -72,10 +74,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
         className="group relative bg-white rounded-xl overflow-hidden border border-[#E8E8E8] flex flex-col cursor-pointer h-full"
       >
         <div className="relative aspect-square w-full bg-[#FAFAFA] overflow-hidden">
-          <img
+          <LazyImage
             src={product.images[0]}
             alt={product.name}
             referrerPolicy="no-referrer"
+            loaderSize="sm"
+            containerClassName="w-full h-full"
             className="w-full h-full object-cover object-center"
           />
 
@@ -193,10 +197,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
       className="group relative bg-white rounded-xl overflow-hidden border border-[#D9F1F5] shadow-2xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between cursor-pointer"
     >
       <div className="relative aspect-4/3 w-full bg-[#FFFDF7] overflow-hidden">
-        <img
+        <LazyImage
           src={isHovered && product.hoverImage ? product.hoverImage : product.images[0]}
           alt={product.name}
           referrerPolicy="no-referrer"
+          loaderSize="md"
+          containerClassName="w-full h-full"
           className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
         />
 

@@ -6,6 +6,7 @@ import { motion } from 'motion/react';
 import { ArrowRight, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
 import { goToShop } from '@/utils/navigate-shop';
+import { LazyImage } from '../common/LazyImage';
 
 export const FeaturedCategories: React.FC = () => {
   const router = useRouter();
@@ -33,7 +34,6 @@ export const FeaturedCategories: React.FC = () => {
     .slice()
     .sort((a, b) => (a.navOrder ?? 0) - (b.navOrder ?? 0) || a.name.localeCompare(b.name))
     .map((cat) => {
-      // Prefer API item_count; fall back to live product list if missing
       const liveCount = products.filter(
         (p) =>
           p.isPublished !== false &&
@@ -95,7 +95,6 @@ export const FeaturedCategories: React.FC = () => {
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
-
         </div>
       </div>
 
@@ -121,47 +120,49 @@ export const FeaturedCategories: React.FC = () => {
           ref={scrollRef}
           className="flex gap-4 sm:gap-6 overflow-x-auto overflow-y-hidden touch-pan-x overscroll-x-contain scroll-smooth no-scrollbar pb-4 snap-x snap-mandatory"
         >
-        {activeCategories.map((cat, index) => (
-          <motion.div
-            key={cat.id}
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: index * 0.05 }}
-            onClick={() => handleCategorySelect(cat.slug)}
-            className="group relative rounded-xl overflow-hidden cursor-pointer shadow-xs hover:shadow-xl transition-all duration-300 h-64 sm:h-72 border border-[#D9F1F5] flex-none w-[200px] sm:w-[240px] lg:w-[280px] snap-start"
-            style={{ backgroundColor: cat.color }}
-          >
-            {/* Background Image with Hover Zoom */}
-            {cat.image ? (
-              <img
-                src={cat.image}
-                alt={cat.name}
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out"
-              />
-            ) : (
-              <div className="w-full h-full bg-slate-200" />
-            )}
+          {activeCategories.map((cat, index) => (
+            <motion.div
+              key={cat.id}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: index * 0.05 }}
+              onClick={() => handleCategorySelect(cat.slug)}
+              className="group relative rounded-xl overflow-hidden cursor-pointer shadow-xs hover:shadow-xl transition-all duration-300 h-64 sm:h-72 border border-[#D9F1F5] flex-none w-[200px] sm:w-[240px] lg:w-[280px] snap-start"
+              style={{ backgroundColor: cat.color }}
+            >
+              {/* Background Image with Hover Zoom */}
+              {cat.image ? (
+                <LazyImage
+                  src={cat.image}
+                  alt={cat.name}
+                  referrerPolicy="no-referrer"
+                  loaderSize="md"
+                  containerClassName="w-full h-full"
+                  className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out"
+                />
+              ) : (
+                <div className="w-full h-full bg-slate-200" />
+              )}
 
-            {/* Gradient Overlay for Readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent p-4 flex flex-col justify-end text-white">
-              <div className="transform group-hover:-translate-y-1 transition-transform duration-300">
-                <h3 className="text-sm sm:text-base font-black leading-tight text-white group-hover:text-[#FFD52F] transition-colors">
-                  {cat.name}
-                </h3>
-              </div>
+              {/* Gradient Overlay for Readability */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent p-4 flex flex-col justify-end text-white">
+                <div className="transform group-hover:-translate-y-1 transition-transform duration-300">
+                  <h3 className="text-sm sm:text-base font-black leading-tight text-white group-hover:text-[#FFD52F] transition-colors">
+                    {cat.name}
+                  </h3>
+                </div>
 
-              {/* Hover Arrow Badge */}
-              <div className="mt-2 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300 pt-1 border-t border-white/20">
-                <span className="text-[11px] font-bold text-[#FFD52F]">Shop Now</span>
-                <span className="w-6 h-6 rounded-full bg-white text-[#0798AE] flex items-center justify-center text-xs shadow-xs">
-                  →
-                </span>
+                {/* Hover Arrow Badge */}
+                <div className="mt-2 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300 pt-1 border-t border-white/20">
+                  <span className="text-[11px] font-bold text-[#FFD52F]">Shop Now</span>
+                  <span className="w-6 h-6 rounded-full bg-white text-[#0798AE] flex items-center justify-center text-xs shadow-xs">
+                    →
+                  </span>
+                </div>
               </div>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          ))}
         </div>
       </div>
 

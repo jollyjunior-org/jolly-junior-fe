@@ -23,6 +23,20 @@ export const HeroSlider: React.FC = () => {
     (slide): slide is HeroSlideConfig & { imageUrl: string } => Boolean(slide.imageUrl),
   );
 
+  // Preload all hero poster images into browser memory/CDN cache on mount
+  useEffect(() => {
+    slides.forEach((s) => {
+      if (s.imageUrl) {
+        const img = new Image();
+        img.src = s.imageUrl;
+      }
+      if (s.mobileImageUrl) {
+        const mImg = new Image();
+        mImg.src = s.mobileImageUrl;
+      }
+    });
+  }, [slides]);
+
   useEffect(() => {
     if (slides.length <= 1 || isPaused) return;
 
@@ -67,30 +81,28 @@ export const HeroSlider: React.FC = () => {
         <AnimatePresence mode="wait">
           <motion.div
             key={slide.id}
-            initial={{ opacity: 0, scale: 1.02 }}
+            initial={{ opacity: 0, scale: 1.01 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.7, ease: 'easeInOut' }}
+            exit={{ opacity: 0, scale: 0.99 }}
+            transition={{ duration: 0.6, ease: 'easeInOut' }}
             className="absolute inset-0 w-full h-full"
           >
             {/* Desktop image — hidden on small screens when mobile image exists */}
-            <LazyImage
+            <img
               src={slide.imageUrl}
               alt={slide.title}
               referrerPolicy="no-referrer"
-              loaderSize="lg"
-              containerClassName={`w-full h-full ${slide.mobileImageUrl ? 'hidden sm:block' : ''}`}
-              className="w-full h-full object-cover object-center"
+              className={`w-full h-full object-cover object-center ${
+                slide.mobileImageUrl ? 'hidden sm:block' : ''
+              }`}
             />
             {/* Mobile image — shown only on small screens */}
             {slide.mobileImageUrl && (
-              <LazyImage
+              <img
                 src={slide.mobileImageUrl}
                 alt={slide.title}
                 referrerPolicy="no-referrer"
-                loaderSize="lg"
-                containerClassName="w-full h-full block sm:hidden"
-                className="w-full h-full object-cover object-center"
+                className="w-full h-full object-cover object-center block sm:hidden"
               />
             )}
 

@@ -14,6 +14,8 @@ interface ProductSliderProps {
   subtitle?: string;
   products?: Product[];
   categoryFilterSlug?: string;
+  sourceType?: string;
+  sourceValue?: string;
   badge?: string;
   badgeColor?: string;
 }
@@ -23,6 +25,8 @@ export const ProductSlider: React.FC<ProductSliderProps> = ({
   subtitle,
   products: propProducts,
   categoryFilterSlug,
+  sourceType,
+  sourceValue,
   badge = 'Handpicked',
   badgeColor = 'bg-[#0798AE]/20 text-[#0798AE]'
 }) => {
@@ -54,15 +58,38 @@ export const ProductSlider: React.FC<ProductSliderProps> = ({
     }
   };
 
-  /** Open shop and load that category from the API. */
+  /** Open shop and load that category/tag/badge filter from the API. */
   const handleViewAll = () => {
-    const slug = categoryFilterSlug || null;
-    goToShop(router, {
-      categoryId: slug,
-      categoryIds: slug ? [slug] : [],
-      saleKey: null,
-      searchQuery: '',
-    });
+    if (sourceType === 'category' && (categoryFilterSlug || sourceValue)) {
+      const slug = categoryFilterSlug || sourceValue;
+      goToShop(router, {
+        categoryId: slug,
+        categoryIds: [slug],
+        saleKey: null,
+        searchQuery: '',
+      });
+    } else if (sourceType === 'discount' || (sourceType === 'rule' && sourceValue === 'sale')) {
+      goToShop(router, {
+        categoryId: null,
+        categoryIds: [],
+        saleKey: 'on-sale',
+        searchQuery: '',
+      });
+    } else if (sourceValue && (sourceType === 'tag' || sourceType === 'badge')) {
+      goToShop(router, {
+        categoryId: null,
+        categoryIds: [],
+        saleKey: null,
+        searchQuery: sourceValue,
+      });
+    } else {
+      goToShop(router, {
+        categoryId: null,
+        categoryIds: [],
+        saleKey: null,
+        searchQuery: '',
+      });
+    }
   };
 
   return (

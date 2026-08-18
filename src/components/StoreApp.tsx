@@ -161,6 +161,8 @@ export default function StoreApp() {
                     subtitle={section.subtitle || ''}
                     products={sectionProducts}
                     categoryFilterSlug={categorySlug}
+                    sourceType={section.sourceType}
+                    sourceValue={section.sourceValue}
                     badge={section.sectionBadge}
                     badgeColor="bg-[#FFFDF7] text-[#0798AE]"
                   />

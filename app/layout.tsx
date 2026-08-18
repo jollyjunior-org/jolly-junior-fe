@@ -35,16 +35,16 @@ export const metadata: Metadata = {
       {
         url: `${SITE_URL}/og-banner.jpg`,
         secureUrl: `${SITE_URL}/og-banner.jpg`,
-        width: 1200,
-        height: 630,
+        width: 800,
+        height: 800,
         alt: 'JollyJuniors Premium Kids Toys & Baby Care Shop',
         type: 'image/jpeg',
       },
       {
         url: `${SITE_URL}/og-banner.png`,
         secureUrl: `${SITE_URL}/og-banner.png`,
-        width: 1200,
-        height: 630,
+        width: 800,
+        height: 800,
         alt: 'JollyJuniors Premium Kids Toys & Baby Care Shop',
         type: 'image/png',
       },
@@ -89,13 +89,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta property="og:image" content={`${SITE_URL}/og-banner.jpg`} />
-        <meta property="og:image:url" content={`${SITE_URL}/og-banner.jpg`} />
-        <meta property="og:image:secure_url" content={`${SITE_URL}/og-banner.jpg`} />
-        <meta property="og:image:type" content="image/jpeg" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content="JollyJuniors Premium Kids Toys & Baby Care Shop" />
         <meta property="fb:app_id" content="966846896263595" />
       </head>
       <body

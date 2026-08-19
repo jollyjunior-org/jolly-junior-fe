@@ -18,6 +18,8 @@ import {
   loadGuestWishlist,
   saveGuestWishlist,
 } from '@/utils/guest-storage';
+import { mapProduct, mapCategory, mapOrder } from '@/services/mappers';
+import { preloadImages } from '@/utils/cdn-image';
 import { syncShopUrl } from '@/utils/shop-url';
 import type { InventoryStats } from '@/services/inventory-service';
 
@@ -530,6 +532,8 @@ export const useShopStore = create<ShopStore>((set, get) => ({
       // Home rails still need a product list; shop grid uses fetchShopCatalog
       const products = await productService.fetchPublicProducts(slugById);
       set({ products, categories, storefrontConfig });
+      preloadImages(categories.map((c) => c.image).filter(Boolean), 400);
+      preloadImages(products.map((p) => p.images[0]).filter(Boolean), 400);
       get().hydrateGuestState();
       void get().fetchLiveSales();
       void get().fetchShippingConfig();
@@ -593,6 +597,7 @@ export const useShopStore = create<ShopStore>((set, get) => ({
       }
 
       set({ shopProducts: items, shopLoading: false });
+      preloadImages(items.map((p) => p.images[0]).filter(Boolean), 400);
     } catch (err) {
       console.error('Failed to fetch shop catalog', err);
       set({ shopLoading: false });

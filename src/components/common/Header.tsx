@@ -462,7 +462,8 @@ export const Header: React.FC = () => {
                               goToShop(router, {
                                 categoryId: cat.slug,
                                 categoryIds: [cat.slug],
-                                searchQuery: sub,
+                                subCategory: sub,
+                                searchQuery: '',
                               });
                               setHoveredCategory(null);
                               setHoveredCategory(null);

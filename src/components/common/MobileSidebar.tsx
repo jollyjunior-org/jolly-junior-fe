@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Flame, ChevronRight, Home, User, LogOut, Instagram, Facebook, Youtube, Twitter, Linkedin, Globe, MessageCircle, Search, Loader2 } from 'lucide-react';
+import { X, Flame, ChevronRight, Home, User, LogOut, Instagram, Facebook, Youtube, Twitter, Linkedin, Globe, MessageCircle, Search, Loader2, Plus, Minus } from 'lucide-react';
 import { useShopStore } from '@/store/useShopStore';
 import { goToHome, goToShop } from '@/utils/navigate-shop';
 import { productPath } from '@/utils/product-path';
@@ -27,6 +27,15 @@ export const MobileSidebar: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [expandedCategoryIds, setExpandedCategoryIds] = useState<Record<string, boolean>>({});
+
+  const toggleExpandCategory = (catId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedCategoryIds((prev) => ({
+      ...prev,
+      [catId]: !prev[catId],
+    }));
+  };
 
   const disabledCategorySlugs = new Set(
     categories.filter((c) => c.isEnabled === false).map((c) => c.slug),
@@ -248,36 +257,86 @@ export const MobileSidebar: React.FC = () => {
             >
               Shop All
             </button>
-            {enabled.map((cat) => (
-              <div key={cat.id}>
-                <button
-                  type="button"
-                  onClick={() => openCategory(cat.slug)}
-                  className="w-full flex items-center justify-between py-2 text-sm font-bold text-[#0798AE]"
-                >
-                  {cat.name}
-                  <ChevronRight className="w-4 h-4 text-[#0798AE]" />
-                </button>
-                {(cat.subcategories || []).map((sub) => (
-                  <button
-                    key={sub}
-                    type="button"
-                    onClick={() => {
-                      goToShop(router, {
-                        categoryId: cat.slug,
-                        categoryIds: [cat.slug],
-                        searchQuery: sub,
-                        saleKey: null,
-                      });
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full text-left pl-4 py-1.5 text-xs font-semibold text-[#0798AE]"
-                  >
-                    {sub}
-                  </button>
-                ))}
-              </div>
-            ))}
+            {enabled.map((cat) => {
+              const hasSubs = (cat.subcategories || []).length > 0;
+              const isExpanded = Boolean(expandedCategoryIds[cat.id]);
+              return (
+                <div key={cat.id} className="border-b border-slate-100 last:border-b-0">
+                  <div className="flex items-center justify-between w-full">
+                    {/* Main Category Link */}
+                    <button
+                      type="button"
+                      onClick={() => openCategory(cat.slug)}
+                      className="flex-1 text-left py-3 text-xs font-bold text-[#263238] uppercase tracking-wide hover:text-[#0798AE] cursor-pointer flex items-center justify-between"
+                    >
+                      <span>{cat.name}</span>
+                      {cat.itemCount > 0 && (
+                        <span className="text-[10px] font-extrabold text-[#0798AE] bg-[#D9F1F5] px-2 py-0.5 rounded-full mr-2">
+                          {cat.itemCount}
+                        </span>
+                      )}
+                    </button>
+
+                    {/* Plus / Minus Accordion Toggle Button */}
+                    {hasSubs ? (
+                      <button
+                        type="button"
+                        onClick={(e) => toggleExpandCategory(cat.id, e)}
+                        className="w-10 h-10 flex items-center justify-center border-l border-slate-100 text-slate-500 hover:text-[#0798AE] hover:bg-slate-50 cursor-pointer"
+                        title={isExpanded ? 'Collapse subcategories' : 'Expand subcategories'}
+                      >
+                        {isExpanded ? (
+                          <Minus className="w-4 h-4 text-[#0798AE]" />
+                        ) : (
+                          <Plus className="w-4 h-4 text-slate-400" />
+                        )}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => openCategory(cat.slug)}
+                        className="w-10 h-10 flex items-center justify-center text-slate-300 hover:text-[#0798AE] cursor-pointer"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Expanded Subcategories Drawer List */}
+                  {hasSubs && isExpanded && (
+                    <div className="bg-[#F8FAFC] border-t border-slate-100 py-1.5 px-3 space-y-1 my-1 rounded-lg">
+                      {(cat.subcategories || []).map((sub) => {
+                        const subCount = cat.subcategoryCounts?.[sub];
+                        return (
+                          <button
+                            key={sub}
+                            type="button"
+                            onClick={() => {
+                              goToShop(router, {
+                                categoryId: cat.slug,
+                                categoryIds: [cat.slug],
+                                subCategory: sub,
+                                searchQuery: '',
+                                saleKey: null,
+                              });
+                              setMobileMenuOpen(false);
+                            }}
+                            className="w-full text-left py-2 px-3 text-xs font-semibold text-[#607D80] hover:text-[#0798AE] hover:bg-white rounded-md transition-colors flex items-center justify-between cursor-pointer"
+                          >
+                            <span>• {sub}</span>
+                            {subCount !== undefined && subCount > 0 && (
+                              <span className="text-[10px] font-bold text-slate-400">
+                                ({subCount})
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 

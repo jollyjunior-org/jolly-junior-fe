@@ -61,6 +61,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
     slug: '',
     categoryId: categories[0]?.id || '',
     categoryName: categories[0]?.name || 'Educational Toys',
+    subCategory: '',
     price: 1000,
     basePrice: 0,
     originalPrice: 0,
@@ -103,6 +104,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
       slug: '',
       categoryId: categories[0]?.id || '',
       categoryName: categories[0]?.name || 'Educational Toys',
+      subCategory: '',
       price: 1000,
       basePrice: 0,
       originalPrice: 0,
@@ -151,6 +153,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
       slug: product.slug,
       categoryId: product.categoryId,
       categoryName: product.categoryName,
+      subCategory: product.subCategory || '',
       price: product.price,
       basePrice: product.basePrice || 0,
       originalPrice: product.originalPrice || 0,
@@ -285,6 +288,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
       slug: generatedSlug,
       categoryId: formData.categoryId,
       categoryName: formData.categoryName,
+      subCategory: formData.subCategory || undefined,
       price: computedPrice,
       basePrice: formData.basePrice ? Number(formData.basePrice) : undefined,
       originalPrice: computedOriginalPrice,
@@ -673,8 +677,8 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                 />
               </div>
 
-              {/* Category & Age Group */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Category, Subcategory & Age Group */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Category *</label>
                   <select
@@ -685,6 +689,22 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                     {categories.map(c => (
                       <option key={c.id} value={c.id}>
                         {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Subcategory</label>
+                  <select
+                    value={formData.subCategory}
+                    onChange={e => setFormData({ ...formData, subCategory: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-sky-500"
+                  >
+                    <option value="">None / General</option>
+                    {(categories.find(c => c.id === formData.categoryId)?.subcategories || []).map(sub => (
+                      <option key={sub} value={sub}>
+                        {sub}
                       </option>
                     ))}
                   </select>

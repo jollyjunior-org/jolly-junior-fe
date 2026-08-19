@@ -15,10 +15,12 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
   openAddModalInitially = false,
   onCloseAddModal
 }) => {
-  const { categories, products, addCategory, updateCategory, deleteCategory } = useShopStore();
+  const { categories, products, addCategory, updateCategory, deleteCategory, addSubcategory, deleteSubcategory } = useShopStore();
 
   const [isModalOpen, setIsModalOpen] = useState(openAddModalInitially);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [newSubName, setNewSubName] = useState('');
+  const [isSubmittingSub, setIsSubmittingSub] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -32,11 +34,11 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
     showInNav: false,
     showInFooter: false,
     navOrder: 1,
-    subcategoriesText: 'Wooden Puzzles, Sorting Blocks, Sensory Toys'
   });
 
   const resetForm = () => {
     setEditingCategory(null);
+    setNewSubName('');
     setFormData({
       name: '',
       slug: '',
@@ -49,7 +51,6 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
       showInNav: false,
       showInFooter: false,
       navOrder: categories.length + 1,
-      subcategoriesText: 'Wooden Puzzles, Sorting Blocks, Sensory Toys'
     });
   };
 
@@ -60,6 +61,7 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
 
   const handleOpenEditModal = (cat: Category) => {
     setEditingCategory(cat);
+    setNewSubName('');
     setFormData({
       name: cat.name,
       slug: cat.slug,
@@ -72,7 +74,6 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
       showInNav: Boolean(cat.showInNav),
       showInFooter: Boolean(cat.showInFooter),
       navOrder: cat.navOrder ?? 1,
-      subcategoriesText: cat.subcategories.join(', ')
     });
     setIsModalOpen(true);
   };
@@ -83,13 +84,54 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
     if (onCloseAddModal) onCloseAddModal();
   };
 
+  const handleAddSubcategory = async () => {
+    if (!editingCategory || !newSubName.trim() || isSubmittingSub) return;
+    const subToAdd = newSubName.trim();
+    const catId = editingCategory.id;
+
+    // Optimistic UI update
+    setEditingCategory((prev) =>
+      prev
+        ? {
+            ...prev,
+            subcategories: Array.from(new Set([...(prev.subcategories || []), subToAdd])),
+          }
+        : null
+    );
+    setNewSubName('');
+    setIsSubmittingSub(true);
+
+    const updated = await addSubcategory(catId, subToAdd);
+    if (updated) {
+      setEditingCategory(updated);
+    }
+    setIsSubmittingSub(false);
+  };
+
+  const handleDeleteSubcategory = async (subName: string) => {
+    if (!editingCategory || isSubmittingSub) return;
+    const catId = editingCategory.id;
+
+    // Optimistic UI update — instantly remove tag badge from modal
+    setEditingCategory((prev) =>
+      prev
+        ? {
+            ...prev,
+            subcategories: (prev.subcategories || []).filter((s) => s.toLowerCase() !== subName.toLowerCase()),
+          }
+        : null
+    );
+    setIsSubmittingSub(true);
+
+    const updated = await deleteSubcategory(catId, subName);
+    if (updated) {
+      setEditingCategory(updated);
+    }
+    setIsSubmittingSub(false);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    const subs = formData.subcategoriesText
-      .split(',')
-      .map(s => s.trim())
-      .filter(Boolean);
 
     const generatedSlug = formData.slug || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
@@ -106,7 +148,6 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
         showInNav: formData.showInNav,
         showInFooter: formData.showInFooter,
         navOrder: formData.navOrder,
-        subcategories: subs.length > 0 ? subs : ['General Essentials']
       });
     } else {
       addCategory({
@@ -121,7 +162,7 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
         showInNav: formData.showInNav,
         showInFooter: formData.showInFooter,
         navOrder: formData.navOrder,
-        subcategories: subs.length > 0 ? subs : ['General Essentials'],
+        subcategories: [],
         itemCount: 0
       });
     }
@@ -333,16 +374,67 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
                 />
               </div>
 
-              {/* Subcategories */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Subcategories (comma separated)</label>
-                <input
-                  type="text"
-                  placeholder="Night Lamps, Wall Decals, Storage Baskets"
-                  value={formData.subcategoriesText}
-                  onChange={e => setFormData({ ...formData, subcategoriesText: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-sky-500"
-                />
+              {/* Subcategories Manager */}
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                <label className="block text-xs font-bold text-slate-800">
+                  Subcategories Management
+                </label>
+                {editingCategory ? (
+                  <>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Add subcategory name (e.g. Wooden Puzzles)..."
+                        value={newSubName}
+                        onChange={(e) => setNewSubName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddSubcategory();
+                          }
+                        }}
+                        className="flex-1 px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium outline-none focus:border-sky-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddSubcategory}
+                        disabled={!newSubName.trim() || isSubmittingSub}
+                        className="px-3 py-1.5 bg-[#0798AE] text-white font-bold text-xs rounded-lg hover:bg-[#06869a] disabled:opacity-50 cursor-pointer inline-flex items-center gap-1"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add</span>
+                      </button>
+                    </div>
+
+                    {/* Subcategories Pill Badge List */}
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {(editingCategory.subcategories || []).length === 0 ? (
+                        <span className="text-xs text-slate-400 italic">No subcategories added yet.</span>
+                      ) : (
+                        (editingCategory.subcategories || []).map((sub) => (
+                          <span
+                            key={sub}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-sky-50 text-sky-700 border border-sky-200 rounded-full text-xs font-bold"
+                          >
+                            <span>{sub}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteSubcategory(sub)}
+                              className="hover:bg-sky-200 rounded-full p-0.5 text-sky-800 cursor-pointer"
+                              title={`Remove ${sub}`}
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </span>
+                        ))
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-xs text-slate-500 italic">
+                    Subcategories can be added right after creating this category.
+                  </p>
+                )}
               </div>
 
               {/* Status Switch */}

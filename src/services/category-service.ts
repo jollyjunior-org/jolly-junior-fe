@@ -56,3 +56,26 @@ export async function updateCategory(
 export async function deleteCategory(id: string): Promise<unknown> {
   return apiFetch(adminEndpoints.category(id), { method: 'DELETE' });
 }
+
+/**
+ * POST add subcategory to category.
+ * Args: id, name
+ */
+export async function addSubcategory(id: string, name: string): Promise<Category> {
+  const data = await apiFetch<Record<string, unknown>>(`${adminEndpoints.category(id)}/subcategories`, {
+    method: 'POST',
+    body: JSON.stringify({ name }),
+  });
+  return mapCategory(data);
+}
+
+/**
+ * DELETE subcategory from category.
+ * Args: id, subcategoryName
+ */
+export async function deleteSubcategory(id: string, subcategoryName: string): Promise<Category> {
+  const data = await apiFetch<Record<string, unknown>>(`${adminEndpoints.category(id)}/subcategories/${encodeURIComponent(subcategoryName)}`, {
+    method: 'DELETE',
+  });
+  return mapCategory(data);
+}

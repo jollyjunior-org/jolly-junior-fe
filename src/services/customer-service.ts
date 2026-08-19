@@ -122,7 +122,7 @@ export async function searchStoreProducts(q: string): Promise<Product[]> {
  */
 export async function fetchCategoryProducts(
   categoryRef: string,
-  opts?: { page?: number; pageSize?: number; sort?: string; inStock?: boolean; ageGroup?: string; onSaleOnly?: boolean },
+  opts?: { page?: number; pageSize?: number; sort?: string; inStock?: boolean; ageGroup?: string; onSaleOnly?: boolean; subCategory?: string },
 ): Promise<{ items: Product[]; total: number }> {
   const params = new URLSearchParams();
   params.set('page', String(opts?.page || 1));
@@ -131,6 +131,7 @@ export async function fetchCategoryProducts(
   if (opts?.inStock != null) params.set('in_stock', String(opts.inStock));
   if (opts?.ageGroup) params.set('age_group', opts.ageGroup);
   if (opts?.onSaleOnly != null) params.set('on_sale', String(opts.onSaleOnly));
+  if (opts?.subCategory) params.set('sub_category', opts.subCategory);
   const data = await apiFetch<{ items: Record<string, unknown>[]; total: number }>(
     publicEndpoints.categoryProducts(categoryRef, params.toString()),
     { skipAuth: true },
@@ -145,6 +146,7 @@ export async function fetchCategoryProducts(
  */
 export async function fetchStoreProducts(opts?: {
   categoryIds?: string[];
+  subCategory?: string;
   q?: string;
   sort?: string;
   inStock?: boolean;
@@ -157,6 +159,7 @@ export async function fetchStoreProducts(opts?: {
   params.set('page', String(opts?.page || 1));
   params.set('page_size', String(opts?.pageSize || 500));
   if (opts?.categoryIds?.length) params.set('category_ids', opts.categoryIds.join(','));
+  if (opts?.subCategory) params.set('sub_category', opts.subCategory);
   if (opts?.q) params.set('q', opts.q);
   if (opts?.sort) params.set('sort', opts.sort);
   if (opts?.inStock != null) params.set('in_stock', String(opts.inStock));

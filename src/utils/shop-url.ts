@@ -11,6 +11,7 @@ export function buildShopHref(filter: Partial<FilterState> & { view?: 'shop' | '
 
   if (filter.categoryId) params.set('category', filter.categoryId);
   if (filter.categoryIds?.length) params.set('categories', filter.categoryIds.join(','));
+  if (filter.subCategory) params.set('subcategory', filter.subCategory);
   if (filter.saleKey) params.set('sale', filter.saleKey);
   if (filter.searchQuery) params.set('q', filter.searchQuery);
   if (filter.onSaleOnly) params.set('deals', '1');
@@ -36,7 +37,7 @@ export function syncShopUrl(
 
   const href = buildShopHref({
     ...filter,
-    view: view === 'shop' || Boolean(filter.categoryId || filter.saleKey || filter.categoryIds?.length)
+    view: view === 'shop' || Boolean(filter.categoryId || filter.subCategory || filter.saleKey || filter.categoryIds?.length)
       ? 'shop'
       : 'home',
   });
@@ -48,6 +49,7 @@ export function readShopUrl(): {
   view?: 'shop';
   categoryId: string | null;
   categoryIds: string[];
+  subCategory: string | null;
   saleKey: string | null;
   searchQuery: string;
   onSaleOnly: boolean;
@@ -56,6 +58,7 @@ export function readShopUrl(): {
     return {
       categoryId: null,
       categoryIds: [],
+      subCategory: null,
       saleKey: null,
       searchQuery: '',
       onSaleOnly: false,
@@ -70,6 +73,7 @@ export function readShopUrl(): {
     view: params.get('view') === 'shop' ? 'shop' : undefined,
     categoryId: params.get('category'),
     categoryIds: categories,
+    subCategory: params.get('subcategory'),
     saleKey: params.get('sale'),
     searchQuery: params.get('q') || '',
     onSaleOnly: params.get('deals') === '1',

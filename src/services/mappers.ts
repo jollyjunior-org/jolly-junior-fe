@@ -16,6 +16,7 @@ export function mapProduct(p: Record<string, unknown>, categorySlugById?: Map<st
     categoryId,
     categorySlug: slugFromMap || String(p.category_slug ?? p.categorySlug ?? ''),
     categoryName: String(p.category_name ?? p.categoryName ?? 'Uncategorized'),
+    subCategory: (p.sub_category as string) || (p.subCategory as string) || undefined,
     // Accept both plain URL strings and enriched {secure_url} objects from admin API
     images: ((p.images ?? p.image_urls) as Array<string | Record<string, unknown>> || [])
       .map((img) => {
@@ -97,6 +98,7 @@ export function mapCategory(c: Record<string, unknown>): Category {
     tagLabel: (c.tag_label as string | null | undefined) ?? null,
     tagColor: (c.tag_color as string | null | undefined) ?? null,
     subcategories: (c.subcategories as string[]) || [],
+    subcategoryCounts: (c.subcategory_counts ?? c.subcategoryCounts) as Record<string, number> || {},
   };
 }
 

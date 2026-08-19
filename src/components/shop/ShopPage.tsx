@@ -29,6 +29,7 @@ export const ShopPage: React.FC = () => {
     fetchShopCatalog,
     filter.categoryId,
     filter.categoryIds.join(','),
+    filter.subCategory,
     filter.saleKey,
     filter.searchQuery,
     filter.sortBy,
@@ -48,6 +49,19 @@ export const ShopPage: React.FC = () => {
 
   const activeCategory = enabledCategories.find((c) => c.slug === filter.categoryId);
 
+  /** Helper to get product count for a specific subcategory */
+  const getSubcategoryCount = (cat: typeof enabledCategories[0], subName: string): number => {
+    if (cat.subcategoryCounts && subName in cat.subcategoryCounts) {
+      return cat.subcategoryCounts[subName];
+    }
+    const targetSub = subName.toLowerCase().trim();
+    return products.filter((p) => {
+      const matchCat = p.categoryId === cat.id || p.categorySlug === cat.slug;
+      const matchSub = p.subCategory && p.subCategory.toLowerCase().trim() === targetSub;
+      return matchCat && matchSub && p.isPublished !== false;
+    }).length;
+  };
+
   /** Toggle a category slug in the multi-select filter (reloads via useEffect). */
   const toggleCategory = (slug: string) => {
     const current = new Set(filter.categoryIds || []);
@@ -57,11 +71,23 @@ export const ShopPage: React.FC = () => {
     setFilter({
       categoryIds: next,
       categoryId: next.length === 1 ? next[0] : next.includes(filter.categoryId || '') ? filter.categoryId : null,
+      subCategory: null,
     });
   };
 
   // Use API-loaded shop catalog for active filters
   let filteredProducts = shopProducts.slice();
+
+  if (filter.subCategory) {
+    const targetSub = filter.subCategory.toLowerCase().trim();
+    filteredProducts = filteredProducts.filter((p) => {
+      if (p.subCategory && p.subCategory.toLowerCase().trim() === targetSub) return true;
+      if (p.name.toLowerCase().includes(targetSub)) return true;
+      if (p.description.toLowerCase().includes(targetSub)) return true;
+      if ((p.tags || []).some((t) => t.name.toLowerCase() === targetSub)) return true;
+      return false;
+    });
+  }
 
   if (filter.sortBy === 'price-low-high') {
     filteredProducts.sort((a, b) => a.price - b.price);
@@ -78,7 +104,9 @@ export const ShopPage: React.FC = () => {
     : selectedSlugs.size > 1
       ? `${selectedSlugs.size} Categories`
       : activeCategory
-        ? activeCategory.name
+        ? filter.subCategory
+          ? `${activeCategory.name} > ${filter.subCategory}`
+          : activeCategory.name
         : filter.searchQuery
           ? `Search: ${filter.searchQuery}`
           : 'All Products & Essentials';
@@ -117,6 +145,12 @@ export const ShopPage: React.FC = () => {
             <X className="w-3 h-3 cursor-pointer ml-1" onClick={() => toggleCategory(slug)} />
           </span>
         ))}
+        {filter.subCategory && (
+          <span className={`${chipClass} bg-[#FFD52F]/30 text-[#0798AE] border border-[#FFD52F]`}>
+            Sub: {filter.subCategory}
+            <X className="w-3 h-3 cursor-pointer ml-1" onClick={() => setFilter({ subCategory: null })} />
+          </span>
+        )}
         {filter.ageGroup && (
           <span className={`${chipClass} bg-[#D9F1F5] text-[#3B82F6]`}>
             Age: {filter.ageGroup}
@@ -183,20 +217,47 @@ export const ShopPage: React.FC = () => {
           </label>
           {enabledCategories.map((cat) => {
             const checked = selectedSlugs.has(cat.slug);
+            const hasSubs = (cat.subcategories || []).length > 0;
             return (
-              <label
-                key={cat.id}
-                className="flex items-center gap-2 px-2 py-1 text-xs font-bold text-[#607D80] cursor-pointer hover:bg-slate-50 rounded-lg"
-              >
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => toggleCategory(cat.slug)}
-                  className="accent-[#0798AE] w-4 h-4 rounded"
-                />
-                <span className="flex-1">{cat.name}</span>
-                <span className="text-[10px] opacity-70">({cat.itemCount})</span>
-              </label>
+              <div key={cat.id} className="space-y-1">
+                <label className="flex items-center gap-2 px-2 py-1 text-xs font-bold text-[#607D80] cursor-pointer hover:bg-slate-50 rounded-lg">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggleCategory(cat.slug)}
+                    className="accent-[#0798AE] w-4 h-4 rounded"
+                  />
+                  <span className="flex-1">{cat.name}</span>
+                  <span className="text-[10px] font-black text-[#0798AE] bg-[#D9F1F5] px-2 py-0.5 rounded-full">
+                    {cat.itemCount}
+                  </span>
+                </label>
+                {checked && hasSubs && (
+                  <div className="pl-6 space-y-1 border-l-2 border-[#D9F1F5] ml-3 my-1">
+                    {cat.subcategories.map((sub) => {
+                      const subCount = getSubcategoryCount(cat, sub);
+                      const isSelected = filter.subCategory === sub;
+                      return (
+                        <button
+                          key={sub}
+                          type="button"
+                          onClick={() => setFilter({ subCategory: isSelected ? null : sub })}
+                          className={`flex items-center justify-between w-full text-left text-[11px] font-semibold py-1 px-2 rounded-lg transition-colors cursor-pointer ${
+                            isSelected
+                              ? 'text-[#0798AE] font-black bg-[#D9F1F5]/60'
+                              : 'text-slate-600 hover:text-[#0798AE] hover:bg-slate-50'
+                          }`}
+                        >
+                          <span>• {sub}</span>
+                          <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-[#0798AE] text-white' : 'bg-slate-100 text-slate-500'}`}>
+                            {subCount}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
@@ -325,6 +386,47 @@ export const ShopPage: React.FC = () => {
         </div>
 
         <div className="lg:col-span-3 space-y-6">
+          {/* Subcategory Interactive Pill Chips */}
+          {activeCategory && (activeCategory.subcategories || []).length > 0 && (
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+              <button
+                type="button"
+                onClick={() => setFilter({ subCategory: null })}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
+                  !filter.subCategory
+                    ? 'bg-[#0798AE] text-white shadow-xs'
+                    : 'bg-white text-[#0798AE] border border-[#D9F1F5] hover:bg-[#D9F1F5]'
+                }`}
+              >
+                <span>All {activeCategory.name}</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] ${!filter.subCategory ? 'bg-white/20 text-white' : 'bg-[#D9F1F5] text-[#0798AE]'}`}>
+                  {activeCategory.itemCount}
+                </span>
+              </button>
+              {(activeCategory.subcategories || []).map((sub) => {
+                const subCount = getSubcategoryCount(activeCategory, sub);
+                const isSelected = filter.subCategory === sub;
+                return (
+                  <button
+                    key={sub}
+                    type="button"
+                    onClick={() => setFilter({ subCategory: isSelected ? null : sub })}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
+                      isSelected
+                        ? 'bg-[#0798AE] text-white shadow-xs'
+                        : 'bg-white text-[#0798AE] border border-[#D9F1F5] hover:bg-[#D9F1F5]'
+                    }`}
+                  >
+                    <span>{sub}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] ${isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                      {subCount}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           {/* Desktop Active Filters */}
           {hasActiveFilters && (
             <div className="hidden lg:flex flex-wrap items-center gap-2 p-3 bg-white rounded-lg border border-[#F1F5F9]">

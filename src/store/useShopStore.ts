@@ -145,6 +145,8 @@ interface ShopStore {
   addCategory: (newCategory: Omit<Category, 'id'>) => Promise<void>;
   updateCategory: (id: string, updated: Partial<Category>) => Promise<void>;
   deleteCategory: (id: string) => Promise<void>;
+  addSubcategory: (categoryId: string, name: string) => Promise<Category | null>;
+  deleteSubcategory: (categoryId: string, subcategoryName: string) => Promise<Category | null>;
 
   addOrder: (order: Order) => Promise<void>;
   updateOrderStatus: (orderId: string, status: Order['status']) => Promise<void>;
@@ -184,6 +186,7 @@ interface ShopStore {
 const initialFilter: FilterState = {
   categoryId: null,
   categoryIds: [],
+  subCategory: null,
   searchQuery: '',
   ageGroup: null,
   priceRange: [0, 15000],
@@ -399,6 +402,7 @@ export const useShopStore = create<ShopStore>((set, get) => ({
       syncShopUrl('home', {
         categoryId: null,
         categoryIds: [],
+        subCategory: null,
         searchQuery: '',
         ageGroup: null,
         priceRange: [0, 15000],
@@ -569,6 +573,7 @@ export const useShopStore = create<ShopStore>((set, get) => ({
       } else if (cats.length === 1 && !filter.searchQuery.trim()) {
         const page = await customerService.fetchCategoryProducts(cats[0], {
           sort,
+          subCategory: filter.subCategory || undefined,
           inStock: filter.inStockOnly || undefined,
           ageGroup: filter.ageGroup || undefined,
           onSaleOnly: filter.onSaleOnly || undefined,
@@ -577,6 +582,7 @@ export const useShopStore = create<ShopStore>((set, get) => ({
       } else {
         const page = await customerService.fetchStoreProducts({
           categoryIds: cats.length ? cats : undefined,
+          subCategory: filter.subCategory || undefined,
           q: filter.searchQuery.trim() || undefined,
           sort,
           inStock: filter.inStockOnly || undefined,
@@ -719,6 +725,7 @@ export const useShopStore = create<ShopStore>((set, get) => ({
         original_price: newProdData.originalPrice,
         category_id: newProdData.categoryId || null,
         category_name: newProdData.categoryName || 'Uncategorized',
+        sub_category: newProdData.subCategory || null,
         badge: newProdData.badge,
         discount_badge: newProdData.discountBadge,
         tag_ids: newProdData.tagIds || [],
@@ -754,6 +761,7 @@ export const useShopStore = create<ShopStore>((set, get) => ({
       if (updated.originalPrice !== undefined) payload.original_price = updated.originalPrice;
       if (updated.categoryId !== undefined) payload.category_id = updated.categoryId;
       if (updated.categoryName !== undefined) payload.category_name = updated.categoryName;
+      if (updated.subCategory !== undefined) payload.sub_category = updated.subCategory;
       if (updated.badge !== undefined) payload.badge = updated.badge;
       if (updated.discountBadge !== undefined) payload.discount_badge = updated.discountBadge;
       if (updated.tagIds !== undefined) payload.tag_ids = updated.tagIds;
@@ -858,6 +866,34 @@ export const useShopStore = create<ShopStore>((set, get) => ({
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to delete category';
       get().showToast(`Error: ${message}`);
+    }
+  },
+
+  addSubcategory: async (categoryId, name) => {
+    try {
+      const updatedCat = await categoryService.addSubcategory(categoryId, name);
+      await get().fetchAdminData();
+      await get().fetchShopCatalog();
+      get().showToast(`Subcategory "${name}" added`);
+      return updatedCat;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to add subcategory';
+      get().showToast(`Error: ${message}`);
+      return null;
+    }
+  },
+
+  deleteSubcategory: async (categoryId, subcategoryName) => {
+    try {
+      const updatedCat = await categoryService.deleteSubcategory(categoryId, subcategoryName);
+      await get().fetchAdminData();
+      await get().fetchShopCatalog();
+      get().showToast(`Subcategory "${subcategoryName}" removed`);
+      return updatedCat;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to delete subcategory';
+      get().showToast(`Error: ${message}`);
+      return null;
     }
   },
 

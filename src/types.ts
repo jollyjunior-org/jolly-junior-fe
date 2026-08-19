@@ -28,6 +28,7 @@ export interface Product {
   categoryId: string; // category UUID
   categorySlug?: string; // category slug for filters / home rails
   categoryName: string;
+  subCategory?: string; // optional subcategory name (e.g. 'Skincare', 'Wooden Puzzles')
   price: number; // in PKR Rs.
   basePrice?: number;
   originalPrice?: number;
@@ -72,6 +73,7 @@ export interface Category {
   tagLabel?: string | null;
   tagColor?: string | null;
   subcategories: string[];
+  subcategoryCounts?: Record<string, number>;
 }
 
 export interface StoreTag {
@@ -183,6 +185,7 @@ export interface FilterState {
   categoryId: string | null;
   /** Multi-select category slugs for shop filter checkboxes */
   categoryIds: string[];
+  subCategory: string | null;
   searchQuery: string;
   ageGroup: string | null;
   priceRange: [number, number];

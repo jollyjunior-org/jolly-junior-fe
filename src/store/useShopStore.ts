@@ -1,15 +1,9 @@
 import { create } from 'zustand';
 import { Product, ProductVariant, CartItem, FilterState, Category, Order, AppUser, StorefrontConfig } from '@/types';
-import {
-  getAccessToken,
-  isAuthenticated,
-} from '@/api/auth-tokens';
 import * as authService from '@/services/auth-service';
 import * as productService from '@/services/product-service';
 import * as categoryService from '@/services/category-service';
 import * as orderService from '@/services/order-service';
-import * as userService from '@/services/user-service';
-import * as inventoryService from '@/services/inventory-service';
 import * as storefrontService from '@/services/storefront-service';
 import * as customerService from '@/services/customer-service';
 import {
@@ -21,7 +15,6 @@ import {
 import { mapProduct, mapCategory, mapOrder } from '@/services/mappers';
 import { preloadImages } from '@/utils/cdn-image';
 import { syncShopUrl } from '@/utils/shop-url';
-import type { InventoryStats } from '@/services/inventory-service';
 
 /** Rebuild CartItem[] from guest storage using current product catalog when possible. */
 function hydrateCartFromStorage(products: Product[]): CartItem[] {
@@ -57,16 +50,13 @@ interface ShopStore {
   shopProducts: Product[];
   shopLoading: boolean;
   categories: Category[];
-  orders: Order[];
-  users: AppUser[];
-  inventoryStats: InventoryStats;
   cart: CartItem[];
   buyNowItem: CartItem | null;
   wishlist: string[];
   filter: FilterState;
   quickViewProduct: Product | null;
   selectedProductDetail: Product | null;
-  currentView: 'home' | 'shop' | 'checkout' | 'order-success' | 'admin' | 'order-tracking';
+  currentView: 'home' | 'shop' | 'checkout' | 'order-success' | 'order-tracking';
   cartOpen: boolean;
   wishlistOpen: boolean;
   searchOpen: boolean;
@@ -76,10 +66,7 @@ interface ShopStore {
   activeCategorySlug: string | null;
   toastMessage: string | null;
   lastOrderNumber: string | null;
-  isAdminAuthenticated: boolean;
   isCustomerAuthenticated: boolean;
-  authToken: string | null;
-  isLoadingAdminData: boolean;
   storefrontConfig: StorefrontConfig;
   liveSales: Array<{
     id: string;
@@ -88,7 +75,7 @@ interface ShopStore {
     badge_text?: string | null;
     tag_ids?: string[];
   }>;
-  /** Delivery fee + free-over threshold from admin settings */
+  /** Delivery fee + free-over threshold from settings */
   shippingConfig: { deliveryFee: number; freeDeliveryThreshold: number };
   /** Promo verified by backend (null = none) */
   appliedPromo: {
@@ -109,7 +96,7 @@ interface ShopStore {
   resetFilter: () => void;
   setQuickViewProduct: (product: Product | null) => void;
   setSelectedProductDetail: (product: Product | null) => void;
-  setCurrentView: (view: 'home' | 'shop' | 'checkout' | 'order-success' | 'admin' | 'order-tracking') => void;
+  setCurrentView: (view: 'home' | 'shop' | 'checkout' | 'order-success' | 'order-tracking') => void;
   setCartOpen: (open: boolean) => void;
   setWishlistOpen: (open: boolean) => void;
   setSearchOpen: (open: boolean) => void;
@@ -129,45 +116,8 @@ interface ShopStore {
   /** Load shop grid from /store/categories/.../products or /store/products */
   fetchShopCatalog: () => Promise<void>;
   fetchStorefrontConfig: () => Promise<void>;
-  fetchInventoryStats: () => Promise<void>;
-  refreshInventoryStats: () => Promise<void>;
-  adjustStock: (productId: string, delta: number) => Promise<void>;
-  setStockQuantity: (productId: string, quantity: number) => Promise<void>;
-  batchRestock: (productIds: string[], amount: number) => Promise<void>;
-
-  fetchAdminData: () => Promise<void>;
-  fetchAdminProducts: () => Promise<void>;
-  fetchAdminCategories: () => Promise<void>;
-  fetchAdminOrders: () => Promise<void>;
-  fetchAdminUsers: () => Promise<void>;
-  addProduct: (newProduct: Omit<Product, 'id'>) => Promise<Product | null>;
-  updateProduct: (id: string, updated: Partial<Product>) => Promise<void>;
-  deleteProduct: (id: string) => Promise<void>;
-
-  addCategory: (newCategory: Omit<Category, 'id'>) => Promise<void>;
-  updateCategory: (id: string, updated: Partial<Category>) => Promise<void>;
-  deleteCategory: (id: string) => Promise<void>;
-  addSubcategory: (categoryId: string, name: string) => Promise<Category | null>;
-  deleteSubcategory: (categoryId: string, subcategoryName: string) => Promise<Category | null>;
 
   addOrder: (order: Order) => Promise<void>;
-  updateOrderStatus: (orderId: string, status: Order['status']) => Promise<void>;
-  deleteOrder: (orderId: string) => Promise<void>;
-  createOrderReturn: (
-    orderId: string,
-    payload: {
-      reason: string;
-      notes?: string;
-      items: Array<{ orderItemId: number; quantity: number; reason?: string }>;
-    },
-  ) => Promise<boolean>;
-
-  addUser: (newUser: Omit<AppUser, 'id'>) => Promise<void>;
-  updateUserStatus: (userId: string, status: 'Active' | 'Suspended') => Promise<void>;
-  deleteUser: (userId: string) => Promise<void>;
-
-  loginAdmin: (email: string, pass: string) => Promise<{ success: boolean; message?: string }>;
-  logoutAdmin: () => void;
 
   getCartTotal: () => number;
   getCartCount: () => number;
@@ -198,30 +148,16 @@ const initialFilter: FilterState = {
   saleKey: null,
 };
 
-const emptyInventoryStats: InventoryStats = {
-  totalStockUnits: 0,
-  lowStockAlert: 0,
-  totalInvestmentValue: 0,
-  totalRetailValue: 0,
-  deliveredSalesValue: 0,
-  deliveredCostValue: 0,
-  totalProfitEarned: 0,
-  currentInventoryValue: 0,
-};
-
 export const useShopStore = create<ShopStore>((set, get) => ({
   products: [],
   shopProducts: [],
   shopLoading: false,
   categories: [],
-  orders: [],
-  users: [],
   // SSR-safe defaults — hydrate from localStorage after mount (avoids hydration mismatch)
   cart: [],
   buyNowItem: null,
   wishlist: [],
   filter: initialFilter,
-  inventoryStats: emptyInventoryStats,
   quickViewProduct: null,
   selectedProductDetail: null,
   currentView: 'home',
@@ -234,10 +170,7 @@ export const useShopStore = create<ShopStore>((set, get) => ({
   activeCategorySlug: null,
   toastMessage: null,
   lastOrderNumber: null,
-  isAdminAuthenticated: false,
   isCustomerAuthenticated: false,
-  authToken: null,
-  isLoadingAdminData: false,
   storefrontConfig: emptyStorefront,
   liveSales: [],
   shippingConfig: { deliveryFee: 250, freeDeliveryThreshold: 3000 },
@@ -431,8 +364,6 @@ export const useShopStore = create<ShopStore>((set, get) => ({
     set({
       cart,
       wishlist,
-      isAdminAuthenticated: isAuthenticated(),
-      authToken: getAccessToken(),
     });
     
     // Check if customer session cookie is valid
@@ -613,308 +544,6 @@ export const useShopStore = create<ShopStore>((set, get) => ({
     }
   },
 
-  fetchAdminProducts: async () => {
-    if (!get().authToken) return;
-    try {
-      const slugById = new Map(get().categories.map((c) => [c.id, c.slug]));
-      const products = await productService.fetchAdminProducts(slugById);
-      set({ products });
-    } catch (err) {
-      console.error('Failed to fetch admin products', err);
-    }
-  },
-
-  fetchAdminCategories: async () => {
-    if (!get().authToken) return;
-    try {
-      const categories = await categoryService.fetchAdminCategories();
-      set({ categories });
-    } catch (err) {
-      console.error('Failed to fetch admin categories', err);
-    }
-  },
-
-  fetchAdminOrders: async () => {
-    if (!get().authToken) return;
-    try {
-      const orders = await orderService.fetchAdminOrders();
-      set({ orders });
-    } catch (err) {
-      console.error('Failed to fetch admin orders', err);
-    }
-  },
-
-  fetchAdminUsers: async () => {
-    if (!get().authToken) return;
-    try {
-      const users = await userService.fetchAdminUsers();
-      set({ users });
-    } catch (err) {
-      console.error('Failed to fetch admin users', err);
-    }
-  },
-
-  fetchAdminData: async () => {
-    if (!get().authToken) return;
-    set({ isLoadingAdminData: true });
-    try {
-      await Promise.all([
-        get().fetchAdminProducts(),
-        get().fetchAdminCategories(),
-        get().fetchAdminOrders(),
-        get().fetchAdminUsers(),
-      ]);
-    } catch (err) {
-      console.error('Failed to fetch admin data', err);
-    } finally {
-      set({ isLoadingAdminData: false });
-    }
-  },
-
-  fetchInventoryStats: async () => {
-    try {
-      const inventoryStats = await inventoryService.fetchInventoryDashboard();
-      set({ inventoryStats });
-    } catch (err) {
-      console.error('Failed to fetch inventory stats', err);
-    }
-  },
-
-  refreshInventoryStats: async () => {
-    await get().fetchInventoryStats();
-  },
-
-  adjustStock: async (productId, delta) => {
-    try {
-      await inventoryService.adjustStock(productId, delta);
-      await get().fetchAdminProducts();
-      await get().refreshInventoryStats();
-      get().showToast('Stock updated');
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to adjust stock';
-      get().showToast(`Error: ${message}`);
-    }
-  },
-
-  setStockQuantity: async (productId, quantity) => {
-    try {
-      await inventoryService.setStockQuantity(productId, quantity);
-      await get().fetchAdminProducts();
-      await get().refreshInventoryStats();
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to update stock';
-      get().showToast(`Error: ${message}`);
-    }
-  },
-
-  batchRestock: async (productIds, amount) => {
-    try {
-      await inventoryService.batchAdjustStock(productIds, amount);
-      await get().fetchAdminProducts();
-      await get().refreshInventoryStats();
-      get().showToast(`Restocked ${productIds.length} items with +${amount} units each`);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to batch restock';
-      get().showToast(`Error: ${message}`);
-    }
-  },
-
-  addProduct: async (newProdData) => {
-    try {
-      const raw = await productService.createProduct({
-        name: newProdData.name,
-        slug: newProdData.name.toLowerCase().replace(/\s+/g, '-'),
-        description: newProdData.description,
-        price: newProdData.price,
-        base_price: newProdData.basePrice,
-        original_price: newProdData.originalPrice,
-        category_id: newProdData.categoryId || null,
-        category_name: newProdData.categoryName || 'Uncategorized',
-        sub_category: newProdData.subCategory || null,
-        badge: newProdData.badge,
-        discount_badge: newProdData.discountBadge,
-        tag_ids: newProdData.tagIds || [],
-        in_stock: newProdData.inStock,
-        stock_quantity: newProdData.stockQuantity,
-        is_featured: false,
-        age_group: newProdData.ageGroup,
-        features: newProdData.features || [],
-        images: newProdData.images,
-        variants: (newProdData.variants || []).map((v) => ({
-          id: v.id,
-          name: v.name,
-          price: v.price,
-          original_price: v.originalPrice ?? null,
-          in_stock: v.inStock,
-          stock_quantity: v.stockQuantity,
-        })),
-      });
-
-      await get().fetchAdminProducts();
-      const createdId = (raw as Record<string, unknown>)?.id;
-      const created = createdId
-        ? get().products.find((p) => p.id === createdId) || mapProduct(raw as Record<string, unknown>)
-        : null;
-
-      get().showToast(`Product "${newProdData.name}" created successfully! Now upload product images.`);
-      return created;
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to create product';
-      get().showToast(`Error: ${message}`);
-      return null;
-    }
-  },
-
-  updateProduct: async (id, updated) => {
-    try {
-      const payload: Record<string, unknown> = {};
-      if (updated.name !== undefined) payload.name = updated.name;
-      if (updated.description !== undefined) payload.description = updated.description;
-      if (updated.price !== undefined) payload.price = updated.price;
-      if (updated.basePrice !== undefined) payload.base_price = updated.basePrice;
-      if (updated.originalPrice !== undefined) payload.original_price = updated.originalPrice;
-      if (updated.categoryId !== undefined) payload.category_id = updated.categoryId;
-      if (updated.categoryName !== undefined) payload.category_name = updated.categoryName;
-      if (updated.subCategory !== undefined) payload.sub_category = updated.subCategory;
-      if (updated.badge !== undefined) payload.badge = updated.badge;
-      if (updated.discountBadge !== undefined) payload.discount_badge = updated.discountBadge;
-      if (updated.tagIds !== undefined) payload.tag_ids = updated.tagIds;
-      if (updated.features !== undefined) payload.features = updated.features;
-      if (updated.inStock !== undefined) payload.in_stock = updated.inStock;
-      if (updated.stockQuantity !== undefined) payload.stock_quantity = updated.stockQuantity;
-      if (updated.ageGroup !== undefined) payload.age_group = updated.ageGroup;
-      if (updated.isPublished !== undefined) payload.is_published = updated.isPublished;
-      if (updated.images !== undefined) payload.images = updated.images;
-      if (updated.variants !== undefined) {
-        payload.variants = updated.variants.map((v) => ({
-          id: v.id,
-          name: v.name,
-          price: v.price,
-          original_price: v.originalPrice ?? null,
-          in_stock: v.inStock,
-          stock_quantity: v.stockQuantity,
-        }));
-      }
-
-      await productService.updateProduct(id, payload);
-      await get().fetchAdminProducts();
-      get().showToast('Product updated successfully!');
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to update product';
-      get().showToast(`Error: ${message}`);
-      throw err;
-    }
-  },
-
-  deleteProduct: async (id) => {
-    try {
-      await productService.deleteProduct(id);
-      await get().fetchAdminProducts();
-      get().showToast('Product deleted');
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to delete product';
-      get().showToast(`Error: ${message}`);
-    }
-  },
-
-  addCategory: async (newCatData) => {
-    try {
-      await categoryService.createCategory({
-        name: newCatData.name,
-        slug: newCatData.slug || newCatData.name.toLowerCase().replace(/\s+/g, '-'),
-        description: newCatData.description,
-        image: newCatData.image,
-        is_enabled: newCatData.isEnabled !== false,
-        show_in_nav: newCatData.showInNav ?? false,
-        show_in_featured: newCatData.showInFeatured ?? newCatData.featured ?? true,
-        show_in_footer: newCatData.showInFooter ?? false,
-        nav_order: newCatData.navOrder ?? 0,
-        tag_id: newCatData.tagId || null,
-        subcategories: (newCatData.subcategories || []).filter(Boolean),
-        icon: newCatData.iconName || 'Shapes',
-        color: newCatData.color || '#FEF3C7',
-      });
-      await get().fetchAdminCategories();
-      get().showToast(`Category "${newCatData.name}" added!`);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to create category';
-      get().showToast(`Error: ${message}`);
-      throw err;
-    }
-  },
-
-  updateCategory: async (id, updated) => {
-    try {
-      const payload: Record<string, unknown> = {};
-      if (updated.name !== undefined) payload.name = updated.name;
-      if (updated.slug !== undefined) payload.slug = updated.slug;
-      if (updated.description !== undefined) payload.description = updated.description;
-      if (updated.image !== undefined) payload.image = updated.image;
-      if (updated.isEnabled !== undefined) payload.is_enabled = updated.isEnabled;
-      if (updated.showInNav !== undefined) payload.show_in_nav = updated.showInNav;
-      if (updated.showInFeatured !== undefined) payload.show_in_featured = updated.showInFeatured;
-      if (updated.showInFooter !== undefined) payload.show_in_footer = updated.showInFooter;
-      if (updated.featured !== undefined && updated.showInFeatured === undefined) {
-        payload.show_in_featured = updated.featured;
-      }
-      if (updated.navOrder !== undefined) payload.nav_order = updated.navOrder;
-      if (updated.tagId !== undefined) payload.tag_id = updated.tagId || null;
-      if (updated.subcategories !== undefined) {
-        payload.subcategories = updated.subcategories.filter(Boolean);
-      }
-      if (updated.iconName !== undefined) payload.icon = updated.iconName;
-      if (updated.color !== undefined) payload.color = updated.color;
-      if (updated.featured !== undefined) payload.featured = updated.featured;
-
-      await categoryService.updateCategory(id, payload);
-      await get().fetchAdminCategories();
-      get().showToast('Category updated');
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to update category';
-      get().showToast(`Error: ${message}`);
-      throw err;
-    }
-  },
-
-  deleteCategory: async (id) => {
-    try {
-      await categoryService.deleteCategory(id);
-      await get().fetchAdminCategories();
-      get().showToast('Category removed');
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to delete category';
-      get().showToast(`Error: ${message}`);
-    }
-  },
-
-  addSubcategory: async (categoryId, name) => {
-    try {
-      const updatedCat = await categoryService.addSubcategory(categoryId, name);
-      await get().fetchAdminCategories();
-      await get().fetchShopCatalog();
-      get().showToast(`Subcategory "${name}" added`);
-      return updatedCat;
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to add subcategory';
-      get().showToast(`Error: ${message}`);
-      return null;
-    }
-  },
-
-  deleteSubcategory: async (categoryId, subcategoryName) => {
-    try {
-      const updatedCat = await categoryService.deleteSubcategory(categoryId, subcategoryName);
-      await get().fetchAdminCategories();
-      await get().fetchShopCatalog();
-      get().showToast(`Subcategory "${subcategoryName}" removed`);
-      return updatedCat;
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to delete subcategory';
-      get().showToast(`Error: ${message}`);
-      return null;
-    }
-  },
-
   addOrder: async (order) => {
     try {
       const subtotal = get().getCartTotal();
@@ -943,7 +572,6 @@ export const useShopStore = create<ShopStore>((set, get) => ({
         })),
       });
 
-      set((state) => ({ orders: [mappedOrder, ...state.orders] }));
       if (mappedOrder.orderNumber) {
         set({ lastOrderNumber: mappedOrder.orderNumber });
       }
@@ -952,79 +580,6 @@ export const useShopStore = create<ShopStore>((set, get) => ({
       const message = err instanceof Error ? err.message : 'Failed to place order';
       get().showToast(`Error: ${message}`);
     }
-  },
-
-  updateOrderStatus: async (orderId, status) => {
-    try {
-      await orderService.updateOrderStatus(orderId, status);
-      await get().fetchAdminOrders();
-      get().showToast(`Order status updated to ${status}`);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to update order status';
-      get().showToast(`Error: ${message}`);
-    }
-  },
-
-  deleteOrder: async (orderId) => {
-    try {
-      await orderService.deleteOrder(orderId);
-      set((state) => ({
-        orders: state.orders.filter((order) => order.id !== orderId),
-      }));
-      get().showToast('Order deleted');
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to delete order';
-      get().showToast(`Error: ${message}`);
-    }
-  },
-
-  createOrderReturn: async (orderId, payload) => {
-    try {
-      const created = await orderService.createOrderReturn(orderId, payload);
-      await get().fetchAdminOrders();
-      await get().fetchAdminProducts();
-      get().showToast(`Return ${created.returnNumber} processed — stock updated`);
-      return true;
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to process return';
-      get().showToast(`Error: ${message}`);
-      return false;
-    }
-  },
-
-  addUser: async () => {
-    get().showToast('User registration via admin endpoint available');
-  },
-
-  updateUserStatus: async (userId, status) => {
-    try {
-      await userService.updateUserStatus(userId, status === 'Active');
-      await get().fetchAdminUsers();
-      get().showToast(`User status updated to ${status}`);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to update user status';
-      get().showToast(`Error: ${message}`);
-    }
-  },
-
-  deleteUser: async () => {
-    get().showToast('User deletion not permitted');
-  },
-
-  loginAdmin: async (email, pass) => {
-    const result = await authService.loginAdmin(email, pass);
-    if (!result.success) return result;
-
-    set({ isAdminAuthenticated: true, authToken: result.token || getAccessToken() });
-    await get().fetchAdminData();
-    get().showToast('Admin authenticated successfully! Welcome back.');
-    return { success: true };
-  },
-
-  logoutAdmin: () => {
-    authService.logoutAdmin();
-    set({ isAdminAuthenticated: false, authToken: null });
-    get().showToast('Logged out of Admin Portal');
   },
 
   getCartTotal: () => {

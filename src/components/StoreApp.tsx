@@ -13,7 +13,6 @@ import { ShopByAge } from '@/components/home/ShopByAge';
 import { GiftIdeas } from '@/components/home/GiftIdeas';
 import { ParentReviews } from '@/components/home/ParentReviews';
 import { ShopPage } from '@/components/shop/ShopPage';
-import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { CartDrawer } from '@/components/cart/CartDrawer';
 import { WishlistDrawer } from '@/components/cart/WishlistDrawer';
 import { QuickViewModal } from '@/components/product/QuickViewModal';
@@ -32,8 +31,8 @@ import { productsForHomeSection } from '@/services/home-section-resolver';
 import { readShopUrl } from '@/utils/shop-url';
 
 /**
- * Client storefront shell (same behavior as the old Vite App.tsx).
- * Home/shop/admin views still switch via Zustand + URL helpers.
+ * Client storefront shell.
+ * Home/shop views switch via Zustand + URL helpers.
  */
 export default function StoreApp() {
   const {
@@ -42,7 +41,6 @@ export default function StoreApp() {
     products,
     fetchPublicData,
     hydrateGuestState,
-    isAdminAuthenticated,
     storefrontConfig,
     setFilter,
     setActiveCategorySlug,
@@ -53,38 +51,15 @@ export default function StoreApp() {
   const cleanWhatsappNum = whatsappNum.replace(/[^\d]/g, '') || '923001234567';
 
   useEffect(() => {
-
     // Restore cart / wishlist / auth from localStorage after mount (SSR-safe)
     hydrateGuestState();
     fetchPublicData();
   }, [fetchPublicData, hydrateGuestState]);
 
-  // Restore shop filters / admin route from URL on load / back button
+  // Restore shop filters from URL on load / back button
   useEffect(() => {
     const applyUrl = () => {
       const path = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/';
-      const hash = window.location.hash.toLowerCase();
-      const isAdminRoute =
-        path === '/jj/admin' ||
-        path === '/jj/admin/dashboard' ||
-        path.startsWith('/jj/admin/') ||
-        path === '/admin' ||
-        path.endsWith('/admin') ||
-        hash === '#jj/admin' ||
-        hash === '#/jj/admin' ||
-        hash === '#admin' ||
-        hash === '#/admin';
-
-      if (isAdminRoute) {
-        setCurrentView('admin');
-        if (isAdminAuthenticated && path === '/jj/admin') {
-          window.history.replaceState(null, '', '/jj/admin/dashboard');
-        } else if (!isAdminAuthenticated && path === '/jj/admin/dashboard') {
-          window.history.replaceState(null, '', '/jj/admin');
-        }
-        return;
-      }
-
       const url = readShopUrl();
       if (url.view === 'shop' || url.categoryId || url.saleKey || url.searchQuery) {
         setFilter({
@@ -117,16 +92,7 @@ export default function StoreApp() {
       window.removeEventListener('popstate', applyUrl);
       window.removeEventListener('hashchange', applyUrl);
     };
-  }, [setCurrentView, isAdminAuthenticated, setFilter, setActiveCategorySlug, fetchShopCatalog]);
-
-  if (currentView === 'admin') {
-    return (
-      <>
-        <AdminDashboard />
-        <Toast />
-      </>
-    );
-  }
+  }, [setCurrentView, setFilter, setActiveCategorySlug, fetchShopCatalog]);
 
   const homeRails = (storefrontConfig.homeSections || []).filter((s) => {
     if (s.key === 'sale' && s.sourceType === 'rule') return false;

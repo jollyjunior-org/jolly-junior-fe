@@ -29,7 +29,6 @@ export function syncShopUrl(
   filter: FilterState,
 ): void {
   if (typeof window === 'undefined') return;
-  if (window.location.pathname.toLowerCase().includes('/jj/admin')) return;
 
   const path = window.location.pathname.replace(/\/+$/, '') || '/';
   // Never stick shop query params on /product/... — leave those routes alone here

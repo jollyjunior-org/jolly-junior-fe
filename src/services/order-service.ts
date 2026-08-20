@@ -1,17 +1,7 @@
 import { apiFetch } from '@/api/api-client';
-import { adminEndpoints } from '@/api/endpoints/admin';
 import { publicEndpoints } from '@/api/endpoints/public';
-import { mapOrder, mapOrderReturn } from '@/services/mappers';
-import type { Order, OrderReturn } from '@/types';
-
-/**
- * GET admin orders list.
- * Returns: Order[]
- */
-export async function fetchAdminOrders(): Promise<Order[]> {
-  const data = await apiFetch<Record<string, unknown>[]>(adminEndpoints.orders());
-  return (data || []).map(mapOrder);
-}
+import { mapOrder } from '@/services/mappers';
+import type { Order } from '@/types';
 
 /**
  * POST create order (guest checkout — no auth).
@@ -25,87 +15,4 @@ export async function createOrder(payload: Record<string, unknown>): Promise<Ord
     skipAuth: true,
   });
   return mapOrder(created);
-}
-
-/**
- * PATCH update order status.
- * Args: orderId, status
- * Delivered/Completed deducts stock; Cancelled restocks net held qty.
- */
-export async function updateOrderStatus(orderId: string, status: string): Promise<unknown> {
-  return apiFetch(adminEndpoints.orderStatus(orderId), {
-    method: 'PATCH',
-    body: JSON.stringify({ status }),
-  });
-}
-
-/**
- * DELETE an order permanently (admin).
- * Args: orderId — order UUID
- * Returns: API confirmation payload
- */
-export async function deleteOrder(orderId: string): Promise<unknown> {
-  return apiFetch(adminEndpoints.order(orderId), {
-    method: 'DELETE',
-  });
-}
-
-/**
- * GET returns for one order.
- * Args: orderId
- * Returns: OrderReturn[]
- */
-export async function fetchOrderReturns(orderId: string): Promise<OrderReturn[]> {
-  const data = await apiFetch<Record<string, unknown>[]>(adminEndpoints.orderReturns(orderId));
-  return (data || []).map(mapOrderReturn);
-}
-
-export interface CreateReturnPayload {
-  reason: string;
-  notes?: string;
-  processImmediately?: boolean;
-  items: Array<{ orderItemId: number; quantity: number; reason?: string }>;
-}
-
-/**
- * POST create a return (full or partial) against an order.
- * Restocks returned qty when processImmediately is true (default).
- */
-export async function createOrderReturn(
-  orderId: string,
-  payload: CreateReturnPayload,
-): Promise<OrderReturn> {
-  const body = {
-    reason: payload.reason,
-    notes: payload.notes,
-    process_immediately: payload.processImmediately !== false,
-    items: payload.items.map((item) => ({
-      order_item_id: item.orderItemId,
-      quantity: item.quantity,
-      reason: item.reason,
-    })),
-  };
-  const created = await apiFetch<Record<string, unknown>>(adminEndpoints.orderReturns(orderId), {
-    method: 'POST',
-    body: JSON.stringify(body),
-  });
-  return mapOrderReturn(created);
-}
-
-/** GET all returns across all orders (admin). */
-export async function fetchAllAdminReturns(): Promise<OrderReturn[]> {
-  const data = await apiFetch<Record<string, unknown>[]>(adminEndpoints.returns());
-  return (data || []).map(mapOrderReturn);
-}
-
-/** PATCH update return status (admin approve / reject / complete). */
-export async function updateAdminReturnStatus(
-  returnId: string,
-  status: string,
-): Promise<OrderReturn> {
-  const updated = await apiFetch<Record<string, unknown>>(adminEndpoints.returnStatus(returnId), {
-    method: 'PATCH',
-    body: JSON.stringify({ status }),
-  });
-  return mapOrderReturn(updated);
 }

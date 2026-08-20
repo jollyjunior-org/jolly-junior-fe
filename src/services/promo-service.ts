@@ -1,5 +1,4 @@
 import { apiFetch } from '@/api/api-client';
-import { adminEndpoints } from '@/api/endpoints/admin';
 import { publicEndpoints } from '@/api/endpoints/public';
 
 export type PromoCode = {
@@ -27,36 +26,6 @@ export type AppliedPromo = {
   discountValue: number;
   discountAmount: number;
 };
-
-/** Admin: list promo codes. */
-export async function fetchAdminPromoCodes(): Promise<PromoCode[]> {
-  const data = await apiFetch<PromoCode[]>(adminEndpoints.promoCodes());
-  return data || [];
-}
-
-/** Admin: create promo. */
-export async function createPromoCode(payload: Record<string, unknown>): Promise<PromoCode> {
-  return apiFetch<PromoCode>(adminEndpoints.promoCodes(), {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
-}
-
-/** Admin: update promo. */
-export async function updatePromoCode(
-  id: string,
-  payload: Record<string, unknown>,
-): Promise<PromoCode> {
-  return apiFetch<PromoCode>(adminEndpoints.promoCode(id), {
-    method: 'PUT',
-    body: JSON.stringify(payload),
-  });
-}
-
-/** Admin: delete promo. */
-export async function deletePromoCode(id: string): Promise<unknown> {
-  return apiFetch(adminEndpoints.promoCode(id), { method: 'DELETE' });
-}
 
 /** Public: load delivery fee + free-shipping threshold. */
 export async function fetchShippingConfig(): Promise<ShippingConfig> {

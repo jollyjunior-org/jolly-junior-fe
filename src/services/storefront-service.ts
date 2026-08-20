@@ -1,6 +1,5 @@
 import { apiFetch } from '@/api/api-client';
 import { publicEndpoints } from '@/api/endpoints/public';
-import { adminEndpoints } from '@/api/endpoints/admin';
 import { mapCategory } from '@/services/mappers';
 import type {
   StoreTag,
@@ -118,107 +117,6 @@ export async function fetchStorefrontConfig(): Promise<StorefrontConfig> {
   return mapStorefrontConfig(raw || {});
 }
 
-/** Admin: list tags. */
-export async function fetchAdminTags(): Promise<StoreTag[]> {
-  const data = await apiFetch<Record<string, unknown>[]>(adminEndpoints.tags());
-  return (data || []).map((t) => ({
-    id: String(t.id),
-    name: String(t.name ?? ''),
-    label: String(t.label ?? ''),
-    color: String(t.color ?? '#F97316'),
-    isActive: t.is_active !== false,
-    sortOrder: Number(t.sort_order ?? 0),
-  }));
-}
-
-export async function createTag(payload: Record<string, unknown>): Promise<unknown> {
-  return apiFetch(adminEndpoints.tags(), { method: 'POST', body: JSON.stringify(payload) });
-}
-
-export async function updateTag(id: string, payload: Record<string, unknown>): Promise<unknown> {
-  return apiFetch(adminEndpoints.tag(id), { method: 'PUT', body: JSON.stringify(payload) });
-}
-
-export async function deleteTag(id: string): Promise<unknown> {
-  return apiFetch(adminEndpoints.tag(id), { method: 'DELETE' });
-}
-
-/** Admin: hero slides */
-export async function fetchAdminHeroSlides(): Promise<HeroSlideConfig[]> {
-  const data = await apiFetch<Record<string, unknown>[]>(adminEndpoints.heroSlides());
-  return (data || []).map((s) => ({
-    id: String(s.id),
-    badge: s.badge ? String(s.badge) : undefined,
-    title: String(s.title ?? ''),
-    subtitle: s.subtitle ? String(s.subtitle) : undefined,
-    imageUrl: s.image_url ? String(s.image_url) : undefined,
-    mobileImageUrl: s.mobile_image_url ? String(s.mobile_image_url) : undefined,
-    buttonText: String(s.button_text ?? 'Shop Now'),
-    accentColor: String(s.accent_color ?? '#F59E0B'),
-    linkType: String(s.link_type ?? 'category'),
-    linkValue: (s.link_value as string | null) ?? null,
-    sortOrder: Number(s.sort_order ?? 0),
-    isActive: s.is_active !== false,
-  }));
-}
-
-export async function createHeroSlide(payload: Record<string, unknown>): Promise<unknown> {
-  return apiFetch(adminEndpoints.heroSlides(), { method: 'POST', body: JSON.stringify(payload) });
-}
-
-export async function updateHeroSlide(
-  id: string,
-  payload: Record<string, unknown>,
-): Promise<unknown> {
-  return apiFetch(adminEndpoints.heroSlide(id), { method: 'PUT', body: JSON.stringify(payload) });
-}
-
-export async function deleteHeroSlide(id: string): Promise<unknown> {
-  return apiFetch(adminEndpoints.heroSlide(id), { method: 'DELETE' });
-}
-
-/** Admin: home sections */
-export async function fetchAdminHomeSections(): Promise<HomeSectionConfig[]> {
-  const data = await apiFetch<Record<string, unknown>[]>(adminEndpoints.homeSections());
-  return (data || []).map((s) => ({
-    id: String(s.id),
-    key: String(s.key ?? ''),
-    title: String(s.title ?? ''),
-    subtitle: s.subtitle ? String(s.subtitle) : undefined,
-    sectionBadge: s.section_badge ? String(s.section_badge) : undefined,
-    sourceType: String(s.source_type ?? 'badge'),
-    sourceValue: (s.source_value as string | null) ?? null,
-    maxItems: Number(s.max_items ?? 12),
-    sortOrder: Number(s.sort_order ?? 0),
-    isActive: s.is_active !== false,
-    showInNav: Boolean(s.show_in_nav),
-    tagId: (s.tag_id as string | null) ?? null,
-    tagLabel: (s.tag_label as string | null) ?? null,
-    tagColor: (s.tag_color as string | null) ?? null,
-  }));
-}
-
-export async function createHomeSection(payload: Record<string, unknown>): Promise<unknown> {
-  return apiFetch(adminEndpoints.homeSections(), {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
-}
-
-export async function updateHomeSection(
-  id: string,
-  payload: Record<string, unknown>,
-): Promise<unknown> {
-  return apiFetch(adminEndpoints.homeSection(id), {
-    method: 'PUT',
-    body: JSON.stringify(payload),
-  });
-}
-
-export async function deleteHomeSection(id: string): Promise<unknown> {
-  return apiFetch(adminEndpoints.homeSection(id), { method: 'DELETE' });
-}
-
 function mapCampaign(c: Record<string, unknown>): CampaignConfig {
   const tags = ((c.tags as Record<string, unknown>[]) || []).map((t) => ({
     id: String(t.id),
@@ -246,27 +144,6 @@ function mapCampaign(c: Record<string, unknown>): CampaignConfig {
       ? (c.tag_ids as string[]).map(String)
       : tags.map((t) => t.id),
   };
-}
-
-/** Admin: list campaigns. */
-export async function fetchAdminCampaigns(): Promise<CampaignConfig[]> {
-  const data = await apiFetch<Record<string, unknown>[]>(adminEndpoints.campaigns());
-  return (data || []).map(mapCampaign);
-}
-
-export async function createCampaign(payload: Record<string, unknown>): Promise<unknown> {
-  return apiFetch(adminEndpoints.campaigns(), { method: 'POST', body: JSON.stringify(payload) });
-}
-
-export async function updateCampaign(
-  id: string,
-  payload: Record<string, unknown>,
-): Promise<unknown> {
-  return apiFetch(adminEndpoints.campaign(id), { method: 'PUT', body: JSON.stringify(payload) });
-}
-
-export async function deleteCampaign(id: string): Promise<unknown> {
-  return apiFetch(adminEndpoints.campaign(id), { method: 'DELETE' });
 }
 
 /**

@@ -1,11 +1,9 @@
-import { getAccessToken, clearAuthStorage } from '@/api/auth-tokens';
-
-type AuthMode = 'admin' | 'customer' | 'none';
+type AuthMode = 'customer' | 'none';
 
 type RequestOptions = RequestInit & {
-  /** Skip attaching the Bearer token (public / login calls). */
+  /** Skip attaching auth token / credentials handling. */
   skipAuth?: boolean;
-  /** Which token to attach. Default: admin (legacy). */
+  /** Which token/auth mode to use. */
   authMode?: AuthMode;
 };
 
@@ -26,7 +24,7 @@ async function parseBody(res: Response): Promise<unknown> {
 
 /**
  * Determine effective authentication mode based on URL or explicit options.
- * Public storefront APIs default to 'none' (NO Bearer token attached).
+ * Public storefront APIs default to 'none'.
  */
 function resolveAuthMode(url: string, explicitAuthMode?: AuthMode, skipAuth?: boolean): AuthMode {
   if (skipAuth || explicitAuthMode === 'none') {
@@ -35,9 +33,6 @@ function resolveAuthMode(url: string, explicitAuthMode?: AuthMode, skipAuth?: bo
   if (explicitAuthMode) {
     return explicitAuthMode;
   }
-  if (url.includes('/admin/') || url.includes('/admin')) {
-    return 'admin';
-  }
   if (url.includes('/store/me/') || url.includes('/store/me')) {
     return 'customer';
   }
@@ -45,7 +40,7 @@ function resolveAuthMode(url: string, explicitAuthMode?: AuthMode, skipAuth?: bo
 }
 
 /**
- * Shared HTTP client — attaches Bearer token for protected routes and throws on non-OK responses.
+ * Shared HTTP client — throws on non-OK responses.
  * Args: url — full request URL; options — fetch options + skipAuth / authMode
  * Returns: typed response body
  */
@@ -58,13 +53,6 @@ export async function apiClient<T = unknown>(
   const headers = new Headers(extraHeaders);
   // Skip ngrok free account browser warning page (which returns HTML & breaks CORS)
   headers.set('ngrok-skip-browser-warning', 'true');
-
-  if (effectiveAuthMode === 'admin') {
-    const token = getAccessToken();
-    if (token) {
-      headers.set('Authorization', `Bearer ${token.trim()}`);
-    }
-  }
 
   // Don't force JSON content-type for FormData (multipart uploads)
   const isFormData = typeof FormData !== 'undefined' && rest.body instanceof FormData;
@@ -81,10 +69,6 @@ export async function apiClient<T = unknown>(
   }
 
   const body = await parseBody(res);
-
-  if (res.status === 401 && effectiveAuthMode !== 'none' && !skipAuth) {
-    if (effectiveAuthMode === 'admin') clearAuthStorage();
-  }
 
 
   if (!res.ok) {

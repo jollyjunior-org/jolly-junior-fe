@@ -5,15 +5,19 @@ import { mapProduct } from '@/services/mappers';
 import type { CartItem, Product } from '@/types';
 
 /** Request a 6-digit login OTP by email. */
-export async function requestLoginOtp(identifier: string): Promise<{
+export async function requestLoginOtp(
+  identifier: string,
+  forceNew?: boolean,
+): Promise<{
   ok: boolean;
   message: string;
   dev_code?: string;
+  existing_code?: boolean;
 }> {
   return apiFetch(authEndpoints.otpRequest(), {
     method: 'POST',
     skipAuth: true,
-    body: JSON.stringify({ identifier }),
+    body: JSON.stringify({ identifier, force_new: Boolean(forceNew) }),
   });
 }
 

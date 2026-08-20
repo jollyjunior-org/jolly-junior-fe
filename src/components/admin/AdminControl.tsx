@@ -4,6 +4,7 @@ import { useShopStore } from '@/store/useShopStore';
 import { AdminCampaigns } from '@/components/admin/AdminCampaigns';
 import { AdminPromos } from '@/components/admin/AdminPromos';
 import { ImageUploadWidget } from '@/components/admin/ImageUploadWidget';
+import { ReloadButton } from '@/components/admin/ReloadButton';
 import { fetchStoreSettings, saveStoreSettings } from '@/services/settings-service';
 import * as storefrontService from '@/services/storefront-service';
 import type { StoreTag, HeroSlideConfig, HomeSectionConfig } from '@/types';
@@ -347,11 +348,14 @@ export const AdminControl: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h2 className="text-xl font-black text-slate-900">Store Control</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Manage nav chips, product tags, flash/seasonal campaigns (timer + background), hero slideshow, and homepage rails — without editing frontend code.
-        </p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-xl border border-slate-200">
+        <div>
+          <h2 className="text-xl font-black text-slate-900">Store Control</h2>
+          <p className="text-sm text-slate-500 mt-1">
+            Manage nav chips, product tags, flash/seasonal campaigns, hero slideshow, and homepage rails.
+          </p>
+        </div>
+        <ReloadButton onReload={loadAll} label="Reload Control Data" />
       </div>
 
       <div className="flex flex-wrap gap-2">

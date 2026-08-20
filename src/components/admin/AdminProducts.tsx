@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { 
   Plus, Search, Edit2, Trash2, CheckCircle2, XCircle, 
-  X, Layers, Tag, DollarSign, Image as ImageIcon, Filter, Check
+  X, Layers, Tag, DollarSign, Image as ImageIcon, Filter, Check, Loader2
 } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
 import { Product, ProductVariant, StoreTag } from '../../types';
 import { ImageUploadWidget, type UploadedImage } from './ImageUploadWidget';
 import { TagMultiSelect } from './TagMultiSelect';
+import { ReloadButton } from './ReloadButton';
 import { formatDiscountLabel } from '../../utils/discount';
 import { commitSession, cleanupSession } from '@/services/upload-service';
 import * as storefrontService from '@/services/storefront-service';
@@ -35,7 +36,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
   openAddModalInitially = false,
   onCloseAddModal
 }) => {
-  const { products, categories, addProduct, updateProduct, deleteProduct } = useShopStore();
+  const { products, categories, addProduct, updateProduct, deleteProduct, fetchAdminProducts } = useShopStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
@@ -48,6 +49,8 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [samePriceForVariants, setSamePriceForVariants] = useState(true);
   const [variants, setVariants] = useState<VariantDraft[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Stable session UUID per modal open — used for Cloudinary upload tracking
   const sessionIdRef = useRef<string>(crypto.randomUUID());
@@ -232,105 +235,110 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
     return Number.isFinite(parsed) ? Math.max(0, Math.min(100, Math.round(parsed))) : 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
 
-    const featuresList = formData.featuresText
-      .split(',')
-      .map(f => f.trim())
-      .filter(Boolean);
+    setIsSubmitting(true);
+    setFormError(null);
 
-    const generatedSlug = formData.slug || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    try {
+      const featuresList = formData.featuresText
+        .split(',')
+        .map(f => f.trim())
+        .filter(Boolean);
 
-    // Build enriched images payload from ImageSlot state
-    const filledSlots = imageSlots.filter((s): s is UploadedImage => s !== null && Boolean(s.secure_url));
-    if (!filledSlots.length) {
-      window.alert('Please add at least one product image.');
-      return;
+      const generatedSlug = formData.slug || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+      // Build enriched images payload from ImageSlot state
+      const filledSlots = imageSlots.filter((s): s is UploadedImage => s !== null && Boolean(s.secure_url));
+      const imagesPayload = filledSlots.map((slot, i) => ({
+        public_id: slot.public_id,
+        secure_url: slot.secure_url,
+        display_order: i,
+      }));
+
+      const hasDiscount = formData.discountPercent > 0 && formData.originalPrice > 0;
+      const computedPrice = hasDiscount
+        ? calculateSellingPrice(formData.originalPrice, formData.discountPercent)
+        : formData.originalPrice > 0
+          ? Math.round(Number(formData.originalPrice))
+          : Number(formData.price);
+      const computedOriginalPrice = hasDiscount ? Number(formData.originalPrice) : computedPrice;
+      const discountPercentValue = hasDiscount ? formData.discountPercent : null;
+
+      const variantPayload: ProductVariant[] = variants
+        .filter((v) => v.name.trim())
+        .map((v, idx) => {
+          const price = samePriceForVariants ? computedPrice : Number(v.price) || computedPrice;
+          const stock = Math.max(0, Number(v.stockQuantity) || 0);
+          return {
+            id: v.id || `tmp-${idx}`,
+            name: v.name.trim(),
+            price,
+            originalPrice: samePriceForVariants ? computedOriginalPrice : Number(v.originalPrice) || price,
+            inStock: stock > 0,
+            stockQuantity: stock,
+          };
+        });
+
+      const variantStockTotal = variantPayload.reduce((sum, v) => sum + v.stockQuantity, 0);
+      const parsedStock = variantPayload.length
+        ? variantStockTotal
+        : Math.max(0, Number(formData.stockQuantity) || 0);
+
+      const productPayload = {
+        name: formData.name,
+        slug: generatedSlug,
+        categoryId: formData.categoryId,
+        categoryName: formData.categoryName,
+        subCategory: formData.subCategory || undefined,
+        price: computedPrice,
+        basePrice: formData.basePrice ? Number(formData.basePrice) : undefined,
+        originalPrice: computedOriginalPrice,
+        discountBadge: discountPercentValue,
+        tagIds: formData.tagIds,
+        badge: (formData.badge || undefined) as Product['badge'],
+        ageGroup: formData.ageGroup,
+        images: imagesPayload as unknown as string[],
+
+        description: formData.description,
+        features: featuresList.length > 0 ? featuresList : ['High quality baby safe material'],
+        inStock: formData.inStock && parsedStock > 0,
+        stockQuantity: parsedStock,
+        isPublished: formData.isPublished,
+        variants: variantPayload,
+      };
+
+      const sid = sessionIdRef.current;
+
+      if (editingProduct) {
+        await updateProduct(editingProduct.id, { ...productPayload, discountBadge: discountPercentValue });
+        if (sid) commitSession(sid).catch(() => {});
+      } else {
+        await addProduct({
+          ...productPayload,
+          discountBadge: discountPercentValue ?? undefined,
+          rating: 5.0,
+          reviewCount: 1,
+          description:
+            formData.description ||
+            'Premium sustainable baby product designed for safe exploration and motor development.',
+          features: featuresList.length > 0 ? featuresList : ['Child safe non-toxic materials', 'Durable design'],
+        });
+        if (sid) commitSession(sid).catch(() => {});
+      }
+
+      // Close modal automatically on success
+      setIsModalOpen(false);
+      resetForm();
+      if (onCloseAddModal) onCloseAddModal();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to save product. Please check input and retry.';
+      setFormError(message);
+    } finally {
+      setIsSubmitting(false);
     }
-    const imagesPayload = filledSlots.map((slot, i) => ({
-      public_id: slot.public_id,
-      secure_url: slot.secure_url,
-      display_order: i,
-    }));
-
-    const hasDiscount = formData.discountPercent > 0 && formData.originalPrice > 0;
-    const computedPrice = hasDiscount
-      ? calculateSellingPrice(formData.originalPrice, formData.discountPercent)
-      : formData.originalPrice > 0
-        ? Math.round(Number(formData.originalPrice))
-        : Number(formData.price);
-    const computedOriginalPrice = hasDiscount ? Number(formData.originalPrice) : computedPrice;
-    const discountPercentValue = hasDiscount ? formData.discountPercent : null;
-
-    const variantPayload: ProductVariant[] = variants
-      .filter((v) => v.name.trim())
-      .map((v, idx) => {
-        const price = samePriceForVariants ? computedPrice : Number(v.price) || computedPrice;
-        const stock = Math.max(0, Number(v.stockQuantity) || 0);
-        return {
-          id: v.id || `tmp-${idx}`,
-          name: v.name.trim(),
-          price,
-          originalPrice: samePriceForVariants ? computedOriginalPrice : Number(v.originalPrice) || price,
-          inStock: stock > 0,
-          stockQuantity: stock,
-        };
-      });
-
-    const variantStockTotal = variantPayload.reduce((sum, v) => sum + v.stockQuantity, 0);
-    const parsedStock = variantPayload.length
-      ? variantStockTotal
-      : Math.max(0, Number(formData.stockQuantity) || 0);
-
-    const productPayload = {
-      name: formData.name,
-      slug: generatedSlug,
-      categoryId: formData.categoryId,
-      categoryName: formData.categoryName,
-      subCategory: formData.subCategory || undefined,
-      price: computedPrice,
-      basePrice: formData.basePrice ? Number(formData.basePrice) : undefined,
-      originalPrice: computedOriginalPrice,
-      discountBadge: discountPercentValue,
-      tagIds: formData.tagIds,
-      badge: (formData.badge || undefined) as Product['badge'],
-      ageGroup: formData.ageGroup,
-      images: imagesPayload as unknown as string[],  // enriched {public_id, secure_url, display_order} — normalised in store
-
-      description: formData.description,
-      features: featuresList.length > 0 ? featuresList : ['High quality baby safe material'],
-      inStock: formData.inStock && parsedStock > 0,
-      stockQuantity: parsedStock,
-      isPublished: formData.isPublished,
-      variants: variantPayload,
-    };
-
-    const sid = sessionIdRef.current;
-
-    if (editingProduct) {
-      updateProduct(editingProduct.id, { ...productPayload, discountBadge: discountPercentValue });
-      // Commit any new uploads added during edit (product ID = session ID)
-      if (sid) commitSession(sid).catch(() => {});
-    } else {
-      addProduct({
-        ...productPayload,
-        discountBadge: discountPercentValue ?? undefined,
-        rating: 5.0,
-        reviewCount: 1,
-        description:
-          formData.description ||
-          'Premium sustainable baby product designed for safe exploration and motor development.',
-        features: featuresList.length > 0 ? featuresList : ['Child safe non-toxic materials', 'Durable design'],
-      });
-      // Commit pending uploads for this session
-      if (sid) commitSession(sid).catch(() => {});
-    }
-
-    // Close WITHOUT triggering the cancel-cleanup (we committed already)
-    setIsModalOpen(false);
-    resetForm();
-    if (onCloseAddModal) onCloseAddModal();
   };
 
   /** Add an empty color/size row. */
@@ -424,13 +432,16 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={handleOpenAddModal}
-          className="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold flex items-center gap-2 cursor-pointer shadow-2xs border-none"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add New Product</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <ReloadButton onReload={fetchAdminProducts} label="Reload Products" />
+          <button
+            onClick={handleOpenAddModal}
+            className="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold flex items-center gap-2 cursor-pointer shadow-2xs border-none"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add New Product</span>
+          </button>
+        </div>
       </div>
 
       {/* Search & Filters */}
@@ -841,7 +852,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Product images (up to {MAX_IMAGES}) *
+                  Product images (up to {MAX_IMAGES})
                 </label>
                 <p className="text-[10px] text-slate-500 mb-2">
                   Image 1 is the main cover photo shown on cards and search.
@@ -866,7 +877,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                       <ImageUploadWidget
                         key={`img-${index}-${slot?.secure_url || 'empty'}`}
                         folder="products"
-                        entityId={sessionIdRef.current}
+                        entityId={editingProduct ? editingProduct.id : sessionIdRef.current}
                         initialImage={slot || undefined}
                         onUploadSuccess={(result) => setImageAt(index, result)}
                       />
@@ -965,20 +976,20 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                             value={row.stockQuantity}
                             onChange={(e) =>
                               updateVariantRow(index, {
-                                stockQuantity: Math.max(0, Number(e.target.value) || 0),
+                                stockQuantity: Math.max(0, parseInt(e.target.value) || 0),
                               })
                             }
                             className="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs outline-none focus:border-sky-500"
                           />
                         </div>
-                        <div className="col-span-4 sm:col-span-2 flex justify-end pb-0.5">
+                        <div className="col-span-4 sm:col-span-1 flex justify-end pb-1">
                           <button
                             type="button"
                             onClick={() => removeVariantRow(index)}
-                            className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 cursor-pointer"
+                            className="p-1 text-slate-400 hover:text-rose-600 rounded cursor-pointer"
                             title="Remove variant"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <X className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
@@ -987,14 +998,9 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                 )}
               </div>
 
-              {/* Merchandising tags — pick only from Control → Tags list */}
+              {/* Tag Multi-Select */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Sale / campaign tags
-                </label>
-                <p className="text-[10px] text-slate-500 mb-2">
-                  Pick from your Tags list (no typing). Same tags on a campaign pull these products into the sale.
-                </p>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Product Tags</label>
                 <TagMultiSelect
                   tags={availableTags}
                   selectedIds={formData.tagIds}
@@ -1081,20 +1087,38 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
 
               </div>
 
+              {formError && (
+                <div className="mx-5 my-2 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs font-medium text-rose-600">
+                  {formError}
+                </div>
+              )}
+
               {/* Submit CTA — stays visible while form scrolls */}
               <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-slate-100 shrink-0 bg-white rounded-b-xl">
                 <button
                   type="button"
+                  disabled={isSubmitting}
                   onClick={handleCloseModal}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg cursor-pointer"
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg cursor-pointer disabled:opacity-50"
                 >
-                  Cancel
+                  {editingProduct ? 'Done' : 'Cancel'}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-lg cursor-pointer shadow-2xs"
+                  disabled={isSubmitting}
+                  className="px-5 py-2 bg-[#0798AE] hover:bg-[#068497] text-white text-xs font-bold rounded-lg cursor-pointer shadow-2xs flex items-center gap-1.5 disabled:opacity-60"
                 >
-                  {editingProduct ? 'Save Changes' : 'Create Product'}
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>{editingProduct ? 'Updating...' : 'Saving...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4" />
+                      <span>{editingProduct ? 'Save Changes' : 'Create Product'}</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>

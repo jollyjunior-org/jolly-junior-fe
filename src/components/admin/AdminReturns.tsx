@@ -14,6 +14,7 @@ import {
 import { useShopStore } from '../../store/useShopStore';
 import * as orderService from '../../services/order-service';
 import type { OrderReturn } from '../../types';
+import { ReloadButton } from './ReloadButton';
 
 export const AdminReturns: React.FC = () => {
   const { showToast } = useShopStore();
@@ -86,14 +87,7 @@ export const AdminReturns: React.FC = () => {
             Review customer return requests, approve refunds, and automatically restock inventory.
           </p>
         </div>
-        <button
-          onClick={loadReturns}
-          disabled={loading}
-          className="self-start sm:self-auto px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-50 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
+        <ReloadButton onReload={loadReturns} label="Reload Returns" />
       </div>
 
       {/* Summary Cards */}

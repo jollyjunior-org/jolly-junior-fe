@@ -4,6 +4,7 @@ import {
   ArrowUpRight, Plus, PackageCheck, Truck, Clock
 } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
+import { ReloadButton } from './ReloadButton';
 
 interface AdminOverviewProps {
   onNavigateTab: (tab: 'products' | 'categories' | 'orders' | 'users' | 'stock' | 'inventory') => void;
@@ -16,7 +17,7 @@ export const AdminOverview: React.FC<AdminOverviewProps> = ({
   onOpenAddProduct,
   onOpenAddCategory
 }) => {
-  const { products, categories, orders, users } = useShopStore();
+  const { products, categories, orders, users, fetchAdminProducts, fetchAdminCategories, fetchAdminOrders, fetchAdminUsers } = useShopStore();
 
   const totalRevenue = orders
     .filter(o => o.status !== 'Cancelled')
@@ -41,6 +42,17 @@ export const AdminOverview: React.FC<AdminOverviewProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <ReloadButton
+            onReload={async () => {
+              await Promise.all([
+                fetchAdminProducts(),
+                fetchAdminCategories(),
+                fetchAdminOrders(),
+                fetchAdminUsers(),
+              ]);
+            }}
+            label="Reload Overview"
+          />
           <button
             onClick={onOpenAddProduct}
             className="px-3.5 py-2 rounded-lg bg-[#38BDF8] hover:bg-[#0284C7] text-slate-950 font-bold text-xs flex items-center gap-1.5 cursor-pointer border-none"

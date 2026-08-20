@@ -5,9 +5,10 @@ import {
 } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
 import { AppUser } from '../../types';
+import { ReloadButton } from './ReloadButton';
 
 export const AdminUsers: React.FC = () => {
-  const { users, orders, addUser, updateUserStatus, deleteUser } = useShopStore();
+  const { users, orders, addUser, updateUserStatus, deleteUser, fetchAdminUsers } = useShopStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'Active' | 'Suspended'>('all');
@@ -86,13 +87,16 @@ export const AdminUsers: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={handleOpenModal}
-          className="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold flex items-center gap-2 cursor-pointer border-none shadow-2xs"
-        >
-          <UserPlus className="w-4 h-4" />
-          <span>Add New User</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <ReloadButton onReload={fetchAdminUsers} label="Reload Users" />
+          <button
+            onClick={handleOpenModal}
+            className="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold flex items-center gap-2 cursor-pointer border-none shadow-2xs"
+          >
+            <UserPlus className="w-4 h-4" />
+            <span>Add New User</span>
+          </button>
+        </div>
       </div>
 
       {/* Search & Filter */}

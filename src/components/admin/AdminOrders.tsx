@@ -6,9 +6,10 @@ import {
 import { useShopStore } from '../../store/useShopStore';
 import { Order, OrderReturn } from '../../types';
 import * as orderService from '../../services/order-service';
+import { ReloadButton } from './ReloadButton';
 
 export const AdminOrders: React.FC = () => {
-  const { orders, updateOrderStatus, deleteOrder, createOrderReturn, showToast } = useShopStore();
+  const { orders, updateOrderStatus, deleteOrder, createOrderReturn, showToast, fetchAdminOrders } = useShopStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
@@ -219,9 +220,12 @@ export const AdminOrders: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-bold text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">
-          <ShoppingBag className="w-4 h-4 text-sky-600" />
-          <span>Total Orders: {orders.length}</span>
+        <div className="flex items-center gap-2">
+          <ReloadButton onReload={fetchAdminOrders} label="Reload Orders" />
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">
+            <ShoppingBag className="w-4 h-4 text-sky-600" />
+            <span>Total Orders: {orders.length}</span>
+          </div>
         </div>
       </div>
 

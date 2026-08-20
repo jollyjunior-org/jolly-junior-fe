@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { 
-  Plus, Edit2, Trash2, X, Layers, Tag, Grid, List
+  Plus, Edit2, Trash2, X, Layers, Tag, Grid, List, Loader2, Check
 } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
 import { Category } from '../../types';
 import { ImageUploadWidget } from './ImageUploadWidget';
+import { ReloadButton } from './ReloadButton';
 
 interface AdminCategoriesProps {
   openAddModalInitially?: boolean;
@@ -15,12 +16,14 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
   openAddModalInitially = false,
   onCloseAddModal
 }) => {
-  const { categories, products, addCategory, updateCategory, deleteCategory, addSubcategory, deleteSubcategory } = useShopStore();
+  const { categories, products, addCategory, updateCategory, deleteCategory, addSubcategory, deleteSubcategory, fetchAdminCategories } = useShopStore();
 
   const [isModalOpen, setIsModalOpen] = useState(openAddModalInitially);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [newSubName, setNewSubName] = useState('');
   const [isSubmittingSub, setIsSubmittingSub] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -39,6 +42,8 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
   const resetForm = () => {
     setEditingCategory(null);
     setNewSubName('');
+    setFormError(null);
+    setIsSubmitting(false);
     setFormData({
       name: '',
       slug: '',
@@ -62,6 +67,8 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
   const handleOpenEditModal = (cat: Category) => {
     setEditingCategory(cat);
     setNewSubName('');
+    setFormError(null);
+    setIsSubmitting(false);
     setFormData({
       name: cat.name,
       slug: cat.slug,
@@ -130,44 +137,55 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
     setIsSubmittingSub(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
 
-    const generatedSlug = formData.slug || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    setIsSubmitting(true);
+    setFormError(null);
 
-    if (editingCategory) {
-      updateCategory(editingCategory.id, {
-        name: formData.name,
-        slug: generatedSlug,
-        description: formData.description,
-        image: formData.image,
-        color: formData.color,
-        iconName: formData.iconName,
-        featured: formData.featured,
-        isEnabled: formData.isEnabled,
-        showInNav: formData.showInNav,
-        showInFooter: formData.showInFooter,
-        navOrder: formData.navOrder,
-      });
-    } else {
-      addCategory({
-        name: formData.name,
-        slug: generatedSlug,
-        description: formData.description || 'Curated collection of baby & toddler essentials.',
-        image: formData.image,
-        color: formData.color,
-        iconName: formData.iconName,
-        featured: formData.featured,
-        isEnabled: formData.isEnabled,
-        showInNav: formData.showInNav,
-        showInFooter: formData.showInFooter,
-        navOrder: formData.navOrder,
-        subcategories: [],
-        itemCount: 0
-      });
+    try {
+      const generatedSlug = formData.slug || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+      if (editingCategory) {
+        await updateCategory(editingCategory.id, {
+          name: formData.name,
+          slug: generatedSlug,
+          description: formData.description,
+          image: formData.image,
+          color: formData.color,
+          iconName: formData.iconName,
+          featured: formData.featured,
+          isEnabled: formData.isEnabled,
+          showInNav: formData.showInNav,
+          showInFooter: formData.showInFooter,
+          navOrder: formData.navOrder,
+        });
+      } else {
+        await addCategory({
+          name: formData.name,
+          slug: generatedSlug,
+          description: formData.description || 'Curated collection of baby & toddler essentials.',
+          image: formData.image,
+          color: formData.color,
+          iconName: formData.iconName,
+          featured: formData.featured,
+          isEnabled: formData.isEnabled,
+          showInNav: formData.showInNav,
+          showInFooter: formData.showInFooter,
+          navOrder: formData.navOrder,
+          subcategories: [],
+          itemCount: 0
+        });
+      }
+
+      handleCloseModal();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to save category. Please retry.';
+      setFormError(message);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    handleCloseModal();
   };
 
   const handleDelete = (id: string, name: string) => {
@@ -187,13 +205,16 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={handleOpenAddModal}
-          className="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold flex items-center gap-2 cursor-pointer border-none shadow-2xs"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Category</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <ReloadButton onReload={fetchAdminCategories} label="Reload Categories" />
+          <button
+            onClick={handleOpenAddModal}
+            className="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold flex items-center gap-2 cursor-pointer border-none shadow-2xs"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Category</span>
+          </button>
+        </div>
       </div>
 
       {/* Category Grid */}
@@ -483,20 +504,38 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
                 </div>
               </div>
 
+              {formError && (
+                <div className="my-2 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs font-medium text-rose-600">
+                  {formError}
+                </div>
+              )}
+
               {/* Submit CTA */}
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
                   type="button"
+                  disabled={isSubmitting}
                   onClick={handleCloseModal}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg cursor-pointer"
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg cursor-pointer disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-lg cursor-pointer shadow-2xs"
+                  disabled={isSubmitting}
+                  className="px-5 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-lg cursor-pointer shadow-2xs flex items-center gap-1.5 disabled:opacity-60"
                 >
-                  {editingCategory ? 'Save Category' : 'Create Category'}
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>{editingCategory ? 'Updating...' : 'Saving...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4" />
+                      <span>{editingCategory ? 'Save Category' : 'Create Category'}</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>

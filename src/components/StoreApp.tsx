@@ -26,6 +26,7 @@ import { FeedbackModal } from '@/components/common/FeedbackModal';
 import { Toast } from '@/components/common/Toast';
 import { OrderTracking } from '@/components/orders/OrderTracking';
 import { ScrollToTop } from '@/components/common/ScrollToTop';
+import { ImageProtection } from '@/components/common/ImageProtection';
 import { MessageSquare } from 'lucide-react';
 import { productsForHomeSection } from '@/services/home-section-resolver';
 import { readShopUrl } from '@/utils/shop-url';
@@ -134,6 +135,7 @@ export default function StoreApp() {
 
   return (
     <div className="min-h-screen flex flex-col relative bg-[#FFFDF7] text-[#263238] selection:bg-[#D9F1F5] selection:text-[#0798AE]">
+      <ImageProtection />
       <BackgroundDecorations />
       <Header />
       <MobileSidebar />

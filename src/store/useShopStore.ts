@@ -140,7 +140,7 @@ interface ShopStore {
   fetchAdminCategories: () => Promise<void>;
   fetchAdminOrders: () => Promise<void>;
   fetchAdminUsers: () => Promise<void>;
-  addProduct: (newProduct: Omit<Product, 'id'>) => Promise<void>;
+  addProduct: (newProduct: Omit<Product, 'id'>) => Promise<Product | null>;
   updateProduct: (id: string, updated: Partial<Product>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
 
@@ -721,7 +721,7 @@ export const useShopStore = create<ShopStore>((set, get) => ({
 
   addProduct: async (newProdData) => {
     try {
-      await productService.createProduct({
+      const raw = await productService.createProduct({
         name: newProdData.name,
         slug: newProdData.name.toLowerCase().replace(/\s+/g, '-'),
         description: newProdData.description,
@@ -738,6 +738,7 @@ export const useShopStore = create<ShopStore>((set, get) => ({
         stock_quantity: newProdData.stockQuantity,
         is_featured: false,
         age_group: newProdData.ageGroup,
+        features: newProdData.features || [],
         images: newProdData.images,
         variants: (newProdData.variants || []).map((v) => ({
           id: v.id,
@@ -748,11 +749,19 @@ export const useShopStore = create<ShopStore>((set, get) => ({
           stock_quantity: v.stockQuantity,
         })),
       });
-      await get().fetchAdminData();
-      get().showToast(`Product "${newProdData.name}" created successfully!`);
+
+      await get().fetchAdminProducts();
+      const createdId = (raw as Record<string, unknown>)?.id;
+      const created = createdId
+        ? get().products.find((p) => p.id === createdId) || mapProduct(raw as Record<string, unknown>)
+        : null;
+
+      get().showToast(`Product "${newProdData.name}" created successfully! Now upload product images.`);
+      return created;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to create product';
       get().showToast(`Error: ${message}`);
+      return null;
     }
   },
 
@@ -770,6 +779,7 @@ export const useShopStore = create<ShopStore>((set, get) => ({
       if (updated.badge !== undefined) payload.badge = updated.badge;
       if (updated.discountBadge !== undefined) payload.discount_badge = updated.discountBadge;
       if (updated.tagIds !== undefined) payload.tag_ids = updated.tagIds;
+      if (updated.features !== undefined) payload.features = updated.features;
       if (updated.inStock !== undefined) payload.in_stock = updated.inStock;
       if (updated.stockQuantity !== undefined) payload.stock_quantity = updated.stockQuantity;
       if (updated.ageGroup !== undefined) payload.age_group = updated.ageGroup;
@@ -787,18 +797,19 @@ export const useShopStore = create<ShopStore>((set, get) => ({
       }
 
       await productService.updateProduct(id, payload);
-      await get().fetchAdminData();
+      await get().fetchAdminProducts();
       get().showToast('Product updated successfully!');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to update product';
       get().showToast(`Error: ${message}`);
+      throw err;
     }
   },
 
   deleteProduct: async (id) => {
     try {
       await productService.deleteProduct(id);
-      await get().fetchAdminData();
+      await get().fetchAdminProducts();
       get().showToast('Product deleted');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to delete product';
@@ -823,11 +834,12 @@ export const useShopStore = create<ShopStore>((set, get) => ({
         icon: newCatData.iconName || 'Shapes',
         color: newCatData.color || '#FEF3C7',
       });
-      await get().fetchAdminData();
+      await get().fetchAdminCategories();
       get().showToast(`Category "${newCatData.name}" added!`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to create category';
       get().showToast(`Error: ${message}`);
+      throw err;
     }
   },
 
@@ -855,18 +867,19 @@ export const useShopStore = create<ShopStore>((set, get) => ({
       if (updated.featured !== undefined) payload.featured = updated.featured;
 
       await categoryService.updateCategory(id, payload);
-      await get().fetchAdminData();
+      await get().fetchAdminCategories();
       get().showToast('Category updated');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to update category';
       get().showToast(`Error: ${message}`);
+      throw err;
     }
   },
 
   deleteCategory: async (id) => {
     try {
       await categoryService.deleteCategory(id);
-      await get().fetchAdminData();
+      await get().fetchAdminCategories();
       get().showToast('Category removed');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to delete category';
@@ -877,7 +890,7 @@ export const useShopStore = create<ShopStore>((set, get) => ({
   addSubcategory: async (categoryId, name) => {
     try {
       const updatedCat = await categoryService.addSubcategory(categoryId, name);
-      await get().fetchAdminData();
+      await get().fetchAdminCategories();
       await get().fetchShopCatalog();
       get().showToast(`Subcategory "${name}" added`);
       return updatedCat;
@@ -891,7 +904,7 @@ export const useShopStore = create<ShopStore>((set, get) => ({
   deleteSubcategory: async (categoryId, subcategoryName) => {
     try {
       const updatedCat = await categoryService.deleteSubcategory(categoryId, subcategoryName);
-      await get().fetchAdminData();
+      await get().fetchAdminCategories();
       await get().fetchShopCatalog();
       get().showToast(`Subcategory "${subcategoryName}" removed`);
       return updatedCat;
@@ -944,7 +957,7 @@ export const useShopStore = create<ShopStore>((set, get) => ({
   updateOrderStatus: async (orderId, status) => {
     try {
       await orderService.updateOrderStatus(orderId, status);
-      await get().fetchAdminData();
+      await get().fetchAdminOrders();
       get().showToast(`Order status updated to ${status}`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to update order status';
@@ -968,7 +981,8 @@ export const useShopStore = create<ShopStore>((set, get) => ({
   createOrderReturn: async (orderId, payload) => {
     try {
       const created = await orderService.createOrderReturn(orderId, payload);
-      await get().fetchAdminData();
+      await get().fetchAdminOrders();
+      await get().fetchAdminProducts();
       get().showToast(`Return ${created.returnNumber} processed — stock updated`);
       return true;
     } catch (err: unknown) {
@@ -985,7 +999,7 @@ export const useShopStore = create<ShopStore>((set, get) => ({
   updateUserStatus: async (userId, status) => {
     try {
       await userService.updateUserStatus(userId, status === 'Active');
-      await get().fetchAdminData();
+      await get().fetchAdminUsers();
       get().showToast(`User status updated to ${status}`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to update user status';

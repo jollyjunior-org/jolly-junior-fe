@@ -68,7 +68,20 @@ export const LazyImage: React.FC<LazyImageProps> = ({
   };
 
   return (
-    <div className={`relative overflow-hidden ${containerClassName || 'w-full h-full'}`}>
+    <div
+      data-protected-image="true"
+      onContextMenu={(e) => e.preventDefault()}
+      onDragStart={(e) => e.preventDefault()}
+      className={`relative overflow-hidden select-none ${containerClassName || 'w-full h-full'}`}
+    >
+      {/* Invisible Overlay Shield Layer preventing direct right click / drag saving */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 z-[5] bg-transparent select-none"
+        onContextMenu={(e) => e.preventDefault()}
+        onDragStart={(e) => e.preventDefault()}
+      />
+
       {/* Loading Skeleton & Spinner */}
       {!loaded && !error && optimizedSrc && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-100 animate-pulse">
@@ -87,6 +100,8 @@ export const LazyImage: React.FC<LazyImageProps> = ({
           ref={imgRef}
           src={optimizedSrc}
           alt={alt}
+          onContextMenu={(e) => e.preventDefault()}
+          onDragStart={(e) => e.preventDefault()}
           onLoad={(e) => {
             setLoaded(true);
             onLoad?.(e);
@@ -95,7 +110,7 @@ export const LazyImage: React.FC<LazyImageProps> = ({
             setError(true);
             onError?.(e);
           }}
-          className={`w-full h-full transition-opacity duration-300 ease-in-out ${
+          className={`w-full h-full transition-opacity duration-300 ease-in-out select-none pointer-events-none ${
             loaded ? 'opacity-100' : 'opacity-0'
           } ${className}`}
           style={style}

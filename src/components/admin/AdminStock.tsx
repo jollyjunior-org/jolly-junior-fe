@@ -4,9 +4,10 @@ import {
   Plus, Minus, RefreshCw, Layers, ArrowUpDown, ShieldAlert, DollarSign, PackagePlus, FileText
 } from 'lucide-react';
 import { useShopStore } from '../../store/useShopStore';
+import { ReloadButton } from './ReloadButton';
 
 export const AdminStock: React.FC = () => {
-  const { products, categories, inventoryStats, adjustStock, setStockQuantity, batchRestock, updateProduct, fetchInventoryStats } = useShopStore();
+  const { products, categories, inventoryStats, adjustStock, setStockQuantity, batchRestock, updateProduct, fetchInventoryStats, fetchAdminProducts } = useShopStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [stockFilter, setStockFilter] = useState<'all' | 'healthy' | 'low' | 'out'>('all');
@@ -97,6 +98,12 @@ export const AdminStock: React.FC = () => {
 
         {/* Quick Batch Actions */}
         <div className="flex flex-wrap items-center gap-2">
+          <ReloadButton
+            onReload={async () => {
+              await Promise.all([fetchAdminProducts(), fetchInventoryStats()]);
+            }}
+            label="Reload Stock"
+          />
           <button
             className="px-3.5 py-2 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors"
           >

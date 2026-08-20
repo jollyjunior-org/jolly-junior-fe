@@ -14,6 +14,7 @@ import { MobileSidebar } from '@/components/common/MobileSidebar';
 import { AuthModal } from '@/components/common/AuthModal';
 import { AccountPanel } from '@/components/common/AccountPanel';
 import { Toast } from '@/components/common/Toast';
+import { ImageProtection } from '@/components/common/ImageProtection';
 import { Loader } from '@/components/common/Loader';
 import { ProductDetailView } from '@/components/product/ProductDetailView';
 import * as productService from '@/services/product-service';
@@ -97,6 +98,7 @@ export default function ProductPageClient() {
 
   return (
     <div className="min-h-screen flex flex-col relative bg-[#FFFDF7] text-[#263238]">
+      <ImageProtection />
       <BackgroundDecorations />
       <Header />
       <MobileSidebar />

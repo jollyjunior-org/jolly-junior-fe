@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Save, Loader2, Cloud, AlertCircle, CheckCircle2, Share2, Plus, Trash2, PhoneCall } from 'lucide-react';
 import { useShopStore } from '@/store/useShopStore';
 import { fetchSettings, saveSettings } from '@/services/settings-service';
+import { ReloadButton } from './ReloadButton';
 
 export const AdminSettings: React.FC = () => {
   const authToken = useShopStore((state) => state.authToken);
@@ -104,11 +105,14 @@ export const AdminSettings: React.FC = () => {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div>
-        <h2 className="text-lg font-bold text-slate-900">System & Social Settings</h2>
-        <p className="text-xs text-slate-500 mt-0.5">
-          Configure WhatsApp support, social media links, third-party integrations, and store communication.
-        </p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-xl border border-slate-200">
+        <div>
+          <h2 className="text-lg font-bold text-slate-900">System &amp; Social Settings</h2>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Configure WhatsApp support, social media links, third-party integrations, and store communication.
+          </p>
+        </div>
+        <ReloadButton onReload={loadSettings} label="Reload Settings" />
       </div>
 
       {message && (

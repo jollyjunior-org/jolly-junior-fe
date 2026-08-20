@@ -37,39 +37,46 @@ export const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'stock' | 'inventory' | 'categories' | 'control' | 'orders' | 'returns' | 'users' | 'settings'>('overview');
   const [openAddProductModal, setOpenAddProductModal] = useState(false);
   const [openAddCategoryModal, setOpenAddCategoryModal] = useState(false);
+  const [loadedTabs, setLoadedTabs] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (!isAdminAuthenticated) return;
+    if (loadedTabs[activeTab]) return; // Skip if tab data is already loaded
+
+    const markLoaded = () => {
+      setLoadedTabs((prev) => ({ ...prev, [activeTab]: true }));
+    };
 
     switch (activeTab) {
       case 'overview':
-        fetchAdminProducts();
-        fetchAdminCategories();
-        fetchAdminOrders();
-        fetchAdminUsers();
+        Promise.all([
+          fetchAdminProducts(),
+          fetchAdminCategories(),
+          fetchAdminOrders(),
+          fetchAdminUsers(),
+        ]).then(markLoaded);
         break;
       case 'products':
       case 'stock':
       case 'inventory':
-        fetchAdminProducts();
-        fetchInventoryStats();
+        Promise.all([fetchAdminProducts(), fetchInventoryStats()]).then(markLoaded);
         break;
       case 'categories':
-        fetchAdminCategories();
-        break;
       case 'control':
-        fetchAdminCategories();
+        fetchAdminCategories().then(markLoaded);
         break;
       case 'orders':
-        fetchAdminOrders();
+      case 'returns':
+        fetchAdminOrders().then(markLoaded);
         break;
       case 'users':
-        fetchAdminUsers();
+        fetchAdminUsers().then(markLoaded);
         break;
       case 'settings':
+        markLoaded();
         break;
     }
-  }, [isAdminAuthenticated, activeTab]);
+  }, [isAdminAuthenticated, activeTab, loadedTabs]);
 
   // If not authenticated, present Admin Login Screen
   if (!isAdminAuthenticated) {

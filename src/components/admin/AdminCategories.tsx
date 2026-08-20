@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { 
   Plus, Edit2, Trash2, X, Layers, Tag, Grid, List, Loader2, Check
 } from 'lucide-react';
@@ -6,6 +6,7 @@ import { useShopStore } from '../../store/useShopStore';
 import { Category } from '../../types';
 import { ImageUploadWidget } from './ImageUploadWidget';
 import { ReloadButton } from './ReloadButton';
+import { commitSession } from '@/services/upload-service';
 
 interface AdminCategoriesProps {
   openAddModalInitially?: boolean;
@@ -24,6 +25,8 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
   const [isSubmittingSub, setIsSubmittingSub] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  const sessionIdRef = useRef<string>(crypto.randomUUID());
 
   const [formData, setFormData] = useState({
     name: '',
@@ -177,6 +180,11 @@ export const AdminCategories: React.FC<AdminCategoriesProps> = ({
           subcategories: [],
           itemCount: 0
         });
+      }
+
+      const sid = editingCategory?.id || sessionIdRef.current;
+      if (sid) {
+        commitSession(sid).catch(() => {});
       }
 
       handleCloseModal();

@@ -6,6 +6,7 @@ import { AdminPromos } from '@/components/admin/AdminPromos';
 import { ImageUploadWidget } from '@/components/admin/ImageUploadWidget';
 import { ReloadButton } from '@/components/admin/ReloadButton';
 import { fetchStoreSettings, saveStoreSettings } from '@/services/settings-service';
+import { commitSession } from '@/services/upload-service';
 import * as storefrontService from '@/services/storefront-service';
 import type { StoreTag, HeroSlideConfig, HomeSectionConfig } from '@/types';
 
@@ -207,12 +208,16 @@ export const AdminControl: React.FC = () => {
       // Send hero-specific image overrides if provided
       if (slideForm.image_url) payload.image_url = slideForm.image_url;
       if (slideForm.mobile_image_url) payload.mobile_image_url = slideForm.mobile_image_url;
+      const sid = editingSlideId || slideSessionId;
       if (editingSlideId) {
         await storefrontService.updateHeroSlide(editingSlideId, payload);
         showToast('Slide updated');
       } else {
         await storefrontService.createHeroSlide(payload);
         showToast('Slide created');
+      }
+      if (sid) {
+        commitSession(sid).catch(() => {});
       }
       resetSlideForm();
       await loadAll();

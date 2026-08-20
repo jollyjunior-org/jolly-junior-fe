@@ -16,13 +16,12 @@ export const AuthModal: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
-  const [devCode, setDevCode] = useState<string | null>(null);
 
   if (!authModalOpen) return null;
 
   /** Send OTP to the entered email address. */
-  const handleRequest = async (e?: React.FormEvent, forceNew = false) => {
-    if (e) e.preventDefault();
+  const handleRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
     const email = identifier.trim();
     if (!email) {
       setError('Please enter your email address.');
@@ -34,11 +33,9 @@ export const AuthModal: React.FC = () => {
     }
 
     setLoading(true);
-    setDevCode(null);
     setError(null);
     try {
-      const res = await requestLoginOtp(email, forceNew);
-      if (res.dev_code) setDevCode(res.dev_code);
+      const res = await requestLoginOtp(email);
       const msg = res.message || 'Verification code sent';
       setInfoMessage(msg);
       showToast(msg);
@@ -62,7 +59,6 @@ export const AuthModal: React.FC = () => {
     } else {
       setStep('email');
       setCode('');
-      setDevCode(null);
       setInfoMessage(null);
     }
   };
@@ -83,7 +79,7 @@ export const AuthModal: React.FC = () => {
         </p>
 
         {step === 'email' ? (
-          <form onSubmit={(e) => handleRequest(e, false)} className="space-y-3">
+          <form onSubmit={handleRequest} className="space-y-3">
             <label className="block text-xs font-bold text-slate-600">
               Email Address
               <div className="relative mt-1">
@@ -121,11 +117,6 @@ export const AuthModal: React.FC = () => {
               {infoMessage || `Verification code sent for ${identifier}`}
             </div>
 
-            {devCode && (
-              <p className="text-[11px] bg-amber-50 text-amber-800 p-2.5 rounded-xl border border-amber-200 font-medium">
-                Dev mode: use code <strong className="font-mono text-xs">{devCode}</strong>
-              </p>
-            )}
             <label className="block text-xs font-bold text-slate-600">
               6-digit code
               <div className="relative mt-1">
@@ -155,15 +146,7 @@ export const AuthModal: React.FC = () => {
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               Verify &amp; sign in
             </button>
-            <div className="flex items-center justify-between text-xs pt-1">
-              <button
-                type="button"
-                onClick={() => handleRequest(undefined, true)}
-                disabled={loading}
-                className="text-[#0798AE] font-bold hover:underline cursor-pointer"
-              >
-                Resend new code
-              </button>
+            <div className="flex items-center justify-end text-xs pt-1">
               <button
                 type="button"
                 onClick={() => {
@@ -171,7 +154,7 @@ export const AuthModal: React.FC = () => {
                   setError(null);
                   setInfoMessage(null);
                 }}
-                className="text-slate-500 hover:underline cursor-pointer"
+                className="text-slate-500 hover:underline cursor-pointer font-medium"
               >
                 Change email
               </button>

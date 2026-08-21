@@ -1,17 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight } from 'lucide-react';
 import { useShopStore } from '@/store/useShopStore';
 import { goToShop } from '@/utils/navigate-shop';
 import type { HeroSlideConfig } from '@/types';
-
-import { LazyImage } from '@/components/common/LazyImage';
 import { HeroSliderSkeleton } from '@/components/common/Skeleton';
 
 /**
- * Homepage hero slider — clean full-image slides with a Shop Now button at bottom-left.
- * Shows mobileImageUrl on small screens, falls back to imageUrl on desktop.
+ * Homepage hero slider — stacked permanent DOM slide elements with CSS opacity transition.
+ * Preloads image assets once and avoids re-requesting images on slide transitions.
  */
 export const HeroSlider: React.FC = () => {
   const router = useRouter();
@@ -19,12 +16,15 @@ export const HeroSlider: React.FC = () => {
   const [isPaused, setIsPaused] = useState(false);
   const { storefrontConfig } = useShopStore();
 
-  const slides = (storefrontConfig.heroSlides || []).filter(
-    (slide): slide is HeroSlideConfig & { imageUrl: string } => Boolean(slide.imageUrl),
-  );
+  const slides = useMemo(() => {
+    return (storefrontConfig.heroSlides || []).filter(
+      (slide): slide is HeroSlideConfig & { imageUrl: string } => Boolean(slide.imageUrl),
+    );
+  }, [storefrontConfig.heroSlides]);
 
-  // Preload all hero poster images into browser memory/CDN cache on mount
+  // Preload all hero slide images into browser cache once when slide configuration changes
   useEffect(() => {
+    if (!slides.length) return;
     slides.forEach((s) => {
       if (s.imageUrl) {
         const img = new Image();
@@ -49,28 +49,6 @@ export const HeroSlider: React.FC = () => {
 
   if (!slides.length) return <HeroSliderSkeleton />;
 
-  const slide = slides[currentIndex] || slides[0];
-
-  const handleSlideClick = () => {
-    const type = slide.linkType || 'category';
-    const value = slide.linkValue || '';
-    if (type === 'none') return;
-    if (type === 'url' && value) {
-      window.open(value, '_blank', 'noopener,noreferrer');
-      return;
-    }
-    if (type === 'shop') {
-      goToShop(router, { categoryId: null, categoryIds: [], searchQuery: '', saleKey: null });
-    } else {
-      goToShop(router, {
-        categoryId: value || null,
-        categoryIds: value ? [value] : [],
-        searchQuery: '',
-        saleKey: null,
-      });
-    }
-  };
-
   return (
     <section className="relative w-full px-3 sm:px-6 pt-2 max-w-7xl mx-auto">
       <div
@@ -78,49 +56,72 @@ export const HeroSlider: React.FC = () => {
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={slide.id}
-            initial={{ opacity: 0, scale: 1.01 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.99 }}
-            transition={{ duration: 0.6, ease: 'easeInOut' }}
-            className="absolute inset-0 w-full h-full"
-          >
-            {/* Desktop image — hidden on small screens when mobile image exists */}
-            <img
-              src={slide.imageUrl}
-              alt={slide.title}
-              referrerPolicy="no-referrer"
-              className={`w-full h-full object-cover object-center ${
-                slide.mobileImageUrl ? 'hidden sm:block' : ''
-              }`}
-            />
-            {/* Mobile image — shown only on small screens */}
-            {slide.mobileImageUrl && (
-              <img
-                src={slide.mobileImageUrl}
-                alt={slide.title}
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-cover object-center block sm:hidden"
-              />
-            )}
+        {slides.map((slide, idx) => {
+          const isActive = idx === currentIndex;
 
-            {/* Shop Now button — bottom-left */}
-            <div className="absolute bottom-5 left-5 sm:bottom-8 sm:left-8 z-10">
-              <motion.button
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                onClick={handleSlideClick}
-                className="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-[#FFD52F] text-[#263238] font-extrabold text-xs sm:text-sm shadow-lg hover:bg-[#0798AE] hover:text-white transition-all cursor-pointer transform hover:scale-105 group"
-              >
-                <span>{slide.buttonText}</span>
-                <ArrowRight className="w-4 h-4 text-[#263238] group-hover:text-white transition-colors" />
-              </motion.button>
+          const handleSlideClick = () => {
+            const type = slide.linkType || 'category';
+            const value = slide.linkValue || '';
+            if (type === 'none') return;
+            if (type === 'url' && value) {
+              window.open(value, '_blank', 'noopener,noreferrer');
+              return;
+            }
+            if (type === 'shop') {
+              goToShop(router, { categoryId: null, categoryIds: [], searchQuery: '', saleKey: null });
+            } else {
+              goToShop(router, {
+                categoryId: value || null,
+                categoryIds: value ? [value] : [],
+                searchQuery: '',
+                saleKey: null,
+              });
+            }
+          };
+
+          return (
+            <div
+              key={slide.id}
+              className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out ${
+                isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
+              }`}
+            >
+              {/* Desktop image */}
+              <img
+                src={slide.imageUrl}
+                alt={slide.title}
+                loading="eager"
+                decoding="async"
+                referrerPolicy="no-referrer"
+                className={`w-full h-full object-cover object-center ${
+                  slide.mobileImageUrl ? 'hidden sm:block' : ''
+                }`}
+              />
+              {/* Mobile image */}
+              {slide.mobileImageUrl && (
+                <img
+                  src={slide.mobileImageUrl}
+                  alt={slide.title}
+                  loading="eager"
+                  decoding="async"
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover object-center block sm:hidden"
+                />
+              )}
+
+              {/* Shop Now button — bottom-left */}
+              <div className="absolute bottom-5 left-5 sm:bottom-8 sm:left-8 z-10">
+                <button
+                  onClick={handleSlideClick}
+                  className="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-[#FFD52F] text-[#263238] font-extrabold text-xs sm:text-sm shadow-lg hover:bg-[#0798AE] hover:text-white transition-all cursor-pointer transform hover:scale-105 group"
+                >
+                  <span>{slide.buttonText}</span>
+                  <ArrowRight className="w-4 h-4 text-[#263238] group-hover:text-white transition-colors" />
+                </button>
+              </div>
             </div>
-          </motion.div>
-        </AnimatePresence>
+          );
+        })}
 
         {slides.length > 1 && (
           <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20 bg-black/20 backdrop-blur-xs px-3 py-1.5 rounded-full">

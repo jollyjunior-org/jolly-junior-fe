@@ -95,36 +95,38 @@ export const ProductSlider: React.FC<ProductSliderProps> = ({
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
       {/* Section Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-          <h2 className="text-xl sm:text-2xl font-black text-[#0798AE] tracking-tight">
+      <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-3 mb-6">
+        <div className="text-left">
+          {badge && (
+            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold mb-2 shadow-2xs ${badgeColor}`}>
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>{badge}</span>
+            </div>
+          )}
+          <h2 className="text-xl sm:text-3xl font-black text-[#263238] tracking-tight">
             {title}
           </h2>
-          {badge && (
-            <span className={`px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-extrabold flex items-center gap-1 ${badgeColor}`}>
-              <Sparkles className="w-3 h-3 text-[#FFD52F]" />
-              {badge}
-            </span>
-          )}
           {subtitle && (
-            <span className="text-xs text-slate-500 font-bold hidden md:inline-block">
-              · {subtitle}
-            </span>
+            <p className="text-xs sm:text-sm text-[#607D80] font-medium mt-1">
+              {subtitle}
+            </p>
           )}
         </div>
 
         {/* Scroll Arrows Controls */}
-        <div className="flex items-center gap-1.5">
+        <div className="hidden sm:flex items-center gap-2 shrink-0">
           <button
+            type="button"
             onClick={() => scroll('left')}
-            className="p-2 rounded-full border border-[#D9F1F5] hover:bg-[#D9F1F5] text-[#0798AE] transition-all cursor-pointer"
+            className="w-9 h-9 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 flex items-center justify-center transition-all shadow-2xs cursor-pointer active:scale-95"
             title="Scroll Left"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
+            type="button"
             onClick={() => scroll('right')}
-            className="p-2 rounded-full border border-[#D9F1F5] hover:bg-[#D9F1F5] text-[#0798AE] transition-all cursor-pointer"
+            className="w-9 h-9 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 flex items-center justify-center transition-all shadow-2xs cursor-pointer active:scale-95"
             title="Scroll Right"
           >
             <ChevronRight className="w-4 h-4" />

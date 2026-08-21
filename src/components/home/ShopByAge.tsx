@@ -60,17 +60,19 @@ export const ShopByAge: React.FC = () => {
   };
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
-      <div className="flex items-center gap-3 flex-wrap mb-4">
-        <h2 className="text-xl sm:text-2xl font-black text-[#0798AE] tracking-tight text-left">
-          Ages
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+      {/* Header Section */}
+      <div className="text-left mb-8 sm:mb-10">
+        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#EBF7F6] text-[#4A5D4E] text-xs font-extrabold border border-[#D5EFEF] mb-2 shadow-2xs">
+          <span>👶</span>
+          <span>Tailored Growth Milestones</span>
+        </div>
+        <h2 className="text-2xl sm:text-4xl font-black text-[#4A5538] tracking-tight">
+          Shop by Baby Age Group
         </h2>
-        <button
-          onClick={() => goToShop(router, { categoryId: null, categoryIds: [], saleKey: null, searchQuery: '' })}
-          className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-[#0798AE]/15 text-[#0798AE] text-[10px] sm:text-xs font-bold cursor-pointer hover:opacity-80 transition-opacity"
-        >
-          👶 Shop by Age
-        </button>
+        <p className="text-xs sm:text-sm text-[#738268] mt-1 font-medium leading-relaxed">
+          Every stage of childhood deserves age-appropriate toys that foster learning &amp; joy
+        </p>
       </div>
 
       <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-5 gap-3">

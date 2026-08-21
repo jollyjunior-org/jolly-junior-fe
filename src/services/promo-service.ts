@@ -52,31 +52,58 @@ export async function validatePromoCode(
   message: string;
   applied?: AppliedPromo;
 }> {
-  const data = await apiFetch<{
-    valid: boolean;
-    code?: string | null;
-    discount_type?: 'percent' | 'fixed' | null;
-    discount_value?: number | null;
-    discount_amount?: number;
-    message: string;
-  }>(publicEndpoints.promoValidate(), {
-    method: 'POST',
-    skipAuth: true,
-    body: JSON.stringify({ code, subtotal }),
-  });
+  const norm = (code || '').trim().toUpperCase();
 
-  if (!data.valid || !data.code) {
-    return { valid: false, message: data.message || 'Invalid promo code.' };
+  // Instant voucher support for WELCOME500 / JOLLY500
+  if (norm === 'WELCOME500' || norm === 'JOLLY500') {
+    if (subtotal < 2000) {
+      return {
+        valid: false,
+        message: 'Minimum order Rs. 2,000 required for Rs. 500 OFF voucher.',
+      };
+    }
+    const discountAmount = Math.min(500, subtotal);
+    return {
+      valid: true,
+      message: 'Voucher WELCOME500 applied! Saved Rs. 500.',
+      applied: {
+        code: 'WELCOME500',
+        discountType: 'fixed',
+        discountValue: 500,
+        discountAmount,
+      },
+    };
   }
 
-  return {
-    valid: true,
-    message: data.message,
-    applied: {
-      code: data.code,
-      discountType: data.discount_type || 'percent',
-      discountValue: Number(data.discount_value || 0),
-      discountAmount: Number(data.discount_amount || 0),
-    },
-  };
+  try {
+    const data = await apiFetch<{
+      valid: boolean;
+      code?: string | null;
+      discount_type?: 'percent' | 'fixed' | null;
+      discount_value?: number | null;
+      discount_amount?: number;
+      message: string;
+    }>(publicEndpoints.promoValidate(), {
+      method: 'POST',
+      skipAuth: true,
+      body: JSON.stringify({ code, subtotal }),
+    });
+
+    if (!data.valid || !data.code) {
+      return { valid: false, message: data.message || 'Invalid promo code.' };
+    }
+
+    return {
+      valid: true,
+      message: data.message,
+      applied: {
+        code: data.code,
+        discountType: data.discount_type || 'percent',
+        discountValue: Number(data.discount_value || 0),
+        discountAmount: Number(data.discount_amount || 0),
+      },
+    };
+  } catch {
+    return { valid: false, message: 'Invalid promo code or server error.' };
+  }
 }

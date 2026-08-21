@@ -19,16 +19,59 @@ export function productsForHomeSection(
       break;
     case 'tag':
       // Match by Tags-list id or internal name (source_value from Control dropdown)
-      matched = published.filter((p) =>
-        (p.tags || []).some((t) => t.id === value || t.name === value) ||
-        (p.tagIds || []).includes(value),
-      );
-      break;
-    case 'category':
       matched = published.filter(
-        (p) => p.categoryId === value || p.categorySlug === value,
+        (p) =>
+          (p.tags || []).some((t) => t.id === value || t.name === value) ||
+          (p.tagIds || []).includes(value),
       );
       break;
+    case 'category': {
+      // Support single or multi-category comma-separated IDs/slugs (e.g. "cat1,cat2")
+      const catList = value.split(',').map((v) => v.trim()).filter(Boolean);
+      if (!catList.length) {
+        matched = published;
+      } else {
+        matched = published.filter(
+          (p) =>
+            catList.includes(p.categoryId) ||
+            (p.categorySlug && catList.includes(p.categorySlug)),
+        );
+      }
+      break;
+    }
+    case 'category_badge': {
+      // Format: "cat1,cat2|BadgeName" (e.g. "baby-care,toys|New")
+      const [catsPart, badgePart] = value.split('|');
+      const catList = (catsPart || '').split(',').map((v) => v.trim()).filter(Boolean);
+      const badgeVal = (badgePart || '').trim();
+      matched = published.filter((p) => {
+        const inCat =
+          !catList.length ||
+          catList.includes(p.categoryId) ||
+          (p.categorySlug && catList.includes(p.categorySlug));
+        const hasBadge = !badgeVal || p.badge === badgeVal;
+        return inCat && hasBadge;
+      });
+      break;
+    }
+    case 'category_tag': {
+      // Format: "cat1,cat2|TagIdOrName" (e.g. "toys|montessori")
+      const [catsPart, tagPart] = value.split('|');
+      const catList = (catsPart || '').split(',').map((v) => v.trim()).filter(Boolean);
+      const tagVal = (tagPart || '').trim();
+      matched = published.filter((p) => {
+        const inCat =
+          !catList.length ||
+          catList.includes(p.categoryId) ||
+          (p.categorySlug && catList.includes(p.categorySlug));
+        const hasTag =
+          !tagVal ||
+          (p.tags || []).some((t) => t.id === tagVal || t.name === tagVal) ||
+          (p.tagIds || []).includes(tagVal);
+        return inCat && hasTag;
+      });
+      break;
+    }
     case 'discount':
       matched = published.filter((p) => Boolean(p.discountBadge));
       break;
